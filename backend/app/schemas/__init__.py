@@ -1,6 +1,14 @@
 from app.schemas.status import RootResponse, HealthResponse, StatusResponse
 from app.schemas.inventory import InventoryResponse
 from app.schemas.product import ProductBase, ProductResponse, ProductListResponse
+from app.schemas.cart import (
+    AddCartItemRequest,
+    UpdateCartItemRequest,
+    CartItemResponse,
+    CartResponse,
+    CartValidationIssue,
+    CartValidationResponse,
+)
 
 __all__ = [
     "RootResponse",
@@ -9,5 +17,11 @@ __all__ = [
     "InventoryResponse",
     "ProductBase",
     "ProductResponse",
-    "ProductListResponse"
+    "ProductListResponse",
+    "AddCartItemRequest",
+    "UpdateCartItemRequest",
+    "CartItemResponse",
+    "CartResponse",
+    "CartValidationIssue",
+    "CartValidationResponse",
 ]
