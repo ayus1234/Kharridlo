@@ -14,12 +14,19 @@ class Settings(BaseSettings):
     # PostgreSQL Database Configuration
     DATABASE_URL: str = "postgresql+psycopg://postgres:postgres@localhost:5432/dhankriya"
 
-    # Future Infrastructure Placeholders (Safe defaults for Milestone 2)
-    REDIS_URL: str = ""
+    # Multi-Provider AI Credentials (Configuration foundation)
     GEMINI_API_KEY: str = ""
+    GEMINI_API_KEY_2: str = ""
+    GROQ_API_KEY: str = ""
+    GROQ_API_KEY_2: str = ""
+
+    # Razorpay Test Mode API Credentials
     RAZORPAY_KEY_ID: str = ""
     RAZORPAY_KEY_SECRET: str = ""
     RAZORPAY_WEBHOOK_SECRET: str = ""
+
+    # Future Infrastructure Placeholders
+    REDIS_URL: str = ""
 
     model_config = SettingsConfigDict(
         env_file=(".env", "../.env"),
