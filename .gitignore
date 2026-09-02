@@ -1,0 +1,84 @@
+# Environment variables & secrets
+.env
+.env*.local
+.env.development
+.env.test
+.env.production
+!.env.example
+*.pem
+*.key
+*.crt
+*.pfx
+serviceAccountKey.json
+firebase-adminsdk*.json
+
+# Node.js & Frontend dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Next.js build output
+.next/
+out/
+build/
+dist/
+
+# Python virtual environments
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Python bytecode & caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.pytest_cache/
+.coverage
+htmlcov/
+coverage/
+*.cover
+*.pyo
+
+# Caching & local databases
+*.sqlite
+*.sqlite3
+*.db
+dump.rdb
+.cache/
+
+# OS-generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# IDE & Editor configurations
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.sublime-workspace
+*.sublime-project
+*.swp
+*.swo
+*~
+
+# Logs & temporary files
+logs/
+*.log
+tmp/
+temp/
+*.tmp
