@@ -9,6 +9,12 @@ from app.schemas.cart import (
     CartValidationIssue,
     CartValidationResponse,
 )
+from app.schemas.policy import (
+    PolicyRuleReason,
+    PolicySummary,
+    PolicyEvaluationResponse,
+    SetSessionPolicyRequest,
+)
 
 __all__ = [
     "RootResponse",
@@ -24,4 +30,8 @@ __all__ = [
     "CartResponse",
     "CartValidationIssue",
     "CartValidationResponse",
+    "PolicyRuleReason",
+    "PolicySummary",
+    "PolicyEvaluationResponse",
+    "SetSessionPolicyRequest",
 ]

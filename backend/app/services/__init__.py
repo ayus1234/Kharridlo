@@ -11,10 +11,12 @@ from app.services.cart_service import (
     InvalidQuantityException,
     ItemNotFoundInCartException,
 )
+from app.services.policy_service import PolicyService
 
 __all__ = [
     "CatalogService",
     "CartService",
+    "PolicyService",
     "CartException",
     "CartNotFoundException",
     "CartExpiredException",
