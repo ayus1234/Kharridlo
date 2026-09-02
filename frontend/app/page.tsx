@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { CheckCircle2, XCircle, RefreshCw, Server, Laptop, Database, ArrowRight, ShoppingBag } from "lucide-react";
+import { CheckCircle2, XCircle, RefreshCw, Server, Laptop, Database, ArrowRight, ShoppingBag, ShoppingCart } from "lucide-react";
+import { getOrCreateSessionId } from "@/lib/session";
 
 interface HealthData {
   status: string;
@@ -12,6 +13,7 @@ interface HealthData {
 export default function Home() {
   const [health, setHealth] = useState<HealthData | null>(null);
   const [catalogCount, setCatalogCount] = useState<number | null>(null);
+  const [cartCount, setCartCount] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [latency, setLatency] = useState<number | null>(null);
@@ -32,12 +34,24 @@ export default function Home() {
       const data: HealthData = await res.json();
       setHealth(data);
 
-      // Also probe catalog count
+      // Probe catalog count
       try {
         const catRes = await fetch(`${apiBaseUrl}/api/v1/products?limit=1`, { cache: "no-store" });
         if (catRes.ok) {
           const catData = await catRes.json();
           setCatalogCount(catData.total);
+        }
+      } catch {
+        // Fallback gracefully
+      }
+
+      // Probe cart count
+      try {
+        const sid = getOrCreateSessionId();
+        const cartRes = await fetch(`${apiBaseUrl}/api/v1/cart/${sid}`, { cache: "no-store" });
+        if (cartRes.ok) {
+          const cartData = await cartRes.json();
+          setCartCount(cartData.total_items_count || 0);
         }
       } catch {
         // Fallback gracefully
@@ -69,34 +83,43 @@ export default function Home() {
           <div className="ml-auto">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              Milestone 2 Active
+              Milestone 3 Active
             </span>
           </div>
         </div>
 
-        {/* Milestone 2 Callout & Catalog Entry */}
-        <div className="bg-indigo-50/70 rounded-xl p-5 mb-6 border border-indigo-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-700 block">
-              Core Commerce Foundation
-            </span>
-            <p className="text-sm text-slate-800 font-semibold mt-0.5">
-              Synthetic Product Catalog & Real-Time Inventory
-            </p>
-            <p className="text-xs text-slate-600 mt-1">
-              {catalogCount !== null 
-                ? `${catalogCount} SKUs loaded with deterministic paise pricing.` 
-                : "PostgreSQL database seeded with tech catalog."}
-            </p>
+        {/* Milestone 3 Callout: Cart Engine & Commerce Foundation */}
+        <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-indigo-50 rounded-xl p-5 mb-6 border border-indigo-100">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-700 block">
+                Deterministic Commerce Engine
+              </span>
+              <p className="text-sm text-slate-800 font-semibold mt-0.5">
+                Cart Engine & Session State Management
+              </p>
+              <p className="text-xs text-slate-600 mt-1">
+                Authoritative integer paise calculations • Real-time inventory reservations • 30-min session lifecycle
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <Link
+                href="/catalog"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-indigo-700 bg-white border border-indigo-200 hover:bg-indigo-50 transition-colors shadow-sm"
+              >
+                <ShoppingBag className="w-3.5 h-3.5" />
+                Catalog ({catalogCount ?? 84})
+              </Link>
+              <Link
+                href="/cart"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-sm"
+              >
+                <ShoppingCart className="w-3.5 h-3.5" />
+                Cart ({cartCount})
+                <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
           </div>
-          <Link
-            href="/catalog"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-sm whitespace-nowrap"
-          >
-            <ShoppingBag className="w-4 h-4" />
-            Explore Catalog
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
         </div>
 
         {/* System Connectivity Grid */}
@@ -160,11 +183,11 @@ export default function Home() {
           </div>
           <div className="flex-1">
             <div className="flex items-center justify-between">
-              <span className="font-semibold text-slate-900 text-sm">PostgreSQL Database</span>
+              <span className="font-semibold text-slate-900 text-sm">PostgreSQL 16 & Cart Engine</span>
               <span className="text-xs font-semibold text-emerald-600">Active</span>
             </div>
             <p className="text-xs text-slate-500 mt-0.5">
-              Alembic Migrations applied • Integer paise financial storage • Real-time inventory tracking
+              Alembic Migrations applied • Row-level inventory locking • Bounded state transitions
             </p>
           </div>
         </div>
