@@ -14,6 +14,7 @@ import {
   Plus
 } from "lucide-react";
 import { getOrCreateSessionId } from "@/lib/session";
+import AIAssistantDrawer from "@/components/AIAssistantDrawer";
 
 interface Product {
   id: string;
@@ -507,6 +508,9 @@ export default function CatalogPage() {
           </div>
         </div>
       )}
+
+      {/* Floating AI Assistant Drawer */}
+      <AIAssistantDrawer onCartUpdated={() => fetchCartCount(sessionId)} />
     </div>
   );
 }

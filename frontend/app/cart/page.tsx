@@ -20,6 +20,7 @@ import {
   UserCheck
 } from "lucide-react";
 import { getOrCreateSessionId } from "@/lib/session";
+import AIAssistantDrawer from "@/components/AIAssistantDrawer";
 
 interface CartItem {
   id: string;
@@ -618,6 +619,9 @@ export default function CartPage() {
           </div>
         )}
       </main>
+
+      {/* Floating AI Assistant Drawer */}
+      <AIAssistantDrawer onCartUpdated={() => fetchCart(sessionId)} />
     </div>
   );
 }

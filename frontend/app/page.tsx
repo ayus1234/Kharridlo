@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { CheckCircle2, XCircle, RefreshCw, Server, Laptop, Database, ArrowRight, ShoppingBag, ShoppingCart } from "lucide-react";
 import { getOrCreateSessionId } from "@/lib/session";
+import AIAssistantDrawer from "@/components/AIAssistantDrawer";
 
 interface HealthData {
   status: string;
@@ -207,6 +208,9 @@ export default function Home() {
           </button>
         </div>
       </div>
+
+      {/* Floating AI Assistant Drawer */}
+      <AIAssistantDrawer />
     </main>
   );
 }
