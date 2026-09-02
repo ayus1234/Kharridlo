@@ -13,7 +13,7 @@ DhanKriya is an AI-native commerce platform that enables AI buyers to discover p
 
 * [x] **Milestone 1:** Project Foundation, Local Development Environment & Health Checks
 * [x] **Milestone 2:** Synthetic Product Catalog, PostgreSQL Foundation, Alembic Migrations & Real-Time Inventory
-* [ ] **Milestone 3:** Cart Engine & Session State Management
+* [x] **Milestone 3:** Cart Engine & Session State Management (Integer Paise Arithmetic & Inventory Reservations)
 * [ ] **Milestone 4:** Deterministic Commerce Policy Engine
 * [ ] **Milestone 5:** AI Agent & ADK Tool Integration
 * [ ] **Milestone 6:** Razorpay Test Mode Payment Pipeline
