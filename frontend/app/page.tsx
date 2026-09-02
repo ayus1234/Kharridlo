@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CheckCircle2, XCircle, RefreshCw, Server, Laptop, ShieldCheck, Zap } from "lucide-react";
+import Link from "next/link";
+import { CheckCircle2, XCircle, RefreshCw, Server, Laptop, Database, ArrowRight, ShoppingBag } from "lucide-react";
 
 interface HealthData {
   status: string;
@@ -10,6 +11,7 @@ interface HealthData {
 
 export default function Home() {
   const [health, setHealth] = useState<HealthData | null>(null);
+  const [catalogCount, setCatalogCount] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [latency, setLatency] = useState<number | null>(null);
@@ -29,6 +31,17 @@ export default function Home() {
       }
       const data: HealthData = await res.json();
       setHealth(data);
+
+      // Also probe catalog count
+      try {
+        const catRes = await fetch(`${apiBaseUrl}/api/v1/products?limit=1`, { cache: "no-store" });
+        if (catRes.ok) {
+          const catData = await catRes.json();
+          setCatalogCount(catData.total);
+        }
+      } catch {
+        // Fallback gracefully
+      }
     } catch (err: any) {
       setError(err?.message || "Failed to reach backend API");
       setHealth(null);
@@ -56,19 +69,37 @@ export default function Home() {
           <div className="ml-auto">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              Milestone 1 Active
+              Milestone 2 Active
             </span>
           </div>
         </div>
 
-        {/* Milestone 1 Notice */}
-        <div className="bg-slate-50 rounded-xl p-4 mb-6 border border-slate-200/70">
-          <p className="text-sm text-slate-700 font-medium">
-            Development environment is running. Foundation layer established for Next.js frontend and FastAPI backend.
-          </p>
+        {/* Milestone 2 Callout & Catalog Entry */}
+        <div className="bg-indigo-50/70 rounded-xl p-5 mb-6 border border-indigo-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-700 block">
+              Core Commerce Foundation
+            </span>
+            <p className="text-sm text-slate-800 font-semibold mt-0.5">
+              Synthetic Product Catalog & Real-Time Inventory
+            </p>
+            <p className="text-xs text-slate-600 mt-1">
+              {catalogCount !== null 
+                ? `${catalogCount} SKUs loaded with deterministic paise pricing.` 
+                : "PostgreSQL database seeded with tech catalog."}
+            </p>
+          </div>
+          <Link
+            href="/catalog"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-sm whitespace-nowrap"
+          >
+            <ShoppingBag className="w-4 h-4" />
+            Explore Catalog
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
         </div>
 
-        {/* System Health Status Grid */}
+        {/* System Connectivity Grid */}
         <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">
           System Connectivity
         </h2>
@@ -122,7 +153,23 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Retry Button */}
+        {/* Database & Commerce Engine Info */}
+        <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 mb-6 flex items-center space-x-3">
+          <div className="p-2 rounded-lg bg-emerald-100 text-emerald-700">
+            <Database className="w-5 h-5" />
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center justify-between">
+              <span className="font-semibold text-slate-900 text-sm">PostgreSQL Database</span>
+              <span className="text-xs font-semibold text-emerald-600">Active</span>
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Alembic Migrations applied • Integer paise financial storage • Real-time inventory tracking
+            </p>
+          </div>
+        </div>
+
+        {/* Footer */}
         <div className="flex items-center justify-between pt-4 border-t border-slate-100">
           <span className="text-xs text-slate-400">
             Razorpay AI Buildathon — Track 01: AI Growth & Agentic Commerce
