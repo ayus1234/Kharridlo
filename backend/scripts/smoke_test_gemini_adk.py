@@ -11,8 +11,13 @@ import argparse
 import time
 import uuid
 
-# Add parent directory to path to allow importing app modules
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+backend_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.insert(0, backend_root)
+
+# If run with system Python, also discover dependencies from backend/.venv
+venv_site_packages = os.path.join(backend_root, ".venv", "Lib", "site-packages")
+if os.path.exists(venv_site_packages) and venv_site_packages not in sys.path:
+    sys.path.insert(0, venv_site_packages)
 
 from app.core.config import settings
 from app.db.session import SessionLocal
@@ -31,11 +36,11 @@ def run_smoke_test(api_key: str, model_name: str = "gemini-2.5-flash"):
     # 1. Configure and Verify SDK Imports
     print(f"\n[1/5] Initializing SDKs...")
     try:
-        import google.genai
-        from google import genai
-        from google.genai import types
-        import google.adk
-        from google.adk import Agent
+        import google.genai  # type: ignore
+        from google import genai  # type: ignore
+        from google.genai import types  # type: ignore
+        import google.adk  # type: ignore
+        from google.adk import Agent  # type: ignore
         print(f"  [+] google-genai version: {google.genai.__version__}")
         print(f"  [+] google-adk version:   {google.adk.__version__}")
     except ImportError as e:

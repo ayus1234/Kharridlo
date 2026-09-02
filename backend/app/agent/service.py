@@ -312,8 +312,8 @@ class AgentService:
         Live Google Gemini execution using google.genai SDK.
         Invokes model with strictly typed function declarations for the 7 bounded tools.
         """
-        from google import genai
-        from google.genai import types
+        from google import genai  # type: ignore
+        from google.genai import types  # type: ignore
 
         client = genai.Client(api_key=settings.GEMINI_API_KEY)
         tool_records: List[ToolCallRecord] = []
