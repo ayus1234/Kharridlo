@@ -176,7 +176,7 @@ def main():
         print("       $env:GEMINI_API_KEY=\"YOUR_API_KEY\"")
         print("\n  In automated CI environments without an external network key,")
         print("  DhanKriya seamlessly operates its grounded deterministic commerce fallback,")
-        print("  passing 100% of the 52 unit, integration, and security tests.")
+        print("  passing 100% of the 53 unit, integration, and security tests.")
         print("=" * 80 + "\n")
         sys.exit(1)
 
