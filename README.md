@@ -4,65 +4,119 @@
 
 DhanKriya is an AI-native commerce platform that enables AI buyers to discover products, receive contextual recommendations, make bounded purchase decisions, and complete Razorpay-powered transactions while helping merchants understand and grow AI-assisted revenue.
 
-## Status
-
-🚧 Under active development
-
 ## Razorpay AI Buildathon
 
-**Track:** AI Growth & Agentic Commerce
+* **Track:** Track 01 — AI Growth & Agentic Commerce
+* **Repository:** [https://github.com/ayus1234/DhanKriya](https://github.com/ayus1234/DhanKriya)
 
-## Problem
+## Progress & Milestones
 
-Traditional e-commerce experiences are primarily designed around human browsing.
+* [x] **Milestone 1:** Project Foundation, Local Development Environment & Health Checks
+* [x] **Milestone 2:** Synthetic Product Catalog, PostgreSQL Foundation, Alembic Migrations & Real-Time Inventory
+* [ ] **Milestone 3:** Cart Engine & Session State Management
+* [ ] **Milestone 4:** Deterministic Commerce Policy Engine
+* [ ] **Milestone 5:** AI Agent & ADK Tool Integration
+* [ ] **Milestone 6:** Razorpay Test Mode Payment Pipeline
+* [ ] **Milestone 7:** Immutable Audit Trail & Failure Handling
+* [ ] **Milestone 8:** AI Buyer Experience (Stitch UI Implementation)
+* [ ] **Milestone 9:** Merchant Intelligence Dashboard & Activity Feed
+* [ ] **Milestone 10:** 500-Scenario Evaluation Suite & Buildathon Polish
 
-AI assistants can increasingly understand buyer intent and recommend products, but merchants need infrastructure that allows AI buyers to discover products, make informed decisions, safely initiate transactions and complete payments.
-
-## Solution
-
-DhanKriya connects AI buyer intent with merchant commerce through an AI-assisted, bounded and auditable transaction workflow.
-
-## Core Capabilities
-
-- AI-powered product discovery
-- Contextual product recommendations
-- AI-assisted upselling and cross-selling
-- AI-readable merchant catalog
-- Bounded AI purchasing
-- Razorpay Test Mode transactions
-- Policy-based payment authorization
-- Explainable audit trail
-- Merchant AI-commerce analytics
-- AI-powered revenue recommendations
-
-## Planned Architecture
-
-[To be added after architecture design]
+---
 
 ## Tech Stack
 
-[To be finalized in implementation]
+* **Frontend:** Next.js 14 (App Router), React 18, TypeScript, Tailwind CSS, Lucide Icons
+* **Backend:** Python 3.13, FastAPI, Pydantic v2, SQLAlchemy 2.0, Alembic, Psycopg 3
+* **Database:** PostgreSQL 16 (financial precision in integer paise)
+* **Testing:** Pytest, FastAPI TestClient, Next.js Build Typechecker
+
+---
 
 ## Project Structure
 
 ```text
 DhanKriya/
-├── docs/           # Documentation, specifications, architecture & audit guides
-├── frontend/       # Next.js web application (AI Buyer UI & Merchant Dashboard)
-├── backend/        # FastAPI application, agent logic & policy engine
-├── data/           # Synthetic catalog data, schemas & seed scripts
-├── tests/          # Unit, integration & end-to-end test suites
-└── evaluation/     # Benchmark datasets & scenario evaluation scripts
+├── docs/                 # Product specifications, blueprints, and milestone reports
+│   ├── milestone-1-foundation.md
+│   ├── milestone-2-catalog.md
+│   └── ...
+├── frontend/             # Next.js web application
+│   ├── app/
+│   │   ├── page.tsx      # System connectivity & environment dashboard
+│   │   └── catalog/      # Deterministic synthetic catalog browser
+│   └── ...
+├── backend/              # FastAPI Python service
+│   ├── alembic/          # Database version migrations
+│   ├── app/
+│   │   ├── api/v1/       # REST API endpoints (/products, /status)
+│   │   ├── core/         # Configuration & settings
+│   │   ├── db/           # SQLAlchemy base & session factories
+│   │   ├── models/       # Relational models (Product, Inventory)
+│   │   ├── schemas/      # Pydantic validation schemas
+│   │   └── services/     # Business logic layer (CatalogService)
+│   ├── scripts/          # Database seeding & catalog generator
+│   └── tests/            # Automated test suite (12 passed)
+├── data/
+│   └── synthetic_catalog.json  # 84-SKU verified catalog
+└── tests/                # System-level verification suites
 ```
 
-## Development
+---
 
-This repository is being developed incrementally with documented milestones, testing, evaluation and failure analysis.
+## Local Development Quickstart
 
-## Demo
+### 1. Prerequisites
+* Python 3.11+ (Python 3.13 supported)
+* Node.js 18+ and npm
+* PostgreSQL 16+ running locally
 
-Coming soon.
+### 2. Backend Setup
+```bash
+cd backend
+python -m venv .venv
+# On Windows:
+.\.venv\Scripts\activate
+# On Unix/macOS:
+# source .venv/bin/activate
+
+pip install -r requirements.txt
+```
+
+Configure your environment:
+```bash
+cp .env.example .env
+# Update DATABASE_URL in .env if needed
+```
+
+Run database migrations and seed the 84-product catalog:
+```bash
+alembic upgrade head
+python scripts/seed_catalog.py
+```
+
+Run backend tests:
+```bash
+pytest
+```
+
+Start the backend development server:
+```bash
+uvicorn app.main:app --reload --port 8000
+```
+API Documentation: `http://localhost:8000/docs`
+
+### 3. Frontend Setup
+```bash
+cd frontend
+npm install
+npm run build
+npm run dev
+```
+Open `http://localhost:3000` to view the environment dashboard or `http://localhost:3000/catalog` to explore the product catalog.
+
+---
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) for details.
+MIT License — see [LICENSE](LICENSE) for details.
