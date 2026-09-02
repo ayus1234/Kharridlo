@@ -299,3 +299,40 @@ def test_unregistered_tools_rejected(test_session_id):
     assert res["success"] is False
     assert res["error_code"] == "UNAUTHORIZED_TOOL"
     db.close()
+
+
+def test_live_gemini_execution_loop(test_session_id):
+    """Verifies that the live Gemini tool-calling loop executes, calls bounded tools, and sets execution_mode='live_gemini'."""
+    from unittest.mock import MagicMock, patch
+    from google.genai import types
+
+    db = SessionLocal()
+    ctx = AgentRequestContext(session_id=test_session_id, db=db)
+
+    mock_func_call = types.FunctionCall(
+        name="search_products",
+        args={"query": "laptop", "max_price_paise": 7000000},
+    )
+    mock_resp_1 = MagicMock()
+    mock_resp_1.function_calls = [mock_func_call]
+    mock_resp_1.candidates = [MagicMock()]
+    mock_resp_1.candidates[0].content = MagicMock()
+
+    mock_resp_2 = MagicMock()
+    mock_resp_2.function_calls = None
+    mock_resp_2.text = "I recommend TechNova Laptop Pro 15 (DK-LP-15) priced at ₹64,999.00."
+
+    with patch("google.genai.Client") as mock_client_cls:
+        mock_client = MagicMock()
+        mock_client_cls.return_value = mock_client
+        mock_client.models.generate_content.side_effect = [mock_resp_1, mock_resp_2]
+
+        res = AgentService._run_live_gemini(ctx, "I need a laptop under 70000")
+
+        assert res.execution_mode == "live_gemini"
+        assert res.model == "gemini-2.5-flash"
+        assert len(res.tool_calls) == 1
+        assert res.tool_calls[0].tool_name == "search_products"
+        assert "TechNova" in res.message
+
+    db.close()

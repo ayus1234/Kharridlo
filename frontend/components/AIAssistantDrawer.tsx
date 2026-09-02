@@ -29,6 +29,8 @@ interface Message {
   tool_calls?: ToolCall[];
   policy?: any;
   cart?: any;
+  execution_mode?: string;
+  model?: string;
   timestamp: string;
 }
 
@@ -111,6 +113,8 @@ export default function AIAssistantDrawer({ onCartUpdated }: AIAssistantDrawerPr
         tool_calls: data.tool_calls,
         policy: data.policy,
         cart: data.cart,
+        execution_mode: data.execution_mode,
+        model: data.model,
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       };
 
@@ -217,6 +221,28 @@ export default function AIAssistantDrawer({ onCartUpdated }: AIAssistantDrawerPr
                     : "bg-slate-800/90 text-slate-200 border border-slate-700/70 rounded-bl-none"
                 }`}
               >
+                {m.sender === "assistant" && m.execution_mode && (
+                  <div className="mb-2">
+                    <span
+                      className={`text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full inline-flex items-center gap-1.5 ${
+                        m.execution_mode === "live_gemini"
+                          ? "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30"
+                          : "bg-slate-900/80 text-slate-400 border border-slate-700/60"
+                      }`}
+                    >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          m.execution_mode === "live_gemini"
+                            ? "bg-emerald-400 animate-pulse"
+                            : "bg-cyan-400"
+                        }`}
+                      />
+                      {m.execution_mode === "live_gemini"
+                        ? `Live: ${m.model || "Gemini 2.5 Flash"}`
+                        : "Deterministic Fallback Engine"}
+                    </span>
+                  </div>
+                )}
                 <p className="whitespace-pre-line">{m.text}</p>
 
                 {/* Tool Invocation Trace */}

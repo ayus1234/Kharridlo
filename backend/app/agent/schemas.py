@@ -21,3 +21,5 @@ class AgentChatResponse(BaseModel):
     tool_calls: List[ToolCallRecord] = Field(default_factory=list)
     cart: Optional[CartResponse] = None
     policy: Optional[PolicyEvaluationResponse] = None
+    execution_mode: str = Field(default="deterministic_fallback", description="Pipeline used: 'live_gemini' or 'deterministic_fallback'")
+    model: Optional[str] = Field(default=None, description="Model identifier if live Gemini was used")

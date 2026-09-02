@@ -439,4 +439,6 @@ class AgentService:
             tool_calls=tool_records,
             cart=_cart_to_response(cart_orm) if cart_orm else None,
             policy=policy_res,
+            execution_mode="live_gemini",
+            model=getattr(settings, "GEMINI_MODEL", "gemini-2.5-flash"),
         )

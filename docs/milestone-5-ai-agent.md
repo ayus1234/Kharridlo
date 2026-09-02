@@ -152,16 +152,41 @@ Each conversational turn is limited to a maximum of **4 tool executions** to eli
     }
   ],
   "cart": null,
-  "policy": null
+  "policy": null,
+  "execution_mode": "live_gemini",
+  "model": "gemini-2.5-flash"
 }
 ```
 
 ---
 
-## 6. Frontend AI Shopping Assistant Drawer
+## 6. Execution Modes: Live Gemini vs. Deterministic Fallback
 
-The frontend integrates an interactive `AIAssistantDrawer` component accessible across the storefront (`/`, `/catalog`, `/cart`):
+To ensure maximum reliability for the buildathon and pitch presentations, DhanKriya explicitly distinguishes between two execution modes:
+
+### Mode 1: Live Gemini + Google ADK Mode (`execution_mode: "live_gemini"`)
+- Active whenever `GEMINI_API_KEY` is provided in environment variables or `.env`.
+- Initializes `google.genai.Client` and `google.adk.Agent`.
+- Gemini 2.5 Flash autonomously interprets buyer natural language, selects appropriate tools from the 7 registered bounded tools, formats arguments, and receives server-executed results before communicating grounded recommendations.
+- **Dedicated Live Smoke Test Script:**
+  ```bash
+  cd backend
+  python scripts/smoke_test_gemini_adk.py --api-key YOUR_GEMINI_API_KEY
+  ```
+  Runs a 3-turn live test against Gemini 2.5 Flash (`search_products` ➔ `add_to_cart` ➔ `evaluate_policy`), verifying live function calling, `<untrusted_catalog_data>` sanitization, and server-side integer paise state.
+
+### Mode 2: Grounded Deterministic Fallback Mode (`execution_mode: "deterministic_fallback"`)
+- Active when `GEMINI_API_KEY` is not present, or if external network/quota issues occur.
+- Uses an internal deterministic intent parser to trigger the exact same 7 bounded tools.
+- Guarantees that 100% of offline developer environments, CI pipelines, and unit tests execute reliably without external dependencies.
+
+---
+
+## 7. Frontend AI Shopping Assistant Drawer
+
+The storefront integrates an interactive `AIAssistantDrawer` component accessible across the storefront (`/`, `/catalog`, `/cart`):
 - **Slide-over Panel**: Displays conversational history between buyer and DhanKriya Assistant.
+- **Live Pipeline Indicator Badge**: Explicitly displays whether the turn was served by `Live: Gemini 2.5 Flash` (emerald badge) or `Deterministic Fallback Engine` (cyan badge).
 - **Quick Suggestion Chips**: One-click exploration buttons for common demo journeys:
   - *"Find developer laptop under ₹70,000"*
   - *"Add DK-LP-15 to my cart"*
@@ -174,23 +199,24 @@ The frontend integrates an interactive `AIAssistantDrawer` component accessible 
 
 ---
 
-## 7. Verification & Automated Test Suite
+## 8. Verification & Automated Test Suite
 
-A comprehensive test suite in `backend/tests/test_agent.py` validates all agent capabilities and security constraints:
+A comprehensive test suite in `backend/tests/test_agent.py` validates all agent capabilities, bounded tools, and live execution loops:
 
 | Category | Tests | Status | Description |
 | :--- | :--- | :--- | :--- |
-| **Tool Registry & Integrity** | 4 | ✅ Passed | Exactly 7 bounded tools; zero payment or code execution tools. |
+| **Tool Registry & Integrity** | 4 | ✅ Passed | Exactly 7 bounded tools; zero payment, override, or code execution tools. |
 | **Tool Execution** | 4 | ✅ Passed | `search_products`, `get_product`, `add_to_cart`, `get_cart` return verified data. |
 | **Security & Parameters** | 3 | ✅ Passed | Disallows client-supplied prices, totals, or custom policy limits. |
 | **Prompt Injection Defense** | 1 | ✅ Passed | Neutralizes delimiter hacks, developer mode, and policy bypass attempts. |
 | **Session Isolation** | 1 | ✅ Passed | Disallows cross-session state leakage or cart spoofing. |
 | **End-to-End Demos** | 5 | ✅ Passed | Validates Discovery, Explicit Addition, Policy Authorization, Blocked Purchase, and Out-of-Stock Refusal. |
+| **Live Execution Loop Path** | 1 | ✅ Passed | Validates `_run_live_gemini` tool-calling loop, function response handling, and `live_gemini` execution mode. |
 | **Graceful Fallback** | 1 | ✅ Passed | Deterministic execution functions flawlessly without mandatory live API keys in CI. |
 
 ### Test Run Output
 ```
-======================== 52 passed, 1 warning in 3.01s ========================
+======================== 53 passed, 1 warning in 3.06s ========================
 ```
-- **Backend Tests**: 52/52 passed (100%)
+- **Backend Tests**: 53/53 passed (100%)
 - **Frontend Build**: 6/6 static routes compiled with zero TypeScript or lint errors.
