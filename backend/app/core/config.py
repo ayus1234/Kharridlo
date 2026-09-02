@@ -11,8 +11,10 @@ class Settings(BaseSettings):
     HOST: str = "0.0.0.0"
     CORS_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000"
 
-    # Optional future infrastructure keys (safe defaults)
-    DATABASE_URL: str = ""
+    # PostgreSQL Database Configuration
+    DATABASE_URL: str = "postgresql+psycopg://postgres:postgres@localhost:5432/dhankriya"
+
+    # Future Infrastructure Placeholders (Safe defaults for Milestone 2)
     REDIS_URL: str = ""
     GEMINI_API_KEY: str = ""
     RAZORPAY_KEY_ID: str = ""
