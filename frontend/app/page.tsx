@@ -83,23 +83,23 @@ export default function Home() {
           <div className="ml-auto">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              Milestone 3 Active
+              Milestone 4 Active
             </span>
           </div>
         </div>
 
-        {/* Milestone 3 Callout: Cart Engine & Commerce Foundation */}
+        {/* Milestone 4 Callout: Deterministic Commerce Policy Engine */}
         <div className="bg-gradient-to-r from-indigo-50 via-purple-50 to-indigo-50 rounded-xl p-5 mb-6 border border-indigo-100">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-700 block">
-                Deterministic Commerce Engine
+                Deterministic Security Boundary
               </span>
               <p className="text-sm text-slate-800 font-semibold mt-0.5">
-                Cart Engine & Session State Management
+                Commerce Policy Engine & Buyer Authorization Gate
               </p>
               <p className="text-xs text-slate-600 mt-1">
-                Authoritative integer paise calculations • Real-time inventory reservations • 30-min session lifecycle
+                Tiered spending caps (₹70k standard) • Explicit buyer approval • Zero float drift • Fail-closed design
               </p>
             </div>
             <div className="flex items-center gap-2">
