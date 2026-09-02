@@ -121,24 +121,14 @@ def test_scenario_c_policy_block_exceeds_limit(test_session_id):
 
 def test_exact_paise_boundaries(test_session_id):
     """Step 23: Test boundary precision (₹69,999.99, ₹70,000.00, ₹70,000.01)."""
-    # Create cart
-    client.get(f"/api/v1/cart/{test_session_id}")
+    # Add valid product so cart and reservation are internally valid
+    client.post(f"/api/v1/cart/{test_session_id}/items", json={"product_id": "DK-LP-15", "quantity": 1})
 
     db = SessionLocal()
     cart = db.query(Cart).filter(Cart.session_id == test_session_id).first()
 
     # Case 1: Exactly ₹70,000.00 (7,000,000 paise)
-    cart.subtotal_paise = 7000000
     cart.total_paise = 7000000
-    # Add dummy item so it's not empty
-    item = CartItem(
-        cart_id=cart.id,
-        product_id="prod_lp15_01",
-        quantity=1,
-        unit_price_paise=7000000,
-        line_total_paise=7000000,
-    )
-    db.add(item)
     db.commit()
     db.close()
 
@@ -150,7 +140,6 @@ def test_exact_paise_boundaries(test_session_id):
     # Case 2: One paise above limit ₹70,000.01 (7,000,001 paise) -> MUST BLOCK!
     db = SessionLocal()
     cart = db.query(Cart).filter(Cart.session_id == test_session_id).first()
-    cart.subtotal_paise = 7000001
     cart.total_paise = 7000001
     db.commit()
     db.close()
@@ -160,7 +149,7 @@ def test_exact_paise_boundaries(test_session_id):
     assert res_above.json()["decision"] == "BLOCK"
     assert res_above.json()["reasons"][0]["code"] == "SINGLE_TRANSACTION_LIMIT_EXCEEDED"
 
-    # Cleanup manually created test cart
+    # Cleanup
     client.delete(f"/api/v1/cart/{test_session_id}")
 
 
