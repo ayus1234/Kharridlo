@@ -21,13 +21,13 @@ Kharridlo is an AI-native commerce platform that enables AI buyers to discover p
 * [x] **Milestone 6:** Razorpay Test Mode Payment Pipeline & Real Payment Verification
 * [x] **Milestone 7:** Immutable Audit Trail & Failure Handling Polish
 * [ ] **Milestone 8:** AI Buyer Experience (Stitch UI Implementation)
-* [ ] **Milestone 8.5:** Real Marketplace Data Integration (Amazon Creators API + Flipkart Feed)
-* [ ] **Milestone 8.6:** Real Product Images & Media Quality
-* [ ] **Milestone 8.7:** Gemini & Groq Orchestration & Deterministic Fallback
-* [ ] **Milestone 9:** Merchant Intelligence Dashboard & Activity Feed
-* [ ] **Milestone 10:** 500-Scenario Evaluation Suite & Buildathon Polish
-* [ ] **Milestone 11:** Final End-to-End Verification
-* [ ] **Milestone 12:** Production Deployment
+* [ ] **Milestone 9:** Real Marketplace Data Integration (Amazon Creators API + Flipkart Feed)
+* [ ] **Milestone 10:** Real Product Images & Media Quality
+* [ ] **Milestone 11:** Gemini & Groq Orchestration & Deterministic Fallback
+* [ ] **Milestone 12:** Merchant Intelligence Dashboard & Activity Feed
+* [ ] **Milestone 13:** 500-Scenario Evaluation Suite & Buildathon Polish
+* [ ] **Milestone 14:** Final End-to-End Verification
+* [ ] **Milestone 15:** Production Deployment
 
 ---
 
