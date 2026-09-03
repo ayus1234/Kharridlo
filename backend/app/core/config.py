@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     # Multi-Provider AI Credentials (Configuration foundation)
     GEMINI_API_KEY: str = ""
     GEMINI_API_KEY_2: str = ""
+    GEMINI_MODEL: str = "gemini-2.5-flash"
     GROQ_API_KEY: str = ""
     GROQ_API_KEY_2: str = ""
 

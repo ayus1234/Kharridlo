@@ -13,6 +13,18 @@ from app.agent.service import AgentService
 client = TestClient(app)
 
 
+from app.core.config import settings
+
+
+@pytest.fixture(autouse=True)
+def ensure_deterministic_agent_env():
+    """Ensure agent unit tests run deterministically against the grounded commerce engine."""
+    orig_key = settings.GEMINI_API_KEY
+    settings.GEMINI_API_KEY = ""
+    yield
+    settings.GEMINI_API_KEY = orig_key
+
+
 @pytest.fixture
 def test_session_id():
     return f"agent_sess_{uuid.uuid4().hex[:12]}"

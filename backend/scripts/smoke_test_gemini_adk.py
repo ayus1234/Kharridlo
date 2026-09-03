@@ -11,6 +11,12 @@ import argparse
 import time
 import uuid
 
+# Ensure UTF-8 output on Windows consoles (e.g. for Indian Rupee symbol ₹)
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8")
+
 backend_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, backend_root)
 
@@ -71,6 +77,7 @@ def run_smoke_test(api_key: str, model_name: str = "gemini-2.5-flash"):
 
     # Temporarily set key in settings for the test run
     original_key = settings.GEMINI_API_KEY
+    original_model = settings.GEMINI_MODEL
     settings.GEMINI_API_KEY = api_key
     settings.GEMINI_MODEL = model_name
 
@@ -139,6 +146,7 @@ def run_smoke_test(api_key: str, model_name: str = "gemini-2.5-flash"):
             print(f"  [!] Cleanup warning: {e}")
         db.close()
         settings.GEMINI_API_KEY = original_key
+        settings.GEMINI_MODEL = original_model
 
     # Summary
     print("\n" + "=" * 80)
