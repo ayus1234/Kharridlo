@@ -344,6 +344,11 @@ export default function CartPage() {
           name: "Kharridlo",
           description: "Autonomous Commerce Gateway (Test Mode)",
           order_id: orderData.razorpay_order_id,
+          prefill: {
+            name: "Kharridlo Buyer",
+            email: "buyer@kharridlo.test",
+            contact: "9876543210",
+          },
           handler: async function (response: any) {
             // Cryptographic signature returned by Razorpay
             await verifyPaymentSignature(
