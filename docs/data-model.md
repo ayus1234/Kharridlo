@@ -1,6 +1,6 @@
-# DhanKriya — Relational Database Schema & Data Models
+# Kharridlo — Relational Database Schema & Data Models
 
-This document defines the complete PostgreSQL 16 relational data model for **DhanKriya**, implemented via SQLAlchemy 2.0 (Async) and Pydantic v2.
+This document defines the complete PostgreSQL 16 relational data model for **Kharridlo**, implemented via SQLAlchemy 2.0 (Async) and Pydantic v2.
 
 ---
 

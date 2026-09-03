@@ -268,9 +268,9 @@ export default function CartPage() {
             <div className="h-4 w-px bg-slate-200" />
             <div className="flex items-center space-x-2">
               <span className="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
-                ध
+                ख
               </span>
-              <span className="font-bold text-lg text-slate-900">DhanKriya</span>
+              <span className="font-bold text-lg text-slate-900">Kharridlo</span>
               <span className="text-xs bg-indigo-50 text-indigo-700 font-semibold px-2 py-0.5 rounded border border-indigo-200">
                 Policy Engine Active
               </span>

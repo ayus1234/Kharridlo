@@ -1,6 +1,6 @@
-# DhanKriya — Frontend Client
+# Kharridlo — Frontend Client
 
-Next.js 14 (App Router) client application for **DhanKriya** (Razorpay AI Buildathon — Track 01).
+Next.js 14 (App Router) client application for **Kharridlo** (Razorpay AI Buildathon — Track 01).
 
 ## Prerequisites
 
@@ -31,4 +31,4 @@ Next.js 14 (App Router) client application for **DhanKriya** (Razorpay AI Builda
 
 ## Connectivity with Backend
 
-The frontend communicates with the DhanKriya FastAPI backend service running at `http://localhost:8000` (configured via `NEXT_PUBLIC_API_BASE_URL`). The landing page actively displays the live health status of the backend API.
+The frontend communicates with the Kharridlo FastAPI backend service running at `http://localhost:8000` (configured via `NEXT_PUBLIC_API_BASE_URL`). The landing page actively displays the live health status of the backend API.

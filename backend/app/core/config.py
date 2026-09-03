@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    APP_NAME: str = "DhanKriya API"
+    APP_NAME: str = "Kharridlo API"
     ENVIRONMENT: str = "development"
     DEBUG: bool = True
     PORT: int = 8000

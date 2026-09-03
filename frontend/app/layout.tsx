@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "DhanKriya — From AI intent to trusted transactions",
+  title: "Kharridlo — From AI intent to trusted transactions",
   description: "AI-native commerce platform for bounded, explainable Razorpay transactions.",
 };
 

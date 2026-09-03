@@ -1,8 +1,8 @@
-# DhanKriya — Milestone 5: Gemini + Google ADK Agent & Bounded Tool Integration
+# Kharridlo — Milestone 5: Gemini + Google ADK Agent & Bounded Tool Integration
 
 ## 1. Milestone Objective
 
-Milestone 5 introduces the conversational AI agent layer into **DhanKriya** for the **Razorpay AI Buildathon (Track 01: AI Growth & Agentic Commerce)**.
+Milestone 5 introduces the conversational AI agent layer into **Kharridlo** for the **Razorpay AI Buildathon (Track 01: AI Growth & Agentic Commerce)**.
 
 The agent operates strictly as a grounded advisory assistant directly above the deterministic commerce foundation established in Milestones 1 through 4:
 
@@ -25,7 +25,7 @@ The agent operates strictly as a grounded advisory assistant directly above the 
 ### Core Project Principle Enforced
 > **"AI proposes. Deterministic systems verify and authorize."**
 
-In DhanKriya:
+In Kharridlo:
 - The AI **never** computes prices, never creates financial discounts, never bypasses policy rules, and never executes payments.
 - The AI interprets natural language user intent and translates it into invocations of exactly **7 narrowly bounded tools**.
 - All business logic, inventory reservations, line item aggregation, spending limit evaluations, and policy decisions remain 100% deterministic on the server.
@@ -162,7 +162,7 @@ Each conversational turn is limited to a maximum of **4 tool executions** to eli
 
 ## 6. Execution Modes: Live Gemini vs. Deterministic Fallback
 
-To ensure maximum reliability for the buildathon and pitch presentations, DhanKriya explicitly distinguishes between two execution modes:
+To ensure maximum reliability for the buildathon and pitch presentations, Kharridlo explicitly distinguishes between two execution modes:
 
 ### Mode 1: Live Gemini + Google ADK Mode (`execution_mode: "live_gemini"`)
 - Active whenever `GEMINI_API_KEY` is provided in environment variables or `.env`.
@@ -185,7 +185,7 @@ To ensure maximum reliability for the buildathon and pitch presentations, DhanKr
 ## 7. Frontend AI Shopping Assistant Drawer
 
 The storefront integrates an interactive `AIAssistantDrawer` component accessible across the storefront (`/`, `/catalog`, `/cart`):
-- **Slide-over Panel**: Displays conversational history between buyer and DhanKriya Assistant.
+- **Slide-over Panel**: Displays conversational history between buyer and Kharridlo Assistant.
 - **Live Pipeline Indicator Badge**: Explicitly displays whether the turn was served by `Live: Gemini 2.5 Flash` (emerald badge) or `Deterministic Fallback Engine` (cyan badge).
 - **Quick Suggestion Chips**: One-click exploration buttons for common demo journeys:
   - *"Find developer laptop under ₹70,000"*

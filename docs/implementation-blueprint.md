@@ -1,14 +1,14 @@
-# DhanKriya — Master Technical Implementation Blueprint
+# Kharridlo — Master Technical Implementation Blueprint
 
 ## 1. Executive Summary & Product DNA
 
-* **Product Name:** DhanKriya
+* **Product Name:** Kharridlo
 * **Tagline:** From AI intent to trusted transactions.
 * **Buildathon Track:** Razorpay AI Buildathon — **Track 01: AI Growth & Agentic Commerce**
-* **Core Mission:** Bridge the critical gap between conversational AI intent and bounded, auditable, real-world financial execution. DhanKriya transforms merchant catalogs into machine-readable, agent-transactable storefronts while giving merchants transparent intelligence on AI-driven revenue, conversion uplift, and safety guardrails.
+* **Core Mission:** Bridge the critical gap between conversational AI intent and bounded, auditable, real-world financial execution. Kharridlo transforms merchant catalogs into machine-readable, agent-transactable storefronts while giving merchants transparent intelligence on AI-driven revenue, conversion uplift, and safety guardrails.
 
 ### The Fundamental Differentiator
-Most AI shopping implementations are unconstrained chatbots that end with an affiliate link or a dummy mock modal. **DhanKriya is an agentic commerce runtime**:
+Most AI shopping implementations are unconstrained chatbots that end with an affiliate link or a dummy mock modal. **Kharridlo is an agentic commerce runtime**:
 1. **AI Proposes, Code Authorizes:** Generative AI models reason over intent, compare specifications, and propose cart actions. Deterministic code enforces budgets, quantity ceilings, cryptographic signatures, and payment execution.
 2. **Real Razorpay Integration:** Full end-to-end Test Mode transaction lifecycle (Server Orders API $\rightarrow$ Razorpay Standard Checkout $\rightarrow$ HMAC-SHA256 Signature Verification $\rightarrow$ Idempotent State Machine).
 3. **Dual-Sided Value:** An effortless, zero-friction buyer experience paired with an enterprise-grade Merchant Control Center featuring real-time revenue analytics, agent traces, and an AI Revenue Advisor.
@@ -24,7 +24,7 @@ These components form the demonstrable vertical slice and must be fully operatio
 * **AI Buyer Experience:**
   * Conversational intent parsing (budget, hard specifications, category, use-case).
   * Structured catalog search and specification comparison across 50–100 synthetic SKUs.
-  * Contextual recommendations with explainable justifications (*"Why DhanKriya recommends this"*).
+  * Contextual recommendations with explainable justifications (*"Why Kharridlo recommends this"*).
   * Smart Cart calculation with bounded accessory upselling (e.g., +₹1,499 mouse for laptop setups).
   * Interactive Purchase Authorization Modal (The Policy Gate) with tiered confirmation.
   * Real Razorpay Test Mode checkout launch, simulated payment, and server verification.

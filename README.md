@@ -1,8 +1,10 @@
-# DhanKriya
+# Kharridlo
 
 ### From AI intent to trusted transactions.
 
-DhanKriya is an AI-native commerce platform that enables AI buyers to discover products, receive contextual recommendations, make bounded purchase decisions, and complete Razorpay-powered transactions while helping merchants understand and grow AI-assisted revenue.
+> **Project Rename Note:** Formerly named *DhanKriya*, officially renamed to **Kharridlo** (*"From AI intent to trusted transactions."*).
+
+Kharridlo is an AI-native commerce platform that enables AI buyers to discover products, receive contextual recommendations, make bounded purchase decisions, and complete Razorpay-powered transactions while helping merchants understand and grow AI-assisted revenue.
 
 ## Razorpay AI Buildathon
 
@@ -36,7 +38,7 @@ DhanKriya is an AI-native commerce platform that enables AI buyers to discover p
 ## Project Structure
 
 ```text
-DhanKriya/
+Kharridlo/
 ├── docs/                 # Product specifications, blueprints, and milestone reports
 │   ├── milestone-1-foundation.md
 │   ├── milestone-2-catalog.md

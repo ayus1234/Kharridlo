@@ -1,6 +1,6 @@
-# DhanKriya — Deterministic Policy Engine & Safety Gate
+# Kharridlo — Deterministic Policy Engine & Safety Gate
 
-This document defines the architecture and rule execution logic of the **Deterministic Policy Engine** in **DhanKriya**. It acts as the non-negotiable security boundary separating AI generative reasoning from real-world financial execution.
+This document defines the architecture and rule execution logic of the **Deterministic Policy Engine** in **Kharridlo**. It acts as the non-negotiable security boundary separating AI generative reasoning from real-world financial execution.
 
 ---
 
@@ -52,7 +52,7 @@ Emit Audit: ALLOW             Emit Audit: BLOCK
 
 ## 3. Tiered Human-in-the-Loop Matrix
 
-DhanKriya enforces bounded autonomy via tiered authorization:
+Kharridlo enforces bounded autonomy via tiered authorization:
 
 ```text
 Transaction Value:

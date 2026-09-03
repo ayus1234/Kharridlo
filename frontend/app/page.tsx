@@ -75,10 +75,10 @@ export default function Home() {
         {/* Brand Header */}
         <div className="flex items-center space-x-3 mb-6 pb-6 border-b border-slate-100">
           <div className="h-11 w-11 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-md shadow-indigo-200">
-            ध
+            ख
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">DhanKriya</h1>
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Kharridlo</h1>
             <p className="text-sm font-medium text-indigo-600">From AI intent to trusted transactions.</p>
           </div>
           <div className="ml-auto">

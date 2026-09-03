@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-DhanKriya — Live Google Gemini + Google ADK End-to-End Smoke Test
+Kharridlo — Live Google Gemini + Google ADK End-to-End Smoke Test
 Demonstrates live model invocation, bounded function calling, and server verification.
 Enforces: 'AI proposes. Deterministic systems verify and authorize.'
 """
@@ -28,7 +28,7 @@ from app.services.cart_service import CartService
 
 def run_smoke_test(api_key: str, model_name: str = "gemini-2.5-flash"):
     print("=" * 80)
-    print("  DHANKRIYA - LIVE GEMINI + GOOGLE ADK SMOKE TEST")
+    print("  KHARRIDLO - LIVE GEMINI + GOOGLE ADK SMOKE TEST")
     print("  Track: Razorpay AI Buildathon - Track 01: AI Growth & Agentic Commerce")
     print("  Principle: 'AI proposes. Deterministic systems verify and authorize.'")
     print("=" * 80)
@@ -155,7 +155,7 @@ def run_smoke_test(api_key: str, model_name: str = "gemini-2.5-flash"):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="DhanKriya Live Gemini + Google ADK Smoke Test")
+    parser = argparse.ArgumentParser(description="Kharridlo Live Gemini + Google ADK Smoke Test")
     parser.add_argument("--api-key", default=os.getenv("GEMINI_API_KEY", settings.GEMINI_API_KEY), help="Google Gemini API Key")
     parser.add_argument("--model", default="gemini-2.5-flash", help="Gemini model identifier")
     args = parser.parse_args()
@@ -175,7 +175,7 @@ def main():
         print("     Or in your terminal session:")
         print("       $env:GEMINI_API_KEY=\"YOUR_API_KEY\"")
         print("\n  In automated CI environments without an external network key,")
-        print("  DhanKriya seamlessly operates its grounded deterministic commerce fallback,")
+        print("  Kharridlo seamlessly operates its grounded deterministic commerce fallback,")
         print("  passing 100% of the 53 unit, integration, and security tests.")
         print("=" * 80 + "\n")
         sys.exit(1)

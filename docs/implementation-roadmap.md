@@ -1,6 +1,6 @@
-# DhanKriya — Phased Implementation Roadmap & Build Milestones
+# Kharridlo — Phased Implementation Roadmap & Build Milestones
 
-This document establishes the step-by-step engineering roadmap for building **DhanKriya**. It defines 10 controlled milestones designed to produce a functional end-to-end vertical slice early, rather than building disjointed frontend and backend layers in isolation.
+This document establishes the step-by-step engineering roadmap for building **Kharridlo**. It defines 10 controlled milestones designed to produce a functional end-to-end vertical slice early, rather than building disjointed frontend and backend layers in isolation.
 
 ---
 

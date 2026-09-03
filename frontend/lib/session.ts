@@ -1,5 +1,5 @@
 /**
- * DhanKriya Session Identifier Utility
+ * Kharridlo Session Identifier Utility
  * Generates and persists an opaque client-side session ID for cart and interaction tracking.
  * Strictly avoids capturing PII.
  */

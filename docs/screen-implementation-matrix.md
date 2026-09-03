@@ -1,4 +1,4 @@
-# DhanKriya — Screen Implementation & Component Matrix
+# Kharridlo — Screen Implementation & Component Matrix
 
 This document maps all approved screens from the Stitch designs (`stitch_dhankriya_ai_buyer_experience/`) to their respective React/Next.js component structures, routes, API dependencies, state machines, and implementation priorities.
 
@@ -15,7 +15,7 @@ This document maps all approved screens from the Stitch designs (`stitch_dhankri
 
 | # | Screen Name & Stitch Folder | Route | Priority | Main Components | Required APIs | AI / Tool Role | Failure State |
 | :- | :--- | :--- | :-: | :--- | :--- | :--- | :--- |
-| **1** | **AI Commerce Landing**<br>`dhankriya_ai_shopping_home` | `/` | **P1** | `HeroSection`, `IntentPromptBar`, `QuickStartChips`, `TrustBadgeBar`, `HeaderNav` | `GET /api/products/featured`<br>`GET /api/policies/current` | Pre-seeds popular intent queries; initializes session | Network drop $\rightarrow$ offline banner |
+| **1** | **AI Commerce Landing**<br>`kharridlo_ai_shopping_home` | `/` | **P1** | `HeroSection`, `IntentPromptBar`, `QuickStartChips`, `TrustBadgeBar`, `HeaderNav` | `GET /api/products/featured`<br>`GET /api/policies/current` | Pre-seeds popular intent queries; initializes session | Network drop $\rightarrow$ offline banner |
 | **2** | **AI Shopping Workspace**<br>`ai_shopping_assistant_1` & `_2` | `/shop` | **P1** | `ChatStream`, `UserMessageBubble`, `AgentMessageCard`, `ActiveContextTray`, `BudgetMeter` | `POST /api/agent/chat`<br>`GET /api/cart` | Parses intent; extracts budget, specs; executes search | Ambiguous intent $\rightarrow$ prompts clarification |
 | **3** | **Product Results & Grid**<br>`recommended_products` | `/shop/results` | **P1** | `ProductGrid`, `ProductCard`, `FitExplainerBadge`, `CompareCheckbox`, `AddToCartButton` | `POST /api/products/search`<br>`POST /api/cart/items` | `search_products()`, `get_recommendations()` | No matches $\rightarrow$ relaxes constraints with prompt |
 | **4** | **Product Comparison Matrix**<br>`compare_products` | `/shop/compare` | **P1** | `ComparisonTable`, `SpecHighlightRow`, `TradeoffBadge`, `AgentRecommendationPill` | `POST /api/products/compare` | `compare_products()`: ranks candidates by workload match | Missing spec field $\rightarrow$ shows "N/A" pill |

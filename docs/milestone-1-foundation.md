@@ -1,6 +1,6 @@
-# DhanKriya — Milestone 1: Foundation & Local Development Architecture
+# Kharridlo — Milestone 1: Foundation & Local Development Architecture
 
-This document records the architectural foundation, environment configurations, connectivity patterns, and boundaries established in **Milestone 1** of **DhanKriya**.
+This document records the architectural foundation, environment configurations, connectivity patterns, and boundaries established in **Milestone 1** of **Kharridlo**.
 
 ---
 
@@ -9,14 +9,14 @@ This document records the architectural foundation, environment configurations, 
 1. **FastAPI Backend Application (`backend/`):**
    * Modular architecture: `app/main.py`, `app/core/config.py`, `app/schemas/status.py`, and `app/api/v1/router.py`.
    * Foundation endpoints:
-     * `GET /`: Returns `{"service": "DhanKriya API", "status": "running"}`.
-     * `GET /health`: Returns `{"status": "healthy", "service": "DhanKriya API"}`.
-     * `GET /api/v1/status`: Returns `{"project": "DhanKriya", "version": "0.1.0", "environment": "development"}`.
+     * `GET /`: Returns `{"service": "Kharridlo API", "status": "running"}`.
+     * `GET /health`: Returns `{"status": "healthy", "service": "Kharridlo API"}`.
+     * `GET /api/v1/status`: Returns `{"project": "Kharridlo", "version": "0.1.0", "environment": "development"}`.
    * Environment-driven CORS configuration allowing requests from `http://localhost:3000`.
    * Automated unit test suite using `pytest` verifying all endpoints.
 2. **Next.js 14 Frontend Application (`frontend/`):**
    * Next.js 14 App Router with TypeScript, Tailwind CSS, and Lucide React icons.
-   * Brand identity: Strictly **DhanKriya** (*"From AI intent to trusted transactions."*).
+   * Brand identity: Strictly **Kharridlo** (*"From AI intent to trusted transactions."*).
    * Live connectivity status widget displaying real-time connection status with the backend at `http://localhost:8000/health`.
    * Graceful fallback states: Handles offline backend state with explicit error messaging and manual retry.
 3. **Environment Isolation & Security:**

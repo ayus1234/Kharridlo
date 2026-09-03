@@ -1,6 +1,6 @@
-# DhanKriya — API Contract & REST Endpoint Specification
+# Kharridlo — API Contract & REST Endpoint Specification
 
-This document provides the formal API contract for the **DhanKriya** FastAPI backend service, specifying endpoints, request/response models, validation rules, and HTTP status codes.
+This document provides the formal API contract for the **Kharridlo** FastAPI backend service, specifying endpoints, request/response models, validation rules, and HTTP status codes.
 
 ---
 
@@ -130,7 +130,7 @@ All API errors return a standardized JSON envelope:
     "amount_paise": 6649800,
     "currency": "INR",
     "key_id": "rzp_test_public_key",
-    "merchant_name": "TechNova Store by DhanKriya"
+    "merchant_name": "TechNova Store by Kharridlo"
   }
   ```
 

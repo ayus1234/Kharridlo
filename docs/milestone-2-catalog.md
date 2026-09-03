@@ -1,8 +1,8 @@
-# DhanKriya — Milestone 2: Synthetic Product Catalog & Core Commerce Data Foundation
+# Kharridlo — Milestone 2: Synthetic Product Catalog & Core Commerce Data Foundation
 
 ## 1. Executive Summary
 
-Milestone 2 establishes the deterministic commerce foundation of **DhanKriya** for the **Razorpay AI Buildathon (Track 01: AI Growth & Agentic Commerce)**. 
+Milestone 2 establishes the deterministic commerce foundation of **Kharridlo** for the **Razorpay AI Buildathon (Track 01: AI Growth & Agentic Commerce)**. 
 
 While AI agents reason and recommend products, transactional accuracy and trust require a strictly deterministic backend. In this milestone, we implemented:
 * A PostgreSQL relational database schema with **Alembic migration version control**.

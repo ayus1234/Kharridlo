@@ -12,7 +12,7 @@ def search_products(
     limit: int = 5,
 ) -> Dict[str, Any]:
     """
-    Search the authoritative DhanKriya product catalog.
+    Search the authoritative Kharridlo product catalog.
     Returns product records with verified prices in integer paise and real-time inventory status.
     All text fields are safely wrapped in <untrusted_catalog_data> to neutralize prompt injection.
     """

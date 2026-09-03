@@ -1,8 +1,8 @@
-# DhanKriya — Milestone 4: Deterministic Commerce Policy Engine
+# Kharridlo — Milestone 4: Deterministic Commerce Policy Engine
 
 ## 1. Milestone Objective
 
-Milestone 4 implements the deterministic commerce policy engine and buyer authorization security gate in **DhanKriya** for the **Razorpay AI Buildathon (Track 01: AI Growth & Agentic Commerce)**.
+Milestone 4 implements the deterministic commerce policy engine and buyer authorization security gate in **Kharridlo** for the **Razorpay AI Buildathon (Track 01: AI Growth & Agentic Commerce)**.
 
 The policy engine acts as the authoritative trust boundary between commerce intent/cart formulation and future payment gateway execution:
 
@@ -25,7 +25,7 @@ The policy engine acts as the authoritative trust boundary between commerce inte
 ### Core Project Principle Enforced
 > **"AI proposes. Deterministic systems verify and authorize."**
 
-In DhanKriya, AI shopping agents may propose complex product bundles or cart additions, but **the AI has zero authority over policy decisions or money**. All policy checks are executed deterministically by the backend using integer-paise financial bounds. The policy engine is strictly read-only with respect to cart and inventory state, and payment is never initiated before all required gates pass.
+In Kharridlo, AI shopping agents may propose complex product bundles or cart additions, but **the AI has zero authority over policy decisions or money**. All policy checks are executed deterministically by the backend using integer-paise financial bounds. The policy engine is strictly read-only with respect to cart and inventory state, and payment is never initiated before all required gates pass.
 
 ---
 

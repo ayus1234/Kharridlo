@@ -1,12 +1,12 @@
-# DhanKriya — Failure Handling & Resilience Matrix
+# Kharridlo — Failure Handling & Resilience Matrix
 
-This document defines the comprehensive failure handling matrix for **DhanKriya**, establishing exact system behaviors, UX responses, merchant observability, and audit records for every possible failure scenario across the commerce lifecycle.
+This document defines the comprehensive failure handling matrix for **Kharridlo**, establishing exact system behaviors, UX responses, merchant observability, and audit records for every possible failure scenario across the commerce lifecycle.
 
 ---
 
 ## 1. Resilience Philosophy
 
-DhanKriya is built on three core resilience tenets:
+Kharridlo is built on three core resilience tenets:
 1. **Never Fail Open on Money:** If an error occurs in the AI agent, database, or network, the policy engine strictly defaults to **FAIL-CLOSED (BLOCKED)**. No money is moved.
 2. **Never Blindly Retry Financial Operations:** Payments that fail are never retried automatically by the agent. Retries require explicit human interaction.
 3. **Intentional Safety is Not a Bug:** Guardrail interventions (e.g., stopping a ₹1,49,000 purchase) are styled as proactive safety controls, not system errors.

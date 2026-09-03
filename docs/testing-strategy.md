@@ -1,6 +1,6 @@
-# DhanKriya — Quality Assurance & Testing Strategy
+# Kharridlo — Quality Assurance & Testing Strategy
 
-This document details the multi-tiered testing strategy for **DhanKriya**, establishing unit testing with `pytest`, API integration suites, end-to-end browser automation with `Playwright`, and specialized security validation.
+This document details the multi-tiered testing strategy for **Kharridlo**, establishing unit testing with `pytest`, API integration suites, end-to-end browser automation with `Playwright`, and specialized security validation.
 
 ---
 

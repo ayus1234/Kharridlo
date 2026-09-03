@@ -1,6 +1,6 @@
-# DhanKriya — Backend Service
+# Kharridlo — Backend Service
 
-FastAPI-powered backend service for **DhanKriya** (Razorpay AI Buildathon — Track 01).
+FastAPI-powered backend service for **Kharridlo** (Razorpay AI Buildathon — Track 01).
 
 ## Prerequisites
 

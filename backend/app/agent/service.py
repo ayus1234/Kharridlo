@@ -7,7 +7,7 @@ from app.core.config import settings
 from app.models.cart import Cart
 from app.schemas.cart import CartResponse, CartItemResponse
 from app.agent.context import AgentRequestContext
-from app.agent.instructions import DHANKRIYA_SYSTEM_INSTRUCTIONS
+from app.agent.instructions import KHARRIDLO_SYSTEM_INSTRUCTIONS
 from app.agent.tools import BOUNDED_TOOLS, TOOL_PERMISSIONS
 from app.agent.schemas import AgentChatResponse, ToolCallRecord
 from app.services.cart_service import CartService
@@ -156,7 +156,7 @@ class AgentService:
         # Prompt injection defense
         if is_injection:
             return AgentChatResponse(
-                message="I am DhanKriya's commerce assistant. I can only assist with searching products, managing your cart, and evaluating spending policy. I cannot execute system modifications or payment commands.",
+                message="I am Kharridlo's commerce assistant. I can only assist with searching products, managing your cart, and evaluating spending policy. I cannot execute system modifications or payment commands.",
                 session_id=context.session_id,
                 tool_calls=[],
             )
@@ -322,7 +322,7 @@ class AgentService:
         function_declarations = [
             types.FunctionDeclaration(
                 name="search_products",
-                description="Search authoritative DhanKriya catalog for tech products by query, category, or max price.",
+                description="Search authoritative Kharridlo catalog for tech products by query, category, or max price.",
                 parameters={
                     "type": "OBJECT",
                     "properties": {
@@ -394,7 +394,7 @@ class AgentService:
 
         tools = [types.Tool(function_declarations=function_declarations)]
         config = types.GenerateContentConfig(
-            system_instruction=DHANKRIYA_SYSTEM_INSTRUCTIONS,
+            system_instruction=KHARRIDLO_SYSTEM_INSTRUCTIONS,
             tools=tools,
             temperature=0.2,
         )

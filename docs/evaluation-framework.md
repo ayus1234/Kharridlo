@@ -1,12 +1,12 @@
-# DhanKriya — Evaluation Framework & Benchmark Specifications
+# Kharridlo — Evaluation Framework & Benchmark Specifications
 
-This document defines the quantitative evaluation framework for **DhanKriya**, establishing a 500-scenario synthetic commerce benchmark and key metrics across AI reasoning quality, commercial impact, safety compliance, and system latency.
+This document defines the quantitative evaluation framework for **Kharridlo**, establishing a 500-scenario synthetic commerce benchmark and key metrics across AI reasoning quality, commercial impact, safety compliance, and system latency.
 
 ---
 
 ## 1. The 500-Scenario Evaluation Dataset
 
-To rigorously evaluate DhanKriya before final deployment and video recording, a synthetic benchmark dataset of 500 diverse shopping scenarios is organized under `evaluation/scenarios/`:
+To rigorously evaluate Kharridlo before final deployment and video recording, a synthetic benchmark dataset of 500 diverse shopping scenarios is organized under `evaluation/scenarios/`:
 
 ```text
 ┌────────────────────────────────────────────────────────────────────────┐

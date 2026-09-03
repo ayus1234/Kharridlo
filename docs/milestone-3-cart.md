@@ -1,8 +1,8 @@
-# DhanKriya — Milestone 3: Cart Engine & Session State Management
+# Kharridlo — Milestone 3: Cart Engine & Session State Management
 
 ## 1. Milestone Objective
 
-Milestone 3 establishes the deterministic cart and session state management engine of **DhanKriya** for the **Razorpay AI Buildathon (Track 01: AI Growth & Agentic Commerce)**.
+Milestone 3 establishes the deterministic cart and session state management engine of **Kharridlo** for the **Razorpay AI Buildathon (Track 01: AI Growth & Agentic Commerce)**.
 
 The cart service serves as the authoritative boundary between the product catalog and the upcoming policy engine, payment pipeline, and AI agents:
 

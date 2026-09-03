@@ -1,1 +1,1 @@
-"""DhanKriya Backend Application Package."""
+"""Kharridlo Backend Application Package."""

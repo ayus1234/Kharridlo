@@ -53,7 +53,7 @@ export default function AIAssistantDrawer({ onCartUpdated }: AIAssistantDrawerPr
     {
       id: "welcome",
       sender: "assistant",
-      text: "Hello! I am your DhanKriya Commerce Assistant. I can help you find products, manage your cart, and evaluate transaction policies before payment.",
+      text: "Hello! I am your Kharridlo Commerce Assistant. I can help you find products, manage your cart, and evaluate transaction policies before payment.",
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     },
   ]);
@@ -145,10 +145,10 @@ export default function AIAssistantDrawer({ onCartUpdated }: AIAssistantDrawerPr
       <button
         onClick={() => setIsOpen(true)}
         className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white px-4 py-3 rounded-full shadow-xl shadow-emerald-900/20 transition-all transform hover:-translate-y-0.5 active:translate-y-0 font-medium text-sm"
-        aria-label="Open DhanKriya AI Assistant"
+        aria-label="Open Kharridlo AI Assistant"
       >
         <Sparkles className="w-5 h-5 text-emerald-200 animate-pulse" />
-        <span>DhanKriya Assistant</span>
+        <span>Kharridlo Assistant</span>
       </button>
 
       {/* Backdrop overlay */}
@@ -173,7 +173,7 @@ export default function AIAssistantDrawer({ onCartUpdated }: AIAssistantDrawerPr
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-white text-base">DhanKriya Assistant</h3>
+                <h3 className="font-semibold text-white text-base">Kharridlo Assistant</h3>
                 <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold tracking-wider">
                   M5 Bounded
                 </span>

@@ -1,15 +1,15 @@
-# DhanKriya — UX Flow & Product Journey Specification
+# Kharridlo — UX Flow & Product Journey Specification
 
 ## 1. Product Overview
 
-* **Product Name:** DhanKriya
+* **Product Name:** Kharridlo
 * **Tagline:** From AI intent to trusted transactions.
 * **Meaning:**
-  * **Dhan (धन):** Money, wealth, economic assets, and commerce value.
-  * **Kriya (क्रिया):** Action, execution, purposeful work, and systematic process.
-  * **DhanKriya:** Intelligent, bounded, and explainable action applied to economic exchange.
+  * **Kharridlo (ख़रीद लो):** Colloquial Hindi for *"Buy it / Purchase it"*, embodying decisive, frictionless, and confident agentic commerce.
+  * Formerly known as *DhanKriya* (Dhan = economic value, Kriya = purposeful execution).
+  * Together, **Kharridlo** embodies intelligent, bounded, and trusted action: *From AI intent to trusted transactions.*
 * **Buildathon:** Razorpay AI Buildathon — **Track 01: AI Growth & Agentic Commerce**
-* **Core Concept:** DhanKriya is an AI-native commerce platform that bridges the gap between natural-language consumer intent and secure, bounded financial execution. It enables AI buyers to discover products, evaluate specifications, receive contextual recommendations, and complete real Razorpay Test Mode transactions within strict deterministic spending policies. Simultaneously, it equips merchants with deep visibility into AI-assisted shopping sessions, conversion uplift, and actionable AI-driven revenue intelligence.
+* **Core Concept:** Kharridlo is an AI-native commerce platform that bridges the gap between natural-language consumer intent and secure, bounded financial execution. It enables AI buyers to discover products, evaluate specifications, receive contextual recommendations, and complete real Razorpay Test Mode transactions within strict deterministic spending policies. Simultaneously, it equips merchants with deep visibility into AI-assisted shopping sessions, conversion uplift, and actionable AI-driven revenue intelligence.
 
 ---
 
@@ -80,14 +80,14 @@
 
 ### Detailed Journey Stages
 
-| Stage | User Goal | What the User Sees | What DhanKriya Does | Available Actions | Next Stage | Failure States |
+| Stage | User Goal | What the User Sees | What Kharridlo Does | Available Actions | Next Stage | Failure States |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **1. Landing** | Discover DhanKriya's AI shopping capability | Hero headline, conversational prompt bar, quick-start chips, trust badge | Initial session creation; loads popular intent presets | Click prompt chip, type custom query, click "Start Shopping" | AI Shopping Conversation | Network drop |
+| **1. Landing** | Discover Kharridlo's AI shopping capability | Hero headline, conversational prompt bar, quick-start chips, trust badge | Initial session creation; loads popular intent presets | Click prompt chip, type custom query, click "Start Shopping" | AI Shopping Conversation | Network drop |
 | **2. AI Shopping Entry** | Submit shopping intent | Active chat workspace with clear message history and dynamic context tray | Dispatches user message to Intent Extraction pipeline | Type query, edit constraints, voice/text input | Intent Extraction | Empty input validation error |
 | **3. Intent Extraction** | See requirements accurately understood | Typing indicator; "Understanding your requirements..." status | Extracts budget, use-case, hard specs, and soft preferences | Cancel request, refine prompt | Catalog Search | Ambiguous intent $\rightarrow$ prompts clarification question |
 | **4. Catalog Search & Filter** | Retrieve suitable candidate items | "Searching 84 catalog products..." status | Queries synthetic merchant catalog via structured tool `search_products()` | Wait for results | Product Comparison | Zero results $\rightarrow$ relaxes constraints with user permission |
 | **5. Product Comparison** | Compare top options side-by-side | Side-by-side specification matrix highlighting differentiators | Ranks candidates via deterministic spec matching and trade-off evaluation | Toggle specs, select preferred item, ask follow-up | Contextual Recommendation | Model hallucination guard blocks ungrounded claims |
-| **6. Contextual Recommendation** | Understand why a product is optimal | Top-ranked product card with prominent "Why DhanKriya recommends this" section | Synthesizes explainable justification grounded strictly in catalog data | "View Details", "Add to Cart", "Ask Follow-up" | Product Details or Smart Cart | Discrepancy between price & budget $\rightarrow$ triggers alert |
+| **6. Contextual Recommendation** | Understand why a product is optimal | Top-ranked product card with prominent "Why Kharridlo recommends this" section | Synthesizes explainable justification grounded strictly in catalog data | "View Details", "Add to Cart", "Ask Follow-up" | Product Details or Smart Cart | Discrepancy between price & budget $\rightarrow$ triggers alert |
 | **7. Contextual Upsell** | Discover high-value setup additions | Complementary item card (e.g., mouse, RAM upgrade) with explicit "Why this was suggested" | Identifies complementary accessories via `recommend_bundle()` tool | "Add Accessory", "Decline / Keep Laptop Only" | Smart Cart Review | Suggesting incompatible accessory $\rightarrow$ rule engine blocks |
 | **8. Smart Cart Review** | Review items, quantities, and final total | Clear line-item summary, itemized subtotals, active budget meter | Calculates deterministic total via `calculate_cart()` tool | Adjust quantity, remove item, "Proceed to Review" | Policy & Safety Gate | Calculation mismatch $\rightarrow$ re-evaluates strictly server-side |
 | **9. Policy & Safety Gate** | Verify purchase boundaries | Spending policy inspection card showing budget ceiling, remaining funds, and status | Executes deterministic policy engine (budget, quantity, merchant check) | "Review Details", "Cancel" | Authorization or Blocked Screen | Limit exceeded $\rightarrow$ triggers Blocked Flow |
@@ -115,7 +115,7 @@ Every product card rendered in the shopping conversation includes:
 * **Visuals:** High-resolution product thumbnail, category tag, and availability badge (e.g., `In Stock: 14 units`).
 * **Title & Pricing:** Exact product title, merchant tag (`TechNova Store`), and price formatted in Indian Rupees (e.g., `₹64,999`).
 * **Key Specifications Bar:** Concise spec pills (e.g., `16GB DDR5`, `512GB NVMe SSD`, `Intel Core Ultra 7`, `1.4 kg`).
-* **Explainable Fit Section ("Why DhanKriya Recommends This"):**
+* **Explainable Fit Section ("Why Kharridlo Recommends This"):**
   * Concise bullet points directly mapping buyer goals to product features:
     * *$\checkmark$ Fits comfortably inside your ₹70,000 budget (₹5,001 buffer)*
     * *$\checkmark$ 16GB RAM handles concurrent Docker & LLM inference workloads*
@@ -145,7 +145,7 @@ Every product card rendered in the shopping conversation includes:
 ## 6. Smart Cart Experience
 
 ### Behavioral Rules
-* **Zero Autonomous Additions:** DhanKriya never injects products into the cart without explicit user selection or approval.
+* **Zero Autonomous Additions:** Kharridlo never injects products into the cart without explicit user selection or approval.
 * **Live Budget Progress Meter:** A visual bar displaying:
   $$\text{Current Subtotal} \quad / \quad \text{User Spending Limit (₹70,000)}$$
   Color-coded green when within limit, transitioning to amber at 90%, and red if exceeded.
@@ -161,7 +161,7 @@ Every product card rendered in the shopping conversation includes:
 
 ## 7. Purchase Authorization Flow (The Safety Gate)
 
-Before any financial tool call or payment gateway transition, DhanKriya surfaces the **Commerce Policy Gate**:
+Before any financial tool call or payment gateway transition, Kharridlo surfaces the **Commerce Policy Gate**:
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
@@ -181,7 +181,7 @@ Before any financial tool call or payment gateway transition, DhanKriya surfaces
 │   [✓] Merchant Check: TechNova Store (Authorized)         PASSED │
 │   [!] Authorization Tier: High Value (₹50k+)   CONFIRMATION REQ  │
 ├──────────────────────────────────────────────────────────────────┤
-│ "DhanKriya requires explicit authorization before initiating     │
+│ "Kharridlo requires explicit authorization before initiating     │
 │  a Razorpay Test Mode transaction."                              │
 │                                                                  │
 │     [ Reject / Edit Cart ]           [ Authorize & Pay ₹66,498 ] │
@@ -198,7 +198,7 @@ Before any financial tool call or payment gateway transition, DhanKriya surfaces
 
 ## 8. Blocked Transaction Flow (Intentional Safety Control)
 
-When an item or cart exceeds policy constraints, DhanKriya activates the **Safety Intervention Screen**:
+When an item or cart exceeds policy constraints, Kharridlo activates the **Safety Intervention Screen**:
 
 ### User Trigger
 * User requests: *"Buy me the TechNova Laptop Ultra for ₹1,49,000."*
@@ -245,7 +245,7 @@ Smart Cart ──► Policy Gate Approved ──► Server Creates Order ──�
 ### Step-by-Step Execution
 1. **Server Order Creation:** Backend issues authenticated `POST /orders` request to Razorpay Test Mode API with exact amount in paise (`6649800`) and unique receipt ID.
 2. **Gateway Modal Launch:** Razorpay Standard Checkout opens over the application. Displays:
-   * Merchant: `TechNova Store by DhanKriya`
+   * Merchant: `TechNova Store by Kharridlo`
    * Order ID: `order_test_981249`
    * Amount: `₹66,498.00`
    * Test Mode banner clearly visible.
@@ -263,7 +263,7 @@ Smart Cart ──► Policy Gate Approved ──► Server Creates Order ──�
 ### Scenario: Gateway or Card Rejection
 1. **Payment Attempt Fails:** User inputs invalid test credentials or tests an intentional bank failure.
 2. **Razorpay Modal Returns Failure:** Gateway emits error event (e.g., `PAYMENT_FAILED: Bank network unreachable`).
-3. **DhanKriya Response Screen:**
+3. **Kharridlo Response Screen:**
    * Headline: **"Payment Could Not Be Completed"**
    * Clear message: *"Your card was not charged. The payment attempt failed due to a bank timeout."*
    * Explanatory breakdown: Order ID preserved in `PENDING_PAYMENT` state.
@@ -271,7 +271,7 @@ Smart Cart ──► Policy Gate Approved ──► Server Creates Order ──�
    * `[Retry with Different Test Method]` (launches new checkout session with same order).
    * `[Return to Cart]` (allows editing items or quantities).
    * `[Cancel Order]` (gracefully releases inventory hold).
-5. **Hard Rule:** DhanKriya **never automatically retries** a failed payment. All retry actions require deliberate user initiation.
+5. **Hard Rule:** Kharridlo **never automatically retries** a failed payment. All retry actions require deliberate user initiation.
 
 ---
 
@@ -383,7 +383,7 @@ Provides a transparent trace panel accessible by merchants and auditors without 
 
 ## 17. AI Buyer API / AI-Readable Commerce Concept
 
-To demonstrate true agentic commerce, DhanKriya exposes standardized machine-readable endpoints enabling external AI agents to discover, evaluate, and purchase goods programmatically:
+To demonstrate true agentic commerce, Kharridlo exposes standardized machine-readable endpoints enabling external AI agents to discover, evaluate, and purchase goods programmatically:
 
 * `GET /ai/catalog`: Returns machine-readable catalog with structured JSON-LD specifications, real-time stock levels, and purchasing constraints.
 * `POST /ai/search`: Semantic search accepting structured intent objects (budget, specs, preferences).
@@ -414,13 +414,13 @@ Untrusted Catalog Data ──► [Structured Parser] ──► [Data-Only Sandbo
 
 ### Buyer Interface Navigation
 * **Top Bar:**
-  * Brand Logo: `DhanKriya`
+  * Brand Logo: `Kharridlo`
   * Primary Links: `AI Shopping` (Hero), `Catalog Browser`, `My Orders`, `Audit Trail`
   * Right Utilities: Active Cart Drawer (`₹66,498 [2]`), Buyer Spending Policy Badge (`Limit: ₹70,000`), Profile Avatar
 
 ### Merchant Interface Navigation
 * **Sidebar Layout:**
-  * Store Branding: `TechNova Store (via DhanKriya)`
+  * Store Branding: `TechNova Store (via Kharridlo)`
   * Management: `Dashboard Overview`, `AI Commerce Analytics`, `Orders & Transactions`, `Catalog & Inventory`
   * Intelligence: `AI Revenue Advisor`, `Agent Activity Logs`, `Policy Governance Center`
   * Footer: `Razorpay Test Mode (Active)`, `System Settings`
@@ -535,7 +535,7 @@ Untrusted Catalog Data ──► [Structured Parser] ──► [Data-Only Sandbo
 
 ### Screen 1: AI Commerce Landing
 * **Layout:** Centered single-column hero with floating top navigation.
-* **Header:** Logo `DhanKriya`, navigation links, spending policy pill (`Policy: ₹70,000`).
+* **Header:** Logo `Kharridlo`, navigation links, spending policy pill (`Policy: ₹70,000`).
 * **Hero Content:** Headline: *"From AI intent to trusted transactions."*
 * **Search Component:** Large rounded pill container with prompt input, microphone icon, and prominent `[Start Shopping]` button in deep indigo.
 * **Quick-Start Chips:** `[Laptops under ₹70k for AI Dev]`, `[Phones under ₹40k with high battery]`, `[Developer Workstation Setup]`.
@@ -543,7 +543,7 @@ Untrusted Catalog Data ──► [Structured Parser] ──► [Data-Only Sandbo
 
 ### Screen 2: AI Shopping Workspace
 * **Layout:** Two-column split view (65% left chat, 35% right context tray).
-* **Left Column:** Chat stream with alternating buyer messages (slate bubble, right aligned) and DhanKriya responses (white card with indigo accent border, left aligned).
+* **Left Column:** Chat stream with alternating buyer messages (slate bubble, right aligned) and Kharridlo responses (white card with indigo accent border, left aligned).
 * **Right Column:** Sticky panel titled `Active Shopping State`:
   * Use Case: `AI & Software Development`
   * Budget Limit: `₹70,000 (Remaining: ₹5,001)`
@@ -555,7 +555,7 @@ Untrusted Catalog Data ──► [Structured Parser] ──► [Data-Only Sandbo
 * **Card Anatomy:**
   * Top: 16:9 product image, `AI Match: 98%` emerald badge, `TechNova Store` label.
   * Body: Title `TechNova Laptop Pro 15`, Price `₹64,999`, Spec summary pills.
-  * Highlight Box: *"Why DhanKriya Recommends This: Optimal balance of Intel Core Ultra 7 and 16GB RAM for local model inference under ₹70,000."*
+  * Highlight Box: *"Why Kharridlo Recommends This: Optimal balance of Intel Core Ultra 7 and 16GB RAM for local model inference under ₹70,000."*
   * Footer: `[Add to Cart]` (primary filled), `[Compare]` (secondary outline), `[Details]` (text button).
 
 ### Screen 6: Smart Cart & Bundle Upgrade
@@ -601,7 +601,7 @@ Untrusted Catalog Data ──► [Structured Parser] ──► [Data-Only Sandbo
 
 ## 25. Review & Scope Governance
 
-* [x] **Brand Consistency:** Strictly **DhanKriya** throughout. Zero legacy names or unauthorized suffixes.
+* [x] **Brand Consistency:** Strictly **Kharridlo** throughout. Zero legacy names or unauthorized suffixes.
 * [x] **Track 01 Alignment:** Direct focus on AI Growth (upsells, bundles, merchant advisor) and Agentic Commerce (autonomous intent-to-checkout flow).
 * [x] **Safety Boundaries:** Explicit distinction between what AI models propose vs what deterministic policy code authorizes.
 * [x] **Razorpay Test Mode Integration:** Accurate representation of orders API, checkout modal, and signature verification.

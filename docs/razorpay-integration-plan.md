@@ -1,6 +1,6 @@
-# DhanKriya — Razorpay Integration & Payment State Machine
+# Kharridlo — Razorpay Integration & Payment State Machine
 
-This document details the complete end-to-end integration of **Razorpay Test Mode** within **DhanKriya**, establishing server-side order generation, Standard Checkout orchestration, cryptographic signature verification, idempotency protection, and webhook ingestion.
+This document details the complete end-to-end integration of **Razorpay Test Mode** within **Kharridlo**, establishing server-side order generation, Standard Checkout orchestration, cryptographic signature verification, idempotency protection, and webhook ingestion.
 
 ---
 
@@ -81,7 +81,7 @@ const options: RazorpayOptions = {
   key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!, // Public Key ONLY
   amount: orderData.amount_paise,
   currency: "INR",
-  name: "TechNova Store by DhanKriya",
+  name: "TechNova Store by Kharridlo",
   description: "Order #DK-10042 (Bounded AI Commerce)",
   order_id: orderData.razorpay_order_id,
   handler: async function (response: RazorpayPaymentResponse) {
@@ -100,11 +100,11 @@ const options: RazorpayOptions = {
   },
   prefill: {
     name: "Ayush Nathani",
-    email: "buyer@dhankriya.ai",
+    email: "buyer@kharridlo.ai",
     contact: "9999999999"
   },
   theme: {
-    color: "#4f46e5" // DhanKriya Indigo
+    color: "#4f46e5" // Kharridlo Indigo
   }
 };
 
@@ -143,7 +143,7 @@ def verify_razorpay_signature(
 
 ## 5. Idempotency & Duplicate-Payment Protection
 
-DhanKriya enforces strict idempotency at the database and state machine layers:
+Kharridlo enforces strict idempotency at the database and state machine layers:
 
 ```text
 [CREATED] ──► [PENDING_PAYMENT] ──► [PAID] ──► [FULFILLED]

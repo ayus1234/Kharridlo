@@ -7,7 +7,7 @@ from app.api.v1.router import api_v1_router
 
 app = FastAPI(
     title=settings.APP_NAME,
-    description="DhanKriya Backend API — From AI intent to trusted transactions.",
+    description="Kharridlo Backend API — From AI intent to trusted transactions.",
     version="0.1.0",
     docs_url="/docs",
     redoc_url="/redoc"
@@ -29,7 +29,7 @@ app.include_router(api_v1_router, prefix="/api/v1", tags=["Status"])
 @app.get("/", response_model=RootResponse, tags=["General"])
 async def root() -> RootResponse:
     return RootResponse(
-        service="DhanKriya API",
+        service="Kharridlo API",
         status="running"
     )
 
@@ -38,7 +38,7 @@ async def root() -> RootResponse:
 async def health_check() -> HealthResponse:
     return HealthResponse(
         status="healthy",
-        service="DhanKriya API"
+        service="Kharridlo API"
     )
 
 

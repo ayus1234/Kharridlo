@@ -1,12 +1,12 @@
-# DhanKriya — Audit Trail & Observability Architecture
+# Kharridlo — Audit Trail & Observability Architecture
 
-This document defines the event tracking, append-only audit logging, and OpenTelemetry observability architecture for **DhanKriya**, ensuring that every agent action, policy evaluation, and financial execution is explainable, measurable, and tamper-evident.
+This document defines the event tracking, append-only audit logging, and OpenTelemetry observability architecture for **Kharridlo**, ensuring that every agent action, policy evaluation, and financial execution is explainable, measurable, and tamper-evident.
 
 ---
 
 ## 1. The Explainability Hierarchy
 
-DhanKriya enforces strict privacy and security boundaries in its logging:
+Kharridlo enforces strict privacy and security boundaries in its logging:
 
 ```text
 ┌───────────────────────────────────────────────────────────┐
@@ -73,18 +73,18 @@ class AuditEvent(BaseModel):
 
 ## 3. OpenTelemetry Distributed Tracing
 
-DhanKriya backend services are instrumented using the OpenTelemetry Python SDK:
+Kharridlo backend services are instrumented using the OpenTelemetry Python SDK:
 
 ```python
 from opentelemetry import trace
 
-tracer = trace.get_tracer("dhankriya.commerce")
+tracer = trace.get_tracer("kharridlo.commerce")
 
 async def handle_buyer_checkout(cart_id: str, auth_token: str):
     with tracer.start_as_current_span("policy_gate.evaluate") as policy_span:
         policy_result = evaluate_cart_policy(cart_id)
-        policy_span.set_attribute("dhankriya.policy.decision", policy_result.decision)
-        policy_span.set_attribute("dhankriya.cart.total", float(policy_result.cart_total))
+        policy_span.set_attribute("kharridlo.policy.decision", policy_result.decision)
+        policy_span.set_attribute("kharridlo.cart.total", float(policy_result.cart_total))
         
     if policy_result.decision == "PASSED":
         with tracer.start_as_current_span("razorpay.create_order") as rzp_span:

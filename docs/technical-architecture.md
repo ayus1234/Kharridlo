@@ -1,12 +1,12 @@
-# DhanKriya — Technical Architecture & System Design
+# Kharridlo — Technical Architecture & System Design
 
-This document details the core technical architecture of **DhanKriya**, defining component responsibilities, network topologies, trust zones, security boundaries, and the Google Cloud Run deployment model.
+This document details the core technical architecture of **Kharridlo**, defining component responsibilities, network topologies, trust zones, security boundaries, and the Google Cloud Run deployment model.
 
 ---
 
 ## 1. System Architecture Overview
 
-DhanKriya is built as a high-performance modular monolith composed of two primary containerized services:
+Kharridlo is built as a high-performance modular monolith composed of two primary containerized services:
 1. **Frontend Client (Next.js 14 App Router + TypeScript):** Handles server-side rendering, conversational UI streaming, client-side state management, and the Razorpay Checkout overlay.
 2. **Backend API & Agent Runtime (FastAPI + Python 3.11):** Hosts the REST endpoints, Google ADK Gemini agent engine, deterministic policy engine, Razorpay service, and append-only audit persistence.
 
@@ -138,13 +138,13 @@ The architecture enforces strict network and execution boundaries:
 ## 4. Google Cloud Run Deployment Architecture
 
 ```text
-Google Cloud Project: dhankriya-platform
+Google Cloud Project: kharridlo-platform
 ├── Cloud Run Services:
-│   ├── dhankriya-frontend (Next.js Node.js 20 container)
+│   ├── kharridlo-frontend (Next.js Node.js 20 container)
 │   │   ├── Scaling: 0 to 10 instances
 │   │   ├── Memory: 512 MiB, CPU: 1 vCPU
 │   │   └── Environment: NEXT_PUBLIC_API_URL, NEXT_PUBLIC_RAZORPAY_KEY_ID
-│   └── dhankriya-backend (FastAPI Python 3.11 container via Uvicorn)
+│   └── kharridlo-backend (FastAPI Python 3.11 container via Uvicorn)
 │       ├── Scaling: 0 to 10 instances
 │       ├── Memory: 1 GiB, CPU: 1 vCPU
 │       └── VPC Connector: Access to Cloud SQL & Redis

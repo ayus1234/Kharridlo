@@ -18,7 +18,7 @@ api_v1_router.include_router(agent_router)
 @api_v1_router.get("/status", response_model=StatusResponse, tags=["Status"])
 async def get_api_status() -> StatusResponse:
     return StatusResponse(
-        project="DhanKriya",
+        project="Kharridlo",
         version="0.1.0",
         environment=settings.ENVIRONMENT
     )

@@ -1,18 +1,18 @@
-# DhanKriya — Product Specification
+# Kharridlo — Product Specification
 
 ## 1. Product Identity
 
-* **Product Name:** DhanKriya
+* **Product Name:** Kharridlo
 * **Tagline:** From AI intent to trusted transactions.
 * **Name Meaning:** 
-  * **Dhan (धन):** Represents money, wealth, and economic value.
-  * **Kriya (क्रिया):** Represents action, execution, or purposeful activity.
-  * Together, **DhanKriya** embodies intelligent, bounded, and trusted action involving economic value.
+  * **Kharridlo (ख़रीद लो):** Colloquial Hindi for *"Buy it / Purchase it"*, embodying decisive, frictionless, and confident agentic commerce.
+  * Formerly known as *DhanKriya* (Dhan = economic value, Kriya = purposeful execution).
+  * Together, **Kharridlo** embodies intelligent, bounded, and trusted action: *From AI intent to trusted transactions.*
 * **Buildathon:** Razorpay AI Buildathon
 * **Track:** Track 01 — AI Growth & Agentic Commerce
 
 ### Product One-Liner
-> DhanKriya is an AI-native commerce agent that enables AI buyers to discover products, receive contextual recommendations, make bounded purchase decisions, and complete Razorpay-powered transactions while helping merchants grow and understand AI-assisted revenue.
+> Kharridlo is an AI-native commerce agent that enables AI buyers to discover products, receive contextual recommendations, make bounded purchase decisions, and complete Razorpay-powered transactions while helping merchants grow and understand AI-assisted revenue.
 
 ---
 
@@ -26,14 +26,14 @@ While modern conversational AI assistants can understand complex user intent and
 3. **Absence of Explainable Auditability:** Financial actions taken by an agent need transparent, gated, and auditable verification.
 4. **Merchant Invisibility:** Merchants currently have zero visibility into AI-assisted commerce sessions, conversion drop-offs, or revenue opportunities driven by AI buyers.
 
-DhanKriya bridges this gap directly:
+Kharridlo bridges this gap directly:
 $$\text{AI Buyer Intent} \longrightarrow \text{Merchant Catalog} \longrightarrow \text{Bounded Decision Gate} \longrightarrow \text{Razorpay Payment} \longrightarrow \text{Measurable Merchant Revenue}$$
 
 ---
 
 ## 3. Solution Overview
 
-DhanKriya creates a dual-sided, AI-native commerce platform:
+Kharridlo creates a dual-sided, AI-native commerce platform:
 
 1. **AI Buyer Interface:** Customers interact conversationally with a specialized commerce agent using natural language (e.g., *"I need a laptop for AI development under ₹70,000 with at least 16GB RAM"*). The agent understands requirements, retrieves real-time catalog specs, compares products, suggests contextual upgrades, checks deterministic safety policies, requests human confirmation where needed, and completes a bounded Razorpay test-mode transaction.
 2. **Merchant Intelligence Dashboard:** Merchants gain full visibility into AI-assisted shopping sessions, conversion metrics, average order value (AOV), upsell acceptance rates, blocked unsafe transactions, and receive AI-driven actionable revenue growth recommendations.
@@ -43,13 +43,13 @@ DhanKriya creates a dual-sided, AI-native commerce platform:
 ## 4. Track 01 Alignment: AI Growth & Agentic Commerce
 
 ### AI Growth
-DhanKriya actively drives merchant revenue through:
+Kharridlo actively drives merchant revenue through:
 * **Contextual Upselling:** Recommending logical specification upgrades (e.g., 16GB RAM upgrade for development workloads) with explicit explanations.
 * **Cross-Selling & Bundling:** Intelligently pairing complementary accessories (e.g., precision mouse or ergonomic stand with a development laptop).
 * **AI Merchant Optimization Agent:** Analyzing transaction patterns and drop-offs to recommend specific catalog merchandising improvements to merchants.
 
 ### Agentic Commerce
-DhanKriya implements an end-to-end agentic transaction pipeline:
+Kharridlo implements an end-to-end agentic transaction pipeline:
 $$\text{Buyer Intent} \rightarrow \text{Product Discovery} \rightarrow \text{Comparison} \rightarrow \text{Recommendation} \rightarrow \text{Cart Planning} \rightarrow \text{Policy Validation} \rightarrow \text{User Authorization} \rightarrow \text{Razorpay Checkout} \rightarrow \text{Order Confirmation}$$
 
 ### AI-Readable Commerce
