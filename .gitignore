@@ -84,4 +84,5 @@ temp/
 *.tmp
 
 # Raw design exports & local artifacts
-stitch_dhankriya_ai_buyer_experience/
+stitch_*/
+stitch_*/**
