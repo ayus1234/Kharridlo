@@ -377,3 +377,45 @@ class CartService:
         db.commit()
         db.refresh(cart)
         return cart
+
+    @classmethod
+    def finalize_cart_checkout(cls, db: Session, cart: Cart) -> Cart:
+        """
+        Finalize inventory consumption upon verified payment capture.
+        Converts reserved quantity into permanently consumed stock without double-decrementing.
+        Marks cart as 'converted'.
+        """
+        if cart.status == "converted":
+            return cart
+
+        for item in cart.items:
+            inventory = (
+                db.query(Inventory)
+                .filter(Inventory.product_id == item.product_id)
+                .with_for_update()
+                .first()
+            )
+            if inventory:
+                # Deduct from reserved quantity without adding back to available
+                inventory.reserved_quantity = max(0, inventory.reserved_quantity - item.quantity)
+
+        cart.status = "converted"
+        cart.updated_at = datetime.now(timezone.utc)
+        db.commit()
+        db.refresh(cart)
+        return cart
+
+    @classmethod
+    def release_cart_reservations(cls, db: Session, cart: Cart) -> Cart:
+        """
+        Safely return all reserved inventory for this cart back to available quantity.
+        Used on explicit checkout cancellation or payment abandonment.
+        """
+        if cart.status == "converted":
+            return cart
+
+        cls._release_cart_reservations(db, cart)
+        cart.status = "active"
+        db.commit()
+        db.refresh(cart)
+        return cart

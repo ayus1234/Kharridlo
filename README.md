@@ -18,8 +18,8 @@ Kharridlo is an AI-native commerce platform that enables AI buyers to discover p
 * [x] **Milestone 3:** Cart Engine & Session State Management (Integer Paise Arithmetic & Inventory Reservations)
 * [x] **Milestone 4:** Deterministic Commerce Policy Engine (Tiered Spending Limits & Buyer Authorization Gate)
 * [x] **Milestone 5:** Gemini + Google ADK Agent & Bounded Tool Integration (7 Bounded Tools & Prompt Injection Isolation)
-* [ ] **Milestone 6:** Razorpay Test Mode Payment Pipeline
-* [ ] **Milestone 7:** Immutable Audit Trail & Failure Handling
+* [x] **Milestone 6:** Razorpay Test Mode Payment Pipeline & Merchant Audit Visibility
+* [ ] **Milestone 7:** Immutable Audit Trail & Failure Handling Polish
 * [ ] **Milestone 8:** AI Buyer Experience (Stitch UI Implementation)
 * [ ] **Milestone 9:** Merchant Intelligence Dashboard & Activity Feed
 * [ ] **Milestone 10:** 500-Scenario Evaluation Suite & Buildathon Polish
@@ -97,9 +97,19 @@ alembic upgrade head
 python scripts/seed_catalog.py
 ```
 
-Run backend tests:
+Run backend tests (80 tests covering cart, policy, agent, and Razorpay):
 ```bash
 pytest
+```
+
+Run live Gemini ADK smoke test:
+```bash
+python scripts/smoke_test_gemini_adk.py
+```
+
+Run Razorpay Test Mode payment lifecycle smoke test:
+```bash
+python scripts/smoke_test_razorpay.py
 ```
 
 Start the backend development server:
@@ -108,6 +118,47 @@ uvicorn app.main:app --reload --port 8000
 ```
 API Documentation: `http://localhost:8000/docs`
 
+---
+
+## Razorpay Test Mode Architecture
+
+Kharridlo enforces strict separation between AI reasoning and financial authorization:
+> **"AI proposes. Deterministic systems verify and authorize."**
+
+```text
+[AI Assistant / Gemini]
+      │ (Proposes product / cart modification)
+      ▼
+[Authoritative Cart] ──(Calculates exact integer paise total)
+      │
+      ▼
+[Policy Engine] ───────(Enforces spending limits: STANDARD ₹70k, ELEVATED ₹1.5L)
+      │
+      ▼
+[Buyer Authorization] ─(Explicit human confirmation recorded on server)
+      │
+      ▼
+[Payment Service] ────(Revalidates policy immediately before creating Razorpay order)
+      │
+      ▼
+[Razorpay Checkout] ──(Standard Checkout popup in Test Mode: 'rzp_test_...')
+      │
+      ▼
+[Signature Verification] (HMAC-SHA256 verified on server; stock permanently consumed)
+      │
+      ▼
+[Merchant Audit Trail] ─(Real-time audit log with zero secrets leaked)
+```
+
+### Security Guarantees:
+1. **Zero AI Payment Authority:** Gemini has strictly 0 payment tools and 0 access to Razorpay credentials.
+2. **Authoritative Calculation:** Order amounts are determined solely by backend database prices in integer paise.
+3. **Pre-Order Revalidation:** Policy spending caps and stock availability are rechecked milliseconds before order creation.
+4. **Idempotent Ingestion:** Webhooks and signature verifications are deduplicated using SHA-256 payload hashes and event IDs.
+5. **Secret Redaction:** API keys, HMAC secrets, and tokens are strictly excluded from responses, logs, and frontend code.
+
+---
+
 ### 3. Frontend Setup
 ```bash
 cd frontend
@@ -115,7 +166,7 @@ npm install
 npm run build
 npm run dev
 ```
-Open `http://localhost:3000` to view the environment dashboard or `http://localhost:3000/catalog` to explore the product catalog.
+Open `http://localhost:3000` for the dashboard, `http://localhost:3000/catalog` for products, `http://localhost:3000/cart` for policy & checkout, and `http://localhost:3000/merchant` for the real-time merchant audit trail.
 
 ---
 
