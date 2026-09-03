@@ -1,0 +1,17 @@
+project-excludes = [
+    "**/__pyrefly_virtual__/**/*",
+    "**/inmemory/**/*",
+    "**/__pycache__/**/*",
+    "**/.venv/**/*",
+]
+python-interpreter = "backend/.venv/Scripts/python.exe"
+search-path = [
+    "backend",
+    "backend/.venv/Lib/site-packages",
+]
+infer-with-first-use = false
+
+[errors]
+unknown-attribute-type = "ignore"
+missing-import = "ignore"
+unknown-variable-type = "ignore"
