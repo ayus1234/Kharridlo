@@ -42,6 +42,16 @@ class AuditService:
         metadata: Optional[Dict[str, Any]] = None,
     ) -> AuditEvent:
         """Create and persist an audit event safely."""
+        # Automatically attach request correlation ID if available
+        meta = dict(metadata) if metadata else {}
+        try:
+            from app.middleware.correlation import get_correlation_id
+            cid = get_correlation_id()
+            if cid and "correlation_id" not in meta:
+                meta["correlation_id"] = cid
+        except Exception:
+            pass
+
         event = AuditEvent(
             actor_type=actor_type,
             session_id=session_id,
@@ -50,7 +60,7 @@ class AuditService:
             order_id=order_id,
             razorpay_order_id=razorpay_order_id,
             razorpay_payment_id=razorpay_payment_id,
-            metadata_json=_sanitize_metadata(metadata),
+            metadata_json=_sanitize_metadata(meta),
         )
         db.add(event)
         db.commit()

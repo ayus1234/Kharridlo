@@ -710,6 +710,125 @@ def test_unsupported_webhook_event_ignored_safely():
     assert res.json()["status"] == "ignored"
 
 
+def test_webhook_on_already_finalized_payment_is_safe_and_idempotent(test_session_id):
+    """Webhook arriving after payment was already verified via checkout.js is handled gracefully."""
+    client.post(
+        f"/api/v1/cart/{test_session_id}/items",
+        json={"product_id": "prod_mouse_01", "quantity": 1}
+    )
+    chk = client.post(
+        f"/api/v1/checkout/confirm?session_id={test_session_id}",
+        json={"buyer_confirmed": True}
+    ).json()
+    order = client.post(
+        f"/api/v1/payments/orders?session_id={test_session_id}",
+        json={"checkout_id": chk["id"]}
+    ).json()
+
+    # 1. Frontend verify verifies first
+    payment_id = f"pay_prior_{uuid.uuid4().hex[:12]}"
+    sig = razorpay_client.generate_test_signature(
+        razorpay_order_id=order["razorpay_order_id"],
+        razorpay_payment_id=payment_id,
+    )
+    client.post(
+        "/api/v1/payments/verify",
+        json={
+            "internal_order_id": order["internal_order_id"],
+            "razorpay_order_id": order["razorpay_order_id"],
+            "razorpay_payment_id": payment_id,
+            "razorpay_signature": sig,
+        }
+    )
+
+    # 2. Subsequent webhook arriving later with payment.captured
+    raw_payload = json.dumps({
+        "event_id": f"event_{uuid.uuid4().hex[:12]}",
+        "event": "payment.captured",
+        "payload": {
+            "payment": {
+                "entity": {
+                    "id": payment_id,
+                    "order_id": order["razorpay_order_id"],
+                    "amount": 149900,
+                    "currency": "INR",
+                    "status": "captured",
+                }
+            }
+        }
+    }).encode("utf-8")
+    wh_sig = razorpay_client.generate_test_webhook_signature(raw_payload)
+
+    wh_res = client.post(
+        "/api/v1/payments/webhook",
+        content=raw_payload,
+        headers={"Content-Type": "application/json", "X-Razorpay-Signature": wh_sig}
+    )
+    assert wh_res.status_code == 200
+    assert wh_res.json()["status"] in ["processed", "duplicate"]
+
+
+def test_malformed_json_webhook_rejected():
+    """Webhook with invalid JSON syntax returns 400."""
+    raw_payload = b'{"event": "payment.captured", invalid_json'
+    sig = razorpay_client.generate_test_webhook_signature(raw_payload)
+
+    res = client.post(
+        "/api/v1/payments/webhook",
+        content=raw_payload,
+        headers={"Content-Type": "application/json", "X-Razorpay-Signature": sig}
+    )
+    assert res.status_code == 400
+
+
+def test_payment_failed_webhook_records_failure_state(test_session_id):
+    """payment.failed webhook transitions attempt and order to failed."""
+    client.post(
+        f"/api/v1/cart/{test_session_id}/items",
+        json={"product_id": "prod_mouse_01", "quantity": 1}
+    )
+    chk = client.post(
+        f"/api/v1/checkout/confirm?session_id={test_session_id}",
+        json={"buyer_confirmed": True}
+    ).json()
+    order = client.post(
+        f"/api/v1/payments/orders?session_id={test_session_id}",
+        json={"checkout_id": chk["id"]}
+    ).json()
+
+    payment_id = f"pay_fail_{uuid.uuid4().hex[:12]}"
+    raw_payload = json.dumps({
+        "event_id": f"event_{uuid.uuid4().hex[:12]}",
+        "event": "payment.failed",
+        "payload": {
+            "payment": {
+                "entity": {
+                    "id": payment_id,
+                    "order_id": order["razorpay_order_id"],
+                    "amount": 149900,
+                    "currency": "INR",
+                    "status": "failed",
+                    "error_code": "BAD_REQUEST_ERROR",
+                    "error_description": "Payment was declined by issuing bank",
+                }
+            }
+        }
+    }).encode("utf-8")
+    sig = razorpay_client.generate_test_webhook_signature(raw_payload)
+
+    res = client.post(
+        "/api/v1/payments/webhook",
+        content=raw_payload,
+        headers={"Content-Type": "application/json", "X-Razorpay-Signature": sig}
+    )
+    assert res.status_code == 200
+    assert res.json()["status"] == "processed"
+
+    # Verify order state
+    order_data = client.get(f"/api/v1/payments/orders/{order['internal_order_id']}").json()
+    assert order_data["status"] == "failed"
+
+
 def test_merchant_audit_trail_recorded_and_filterable(test_session_id):
     """Audit events are created across checkout, order, and capture, and can be queried with filters."""
     client.post(

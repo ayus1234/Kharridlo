@@ -93,7 +93,7 @@ interface PolicyTierSummary {
 }
 
 interface PaymentState {
-  status: "IDLE" | "PROCESSING" | "SUCCESS" | "FAILED" | "CANCELLED";
+  status: "IDLE" | "PROCESSING" | "SUCCESS" | "FAILED" | "CANCELLED" | "PENDING";
   internalOrderId?: string;
   razorpayOrderId?: string;
   razorpayPaymentId?: string;
@@ -132,6 +132,22 @@ export default function CartPage() {
       }
     } catch {
       // Graceful fallback
+    }
+  };
+
+  const startNewSession = () => {
+    if (typeof window !== "undefined") {
+      const randomHex = Math.random().toString(36).substring(2, 10);
+      const timestamp = Date.now().toString(36);
+      const newSid = `sess_${randomHex}_${timestamp}`;
+      localStorage.setItem("dhankriya_session_id", newSid);
+      setSessionId(newSid);
+      setCart(null);
+      setPolicyResult(null);
+      setBuyerApproved(false);
+      setPaymentState({ status: "IDLE" });
+      setError(null);
+      fetchCart(newSid);
     }
   };
 
@@ -462,6 +478,42 @@ export default function CartPage() {
     }
   };
 
+  const checkPaymentStatus = async (orderId: string) => {
+    try {
+      setActionLoading("check_status");
+      const res = await fetch(`${apiBaseUrl}/api/v1/payments/orders/${orderId}`, {
+        headers: { "X-Session-ID": sessionId },
+      });
+      if (res.ok) {
+        const orderData = await res.json();
+        if (orderData.status === "paid") {
+          setPaymentState((prev) => ({
+            ...prev,
+            status: "SUCCESS",
+            error: undefined,
+          }));
+          fetchCart(sessionId);
+        } else if (orderData.status === "failed") {
+          setPaymentState((prev) => ({
+            ...prev,
+            status: "FAILED",
+            error: "Payment was marked as failed by bank/gateway.",
+          }));
+        } else {
+          setPaymentState((prev) => ({
+            ...prev,
+            status: "PENDING",
+            error: "Payment is still being processed. Please check back shortly.",
+          }));
+        }
+      }
+    } catch {
+      // Graceful error handling
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
       {/* Top Header */}
@@ -494,6 +546,13 @@ export default function CartPage() {
             </Link>
             <div className="text-xs text-slate-500 font-mono hidden md:flex items-center gap-2">
               <span>Session: {sessionId.substring(0, 10)}...</span>
+              <button
+                onClick={startNewSession}
+                title="Start a fresh, isolated buyer session"
+                className="px-2 py-0.5 text-[11px] font-sans font-medium text-slate-600 hover:text-indigo-600 hover:bg-slate-100 rounded border border-slate-200 transition-colors"
+              >
+                New Session
+              </button>
             </div>
           </div>
         </div>
@@ -595,9 +654,46 @@ export default function CartPage() {
           </div>
         )}
 
+        {/* PAYMENT PENDING BANNER */}
+        {paymentState.status === "PENDING" && (
+          <div className="mb-6 p-5 bg-gradient-to-br from-amber-50 via-yellow-50 to-amber-50 rounded-2xl border-2 border-amber-300 shadow-sm space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-amber-500 text-white flex items-center justify-center shadow-md animate-pulse">
+                <Clock className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700">
+                  Verification In Progress
+                </span>
+                <h3 className="text-base font-extrabold text-amber-950">Payment Awaiting Gateway Confirmation</h3>
+                <p className="text-xs text-amber-800 mt-0.5">
+                  {paymentState.error || "Your transaction is currently being processed. Inventory remains held and stock will only be consumed once confirmed."}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <button
+                onClick={() => paymentState.internalOrderId && checkPaymentStatus(paymentState.internalOrderId)}
+                disabled={actionLoading !== null}
+                className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 transition-colors shadow-sm flex items-center gap-1.5"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${actionLoading ? "animate-spin" : ""}`} />
+                Check Status Now
+              </button>
+              <button
+                onClick={() => setPaymentState({ status: "IDLE" })}
+                className="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 transition-colors border border-slate-300"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* PAYMENT CANCELLED / FAILED SCREEN */}
         {(paymentState.status === "CANCELLED" || paymentState.status === "FAILED") && (
-          <div className="mb-6 p-4 rounded-xl bg-amber-50 border border-amber-200 flex items-start justify-between gap-3">
+          <div className="mb-6 p-4 rounded-xl bg-amber-50 border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-start gap-2.5">
               <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
               <div>
@@ -607,12 +703,22 @@ export default function CartPage() {
                 <p className="text-xs text-amber-800 mt-0.5">{paymentState.error}</p>
               </div>
             </div>
-            <button
-              onClick={() => setPaymentState({ status: "IDLE" })}
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-amber-300 text-amber-800 hover:bg-amber-100 transition-colors shadow-sm"
-            >
-              Dismiss
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={initiatePaymentFlow}
+                disabled={actionLoading !== null}
+                className="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-sm flex items-center gap-1.5 whitespace-nowrap"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                Retry Payment
+              </button>
+              <button
+                onClick={() => setPaymentState({ status: "IDLE" })}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white border border-amber-300 text-amber-800 hover:bg-amber-100 transition-colors shadow-sm"
+              >
+                Dismiss
+              </button>
+            </div>
           </div>
         )}
 

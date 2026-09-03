@@ -92,3 +92,4 @@ stitch_*/**
 *.xlsx
 *.xls
 razorpay_*
+frontend/test-results/
