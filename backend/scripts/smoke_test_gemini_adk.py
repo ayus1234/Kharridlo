@@ -10,6 +10,7 @@ import sys
 import argparse
 import time
 import uuid
+from typing import Any
 
 # Ensure UTF-8 output on Windows consoles (e.g. for Indian Rupee symbol ₹)
 if hasattr(sys.stdout, "reconfigure"):
@@ -30,6 +31,26 @@ from app.db.session import SessionLocal
 from app.agent.service import AgentService
 from app.agent.context import AgentRequestContext
 from app.services.cart_service import CartService
+
+
+def verify_gemini_connectivity(client: Any, model_name: str) -> bool:
+    """Check live connectivity to the Google Gemini model."""
+    print(f"\n[2/5] Connecting to Google Gemini API (Model: {model_name})...")
+    start_time = time.time()
+    try:
+        response = client.models.generate_content(
+            model=model_name,
+            contents="Respond with the exact word 'READY'.",
+        )
+        latency_ms = int((time.time() - start_time) * 1000)
+        raw_text = getattr(response, "text", "") or ""
+        resp_text = str(raw_text).strip()
+        print(f"  [+] Gemini API live response: '{resp_text}' in {latency_ms}ms")
+        return True
+    except Exception as exc:
+        print(f"  [-] Gemini connection failed: {exc}")
+        print("  Please check that your GEMINI_API_KEY is valid and has Gemini 2.5 Flash access.")
+        return False
 
 
 def run_smoke_test(api_key: str, model_name: str = "gemini-2.5-flash"):
@@ -54,20 +75,8 @@ def run_smoke_test(api_key: str, model_name: str = "gemini-2.5-flash"):
         return False
 
     # 2. Test Live Gemini Connectivity
-    print(f"\n[2/5] Connecting to Google Gemini API (Model: {model_name})...")
-    start_time = time.time()
-    try:
-        client = genai.Client(api_key=api_key)
-        conn_check = client.models.generate_content(
-            model=model_name,
-            contents="Respond with the exact word 'READY'.",  # type: ignore[arg-type]
-        )
-        latency_ms = int((time.time() - start_time) * 1000)
-        resp_text = (conn_check.text or "").strip()
-        print(f"  [+] Gemini API live response: '{resp_text}' in {latency_ms}ms")
-    except Exception as e:
-        print(f"  [-] Gemini connection failed: {e}")
-        print("  Please check that your GEMINI_API_KEY is valid and has Gemini 2.5 Flash access.")
+    client = genai.Client(api_key=api_key)
+    if not verify_gemini_connectivity(client, model_name):
         return False
 
     # 3. Create Clean Test Session

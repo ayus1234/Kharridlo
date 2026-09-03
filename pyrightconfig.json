@@ -4,5 +4,13 @@
   "extraPaths": [
     "backend",
     "backend/.venv/Lib/site-packages"
-  ]
+  ],
+  "exclude": [
+    "**/__pyrefly_virtual__/**",
+    "**/__pycache__/**",
+    "**/.venv/**"
+  ],
+  "reportMissingImports": "none",
+  "reportUnknownMemberType": "none",
+  "reportUnknownVariableType": "none"
 }

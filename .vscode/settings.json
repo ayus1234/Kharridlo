@@ -3,5 +3,13 @@
   "python.analysis.extraPaths": [
     "${workspaceFolder}/backend",
     "${workspaceFolder}/backend/.venv/Lib/site-packages"
-  ]
+  ],
+  "python.analysis.exclude": [
+    "**/__pyrefly_virtual__/**",
+    "**/__pycache__/**",
+    "**/.venv/**"
+  ],
+  "files.exclude": {
+    "**/__pyrefly_virtual__/**": true
+  }
 }
