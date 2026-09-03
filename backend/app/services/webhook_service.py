@@ -9,6 +9,7 @@ from app.models.payment import WebhookEvent, PaymentOrder, PaymentAttempt, Check
 from app.services.cart_service import CartService
 from app.services.razorpay_client import razorpay_client
 from app.services.audit_service import AuditService
+from app.schemas.audit import AuditEventType
 
 
 class WebhookService:
@@ -23,6 +24,16 @@ class WebhookService:
         Verify incoming webhook signature and process events idempotently.
         """
         if not signature_header:
+            AuditService.log_event(
+                db=db,
+                actor_type="WEBHOOK",
+                session_id="system_webhook",
+                event_type=AuditEventType.WEBHOOK_SIGNATURE_INVALID.value,
+                event_status="rejected",
+                failure_code="MISSING_SIGNATURE",
+                recovery_action="SUPPLY_SIGNATURE_HEADER",
+                metadata={"reason": "X-Razorpay-Signature header missing."},
+            )
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail={"code": "MISSING_SIGNATURE", "message": "X-Razorpay-Signature header is missing."}
@@ -30,6 +41,16 @@ class WebhookService:
 
         # 1. Verify cryptographic HMAC signature against raw body bytes
         if not razorpay_client.verify_webhook_signature(raw_body, signature_header):
+            AuditService.log_event(
+                db=db,
+                actor_type="WEBHOOK",
+                session_id="system_webhook",
+                event_type=AuditEventType.WEBHOOK_SIGNATURE_INVALID.value,
+                event_status="rejected",
+                failure_code="INVALID_WEBHOOK_SIGNATURE",
+                recovery_action="VERIFY_WEBHOOK_SECRET",
+                metadata={"reason": "HMAC-SHA256 signature mismatch."},
+            )
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail={"code": "INVALID_WEBHOOK_SIGNATURE", "message": "Webhook signature verification failed."}
@@ -50,6 +71,16 @@ class WebhookService:
         event_type = payload.get("event", "unknown")
         razorpay_event_id = payload.get("event_id") or payload.get("id")
 
+        # Log webhook receipt
+        AuditService.log_event(
+            db=db,
+            actor_type="WEBHOOK",
+            session_id="system_webhook",
+            event_type=AuditEventType.WEBHOOK_RECEIVED.value,
+            event_status="attempted",
+            metadata={"event_type": event_type, "event_id": razorpay_event_id, "payload_hash": payload_hash[:16]},
+        )
+
         # 3. Idempotency Check: check if event was already received
         existing_event = (
             db.query(WebhookEvent)
@@ -65,7 +96,9 @@ class WebhookService:
                 db=db,
                 actor_type="WEBHOOK",
                 session_id="system_webhook",
-                event_type="WEBHOOK_DUPLICATE_IGNORED",
+                event_type=AuditEventType.WEBHOOK_DUPLICATE.value,
+                event_status="succeeded",
+                idempotency_key=f"wh_dup_{payload_hash}",
                 metadata={"event_type": event_type, "event_id": razorpay_event_id},
             )
             return {
@@ -206,6 +239,17 @@ class WebhookService:
             # Unsupported or info event: do not mutate core checkout state
             webhook_record.processing_status = "IGNORED"
             db.commit()
+
+            AuditService.log_event(
+                db=db,
+                actor_type="WEBHOOK",
+                session_id="system_webhook",
+                event_type=AuditEventType.WEBHOOK_IGNORED.value,
+                event_status="succeeded",
+                reason_code="UNSUPPORTED_EVENT",
+                metadata={"event_type": event_type, "event_id": razorpay_event_id},
+            )
+
             return {
                 "status": "ignored",
                 "event_type": event_type,
@@ -220,7 +264,8 @@ class WebhookService:
             db=db,
             actor_type="WEBHOOK",
             session_id=order.session_id if order else "system_webhook",
-            event_type="WEBHOOK_PROCESSED",
+            event_type=AuditEventType.WEBHOOK_PROCESSED.value,
+            event_status="succeeded",
             order_id=order.id if order else None,
             razorpay_order_id=rzp_order_id,
             metadata={"event_type": event_type, "event_id": razorpay_event_id},

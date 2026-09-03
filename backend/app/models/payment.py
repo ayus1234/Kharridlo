@@ -129,18 +129,31 @@ class WebhookEvent(Base):
 
 class AuditEvent(Base):
     """
-    Merchant audit log recording all governance, checkout, payment, and webhook lifecycle events.
-    Guaranteed to contain zero secrets, API keys, or raw authentication payloads.
+    Immutable merchant audit log recording all governance, checkout, payment, webhook,
+    AI, inventory, and failure recovery lifecycle events.
+    Guaranteed to be append-only with zero secrets, API keys, or raw payment credentials.
     """
     __tablename__ = "audit_events"
 
     id = Column(String(36), primary_key=True, default=generate_uuid, index=True)
-    actor_type = Column(String(32), index=True, nullable=False)  # BUYER, SYSTEM, MERCHANT, WEBHOOK, RAZORPAY
-    session_id = Column(String(64), index=True, nullable=False)
     event_type = Column(String(64), index=True, nullable=False)
+    event_status = Column(String(32), default="succeeded", index=True, nullable=False)  # attempted, succeeded, failed, rejected, recovered, pending
+    actor_type = Column(String(32), index=True, nullable=False)  # BUYER, AI, SYSTEM, MERCHANT, WEBHOOK, RAZORPAY
+    session_id = Column(String(64), index=True, nullable=False)
     checkout_id = Column(String(36), index=True, nullable=True)
     order_id = Column(String(36), index=True, nullable=True)
     razorpay_order_id = Column(String(64), index=True, nullable=True)
     razorpay_payment_id = Column(String(64), index=True, nullable=True)
+    payment_attempt_id = Column(String(36), index=True, nullable=True)
+    product_id = Column(String(64), index=True, nullable=True)
+    correlation_id = Column(String(64), index=True, nullable=True)
+    parent_event_id = Column(String(36), index=True, nullable=True)
+    provider = Column(String(32), nullable=True)
+    model = Column(String(64), nullable=True)
+    request_id = Column(String(64), nullable=True)
+    reason_code = Column(String(64), nullable=True)
+    failure_code = Column(String(64), nullable=True)
+    recovery_action = Column(String(64), nullable=True)
+    idempotency_key = Column(String(128), unique=True, index=True, nullable=True)
     metadata_json = Column(JSON, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False, index=True)

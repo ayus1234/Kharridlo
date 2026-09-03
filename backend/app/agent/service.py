@@ -12,6 +12,8 @@ from app.agent.tools import BOUNDED_TOOLS, TOOL_PERMISSIONS
 from app.agent.schemas import AgentChatResponse, ToolCallRecord
 from app.services.cart_service import CartService
 from app.services.policy_service import PolicyService
+from app.services.audit_service import AuditService
+from app.schemas.audit import AuditEventType
 
 logger = logging.getLogger(__name__)
 
@@ -84,6 +86,16 @@ class AgentService:
         Rejects any unregistered tools and filters out any injected unauthorized arguments (e.g. price, total).
         """
         if tool_name not in BOUNDED_TOOLS:
+            AuditService.log_event(
+                db=context.db,
+                actor_type="AI",
+                session_id=context.session_id,
+                event_type=AuditEventType.AI_TOOL_REJECTED.value,
+                event_status="rejected",
+                failure_code="UNAUTHORIZED_TOOL",
+                recovery_action="BLOCK_TOOL",
+                metadata={"tool_name": tool_name, "arguments": arguments},
+            )
             return {
                 "success": False,
                 "error_code": "UNAUTHORIZED_TOOL",
@@ -96,9 +108,30 @@ class AgentService:
         safe_args = {k: v for k, v in arguments.items() if k in allowed_params}
 
         try:
-            return tool_func(context, **safe_args)
+            result = tool_func(context, **safe_args)
+            AuditService.log_event(
+                db=context.db,
+                actor_type="AI",
+                session_id=context.session_id,
+                event_type=AuditEventType.AI_TOOL_CALLED.value,
+                event_status="succeeded" if result.get("success", True) else "failed",
+                reason_code=tool_name,
+                metadata={"tool_name": tool_name, "arguments": safe_args, "success": result.get("success", True)},
+            )
+            return result
         except Exception as e:
             logger.exception("Error executing tool %s", tool_name)
+            AuditService.log_event(
+                db=context.db,
+                actor_type="AI",
+                session_id=context.session_id,
+                event_type=AuditEventType.AI_TOOL_CALLED.value,
+                event_status="failed",
+                reason_code=tool_name,
+                failure_code="TOOL_EXECUTION_ERROR",
+                recovery_action="RETRY_OR_FALLBACK",
+                metadata={"tool_name": tool_name, "error": str(e)},
+            )
             return {
                 "success": False,
                 "error_code": "TOOL_EXECUTION_ERROR",
@@ -125,18 +158,83 @@ class AgentService:
         clean_msg = cls.sanitize_user_input(user_message)
         context = AgentRequestContext(session_id=session_id, db=db)
 
+        # Audit AI turn initiation
+        AuditService.log_event(
+            db=db,
+            actor_type="AI",
+            session_id=session_id,
+            event_type=AuditEventType.AI_REQUEST_STARTED.value,
+            event_status="attempted",
+            provider="gemini" if settings.GEMINI_API_KEY and not force_mock else "deterministic",
+            model="gemini-2.5-flash" if settings.GEMINI_API_KEY and not force_mock else "deterministic-rules",
+            metadata={"message_length": len(clean_msg)},
+        )
+
         # Check for prompt injection attempts in user message
         is_injection = any(re.search(pat, clean_msg, re.IGNORECASE) for pat in INJECTION_SIGNATURES)
+        if is_injection:
+            AuditService.log_event(
+                db=db,
+                actor_type="AI",
+                session_id=session_id,
+                event_type=AuditEventType.AI_PROMPT_INJECTION_DETECTED.value,
+                event_status="rejected",
+                failure_code="PROMPT_INJECTION_DETECTED",
+                recovery_action="DEFENSIVE_FALLBACK",
+                metadata={"pattern_matched": True},
+            )
 
         # If live Gemini API key is configured and not forced to mock:
         if settings.GEMINI_API_KEY and not force_mock and not is_injection:
             try:
-                return cls._run_live_gemini(context, clean_msg)
+                response = cls._run_live_gemini(context, clean_msg)
+                AuditService.log_event(
+                    db=db,
+                    actor_type="AI",
+                    session_id=session_id,
+                    event_type=AuditEventType.AI_RESPONSE_GENERATED.value,
+                    event_status="succeeded",
+                    provider="gemini",
+                    model="gemini-2.5-flash",
+                    metadata={"tool_calls": len(response.tool_calls)},
+                )
+                return response
             except Exception as e:
                 logger.warning("Live Gemini execution encountered an issue: %s. Falling back to deterministic engine.", e)
+                AuditService.log_event(
+                    db=db,
+                    actor_type="AI",
+                    session_id=session_id,
+                    event_type=AuditEventType.AI_PROVIDER_FAILED.value,
+                    event_status="failed",
+                    provider="gemini",
+                    model="gemini-2.5-flash",
+                    failure_code="PROVIDER_ERROR",
+                    recovery_action="FALLBACK_TO_DETERMINISTIC",
+                    metadata={"error": str(e)},
+                )
+                AuditService.log_event(
+                    db=db,
+                    actor_type="AI",
+                    session_id=session_id,
+                    event_type=AuditEventType.AI_FALLBACK_USED.value,
+                    event_status="recovered",
+                    provider="deterministic",
+                    metadata={"fallback_reason": "provider_failure"},
+                )
 
         # Grounded Deterministic Agent Engine (used for CI tests, mock mode, or fallback)
-        return cls._run_deterministic_agent(context, clean_msg, is_injection)
+        response = cls._run_deterministic_agent(context, clean_msg, is_injection)
+        AuditService.log_event(
+            db=db,
+            actor_type="AI",
+            session_id=session_id,
+            event_type=AuditEventType.AI_RESPONSE_GENERATED.value,
+            event_status="succeeded",
+            provider="deterministic",
+            metadata={"tool_calls": len(response.tool_calls)},
+        )
+        return response
 
     @classmethod
     def _run_deterministic_agent(

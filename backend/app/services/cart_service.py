@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session, joinedload
 from app.models.cart import Cart, CartItem, get_default_cart_expiry
 from app.models.product import Product
 from app.models.inventory import Inventory
+from app.services.audit_service import AuditService
+from app.schemas.audit import AuditEventType
 
 
 # Custom Domain Exceptions for Machine-Readable API Error Mapping
@@ -100,6 +102,15 @@ class CartService:
         db.add(new_cart)
         db.commit()
         db.refresh(new_cart)
+
+        AuditService.log_event(
+            db=db,
+            actor_type="BUYER",
+            session_id=session_id,
+            event_type=AuditEventType.CART_CREATED.value,
+            event_status="succeeded",
+            metadata={"cart_id": new_cart.id, "currency": new_cart.currency},
+        )
         return new_cart
 
     @classmethod
@@ -195,6 +206,25 @@ class CartService:
 
         db.commit()
         db.refresh(cart)
+
+        AuditService.log_event(
+            db=db,
+            actor_type="BUYER",
+            session_id=session_id,
+            event_type=AuditEventType.INVENTORY_RESERVED.value,
+            event_status="succeeded",
+            product_id=product.id,
+            metadata={"sku": product.sku, "quantity": quantity, "reserved_quantity": inventory.reserved_quantity},
+        )
+        AuditService.log_event(
+            db=db,
+            actor_type="BUYER",
+            session_id=session_id,
+            event_type=AuditEventType.CART_ITEM_ADDED.value,
+            event_status="succeeded",
+            product_id=product.id,
+            metadata={"sku": product.sku, "quantity": quantity, "total_paise": cart.total_paise},
+        )
         return cart
 
     @classmethod
@@ -255,6 +285,16 @@ class CartService:
 
         db.commit()
         db.refresh(cart)
+
+        AuditService.log_event(
+            db=db,
+            actor_type="BUYER",
+            session_id=session_id,
+            event_type=AuditEventType.CART_ITEM_UPDATED.value,
+            event_status="succeeded",
+            product_id=item.product_id,
+            metadata={"new_quantity": quantity, "total_paise": cart.total_paise},
+        )
         return cart
 
     @classmethod
@@ -284,6 +324,8 @@ class CartService:
             inventory.available_quantity += item.quantity
             inventory.reserved_quantity = max(0, inventory.reserved_quantity - item.quantity)
 
+        saved_product_id = item.product_id
+        saved_qty = item.quantity
         db.delete(item)
         cart.items = [i for i in cart.items if i.id != item.id]
 
@@ -293,6 +335,25 @@ class CartService:
 
         db.commit()
         db.refresh(cart)
+
+        AuditService.log_event(
+            db=db,
+            actor_type="BUYER",
+            session_id=session_id,
+            event_type=AuditEventType.INVENTORY_RESERVATION_RELEASED.value,
+            event_status="succeeded",
+            product_id=saved_product_id,
+            metadata={"released_quantity": saved_qty},
+        )
+        AuditService.log_event(
+            db=db,
+            actor_type="BUYER",
+            session_id=session_id,
+            event_type=AuditEventType.CART_ITEM_REMOVED.value,
+            event_status="succeeded",
+            product_id=saved_product_id,
+            metadata={"removed_quantity": saved_qty, "total_paise": cart.total_paise},
+        )
         return cart
 
     @classmethod
@@ -317,6 +378,15 @@ class CartService:
 
         db.commit()
         db.refresh(cart)
+
+        AuditService.log_event(
+            db=db,
+            actor_type="BUYER",
+            session_id=session_id,
+            event_type=AuditEventType.CART_CLEARED.value,
+            event_status="succeeded",
+            metadata={"cart_id": cart.id},
+        )
         return cart
 
     @classmethod
@@ -386,7 +456,25 @@ class CartService:
         Marks cart as 'converted'.
         """
         if cart.status == "converted":
+            AuditService.log_event(
+                db=db,
+                actor_type="SYSTEM",
+                session_id=cart.session_id,
+                event_type=AuditEventType.INVENTORY_FINALIZATION_SKIPPED.value,
+                event_status="succeeded",
+                reason_code="ALREADY_CONVERTED",
+                metadata={"cart_id": cart.id},
+            )
             return cart
+
+        AuditService.log_event(
+            db=db,
+            actor_type="SYSTEM",
+            session_id=cart.session_id,
+            event_type=AuditEventType.INVENTORY_FINALIZATION_STARTED.value,
+            event_status="attempted",
+            metadata={"cart_id": cart.id, "item_count": len(cart.items)},
+        )
 
         for item in cart.items:
             inventory = (
@@ -403,6 +491,15 @@ class CartService:
         cart.updated_at = datetime.now(timezone.utc)
         db.commit()
         db.refresh(cart)
+
+        AuditService.log_event(
+            db=db,
+            actor_type="SYSTEM",
+            session_id=cart.session_id,
+            event_type=AuditEventType.INVENTORY_FINALIZED.value,
+            event_status="succeeded",
+            metadata={"cart_id": cart.id, "total_paise": cart.total_paise},
+        )
         return cart
 
     @classmethod

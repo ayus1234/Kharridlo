@@ -1,4 +1,5 @@
 from typing import Optional
+from datetime import datetime
 from fastapi import APIRouter, Depends, Header, Query, Request, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -17,7 +18,7 @@ from app.schemas.payment import (
 from app.services.payment_service import PaymentService
 from app.services.payment_verification_service import PaymentVerificationService
 from app.services.webhook_service import WebhookService
-from app.services.audit_service import AuditService
+from app.services.audit_service import AuditService, sanitize_audit_metadata
 from app.services.razorpay_client import razorpay_client
 
 router = APIRouter(prefix="/payments", tags=["Payments"])
@@ -169,22 +170,37 @@ async def receive_webhook(
 def get_merchant_audit_trail(
     session_id: Optional[str] = Query(None),
     order_id: Optional[str] = Query(None),
+    checkout_id: Optional[str] = Query(None),
     razorpay_order_id: Optional[str] = Query(None),
+    correlation_id: Optional[str] = Query(None),
     event_type: Optional[str] = Query(None),
+    event_status: Optional[str] = Query(None),
+    actor_type: Optional[str] = Query(None),
+    product_id: Optional[str] = Query(None),
+    start_date: Optional[datetime] = Query(None),
+    end_date: Optional[datetime] = Query(None),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     db: Session = Depends(get_db),
 ) -> AuditListResponse:
     """
     Merchant-side visibility endpoint into the immutable audit trail.
-    Guaranteed to return safe operational data without API keys or secret tokens.
+    Supports multi-parameter filtering across lifecycles, correlation IDs, and actor types.
+    Guaranteed to return safe operational data without secrets, card data, or private model reasoning.
     """
     events = AuditService.get_audit_trail(
         db=db,
         session_id=session_id,
         order_id=order_id,
+        checkout_id=checkout_id,
         razorpay_order_id=razorpay_order_id,
+        correlation_id=correlation_id,
         event_type=event_type,
+        event_status=event_status,
+        actor_type=actor_type,
+        product_id=product_id,
+        start_date=start_date,
+        end_date=end_date,
         limit=limit,
         offset=offset,
     )
@@ -192,8 +208,15 @@ def get_merchant_audit_trail(
         db=db,
         session_id=session_id,
         order_id=order_id,
+        checkout_id=checkout_id,
         razorpay_order_id=razorpay_order_id,
+        correlation_id=correlation_id,
         event_type=event_type,
+        event_status=event_status,
+        actor_type=actor_type,
+        product_id=product_id,
+        start_date=start_date,
+        end_date=end_date,
     )
 
     event_responses = [
@@ -202,11 +225,22 @@ def get_merchant_audit_trail(
             actor_type=e.actor_type,
             session_id=e.session_id,
             event_type=e.event_type,
+            event_status=e.event_status,
             checkout_id=e.checkout_id,
             order_id=e.order_id,
             razorpay_order_id=e.razorpay_order_id,
             razorpay_payment_id=e.razorpay_payment_id,
-            metadata_json=e.metadata_json,
+            payment_attempt_id=e.payment_attempt_id,
+            product_id=e.product_id,
+            correlation_id=e.correlation_id,
+            parent_event_id=e.parent_event_id,
+            provider=e.provider,
+            model=e.model,
+            request_id=e.request_id,
+            reason_code=e.reason_code,
+            failure_code=e.failure_code,
+            recovery_action=e.recovery_action,
+            metadata_json=sanitize_audit_metadata(e.metadata_json),
             created_at=e.created_at,
         )
         for e in events
@@ -214,5 +248,7 @@ def get_merchant_audit_trail(
 
     return AuditListResponse(
         total_events=total_count,
+        limit=limit,
+        offset=offset,
         events=event_responses,
     )

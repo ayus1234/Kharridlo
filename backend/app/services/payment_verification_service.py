@@ -6,6 +6,7 @@ from app.models.payment import PaymentOrder, PaymentAttempt, CheckoutSession
 from app.services.cart_service import CartService
 from app.services.razorpay_client import razorpay_client
 from app.services.audit_service import AuditService
+from app.schemas.audit import AuditEventType
 
 
 class PaymentVerificationService:
@@ -36,6 +37,20 @@ class PaymentVerificationService:
                 detail={"code": "ORDER_NOT_FOUND", "message": f"Order '{internal_order_id}' not found."}
             )
 
+        # Log verification attempt
+        AuditService.log_event(
+            db=db,
+            actor_type="BUYER",
+            session_id=order.session_id,
+            event_type=AuditEventType.PAYMENT_VERIFICATION_STARTED.value,
+            event_status="attempted",
+            order_id=order.id,
+            checkout_id=order.checkout_id,
+            razorpay_order_id=razorpay_order_id,
+            razorpay_payment_id=razorpay_payment_id,
+            metadata={"amount_paise": order.amount_paise},
+        )
+
         # 2. Verify Razorpay Order ID matches internal mapping
         if order.razorpay_order_id != razorpay_order_id:
             AuditService.log_event(
@@ -43,6 +58,9 @@ class PaymentVerificationService:
                 actor_type="SYSTEM",
                 session_id=order.session_id,
                 event_type="PAYMENT_MISMATCH",
+                event_status="rejected",
+                failure_code="ORDER_MISMATCH",
+                recovery_action="VERIFY_ORDER_MAPPING",
                 order_id=order.id,
                 razorpay_order_id=razorpay_order_id,
                 razorpay_payment_id=razorpay_payment_id,
@@ -60,6 +78,21 @@ class PaymentVerificationService:
             .first()
         )
         if existing_attempt and existing_attempt.status == "CAPTURED":
+            AuditService.log_event(
+                db=db,
+                actor_type="BUYER",
+                session_id=order.session_id,
+                event_type=AuditEventType.PAYMENT_DUPLICATE_REQUEST.value,
+                event_status="succeeded",
+                reason_code="ALREADY_CAPTURED",
+                order_id=order.id,
+                checkout_id=order.checkout_id,
+                razorpay_order_id=razorpay_order_id,
+                razorpay_payment_id=razorpay_payment_id,
+                payment_attempt_id=existing_attempt.id,
+                idempotency_key=f"verify_dup_{razorpay_payment_id}",
+                metadata={"message": "Duplicate verification request received for already-captured payment."},
+            )
             return existing_attempt
 
         # 4. Verify cryptographic HMAC signature
@@ -87,12 +120,17 @@ class PaymentVerificationService:
 
             AuditService.log_event(
                 db=db,
-                actor_type="SYSTEM",
+                actor_type="PAYMENT_PROVIDER",
                 session_id=order.session_id,
-                event_type="PAYMENT_SIGNATURE_FAILED",
+                event_type=AuditEventType.PAYMENT_FAILED.value,
+                event_status="failed",
+                failure_code="INVALID_SIGNATURE",
+                recovery_action="RETRY_PAYMENT",
                 order_id=order.id,
+                checkout_id=order.checkout_id,
                 razorpay_order_id=razorpay_order_id,
                 razorpay_payment_id=razorpay_payment_id,
+                payment_attempt_id=failed_attempt.id,
                 metadata={"reason": "Invalid payment signature."},
             )
 
@@ -141,11 +179,27 @@ class PaymentVerificationService:
             db=db,
             actor_type="SYSTEM",
             session_id=order.session_id,
-            event_type="PAYMENT_CAPTURED",
+            event_type=AuditEventType.PAYMENT_VERIFIED.value,
+            event_status="succeeded",
             checkout_id=order.checkout_id,
             order_id=order.id,
             razorpay_order_id=razorpay_order_id,
             razorpay_payment_id=razorpay_payment_id,
+            payment_attempt_id=attempt.id,
+            metadata={"signature_verified": True},
+        )
+
+        AuditService.log_event(
+            db=db,
+            actor_type="SYSTEM",
+            session_id=order.session_id,
+            event_type=AuditEventType.PAYMENT_CAPTURED.value,
+            event_status="succeeded",
+            checkout_id=order.checkout_id,
+            order_id=order.id,
+            razorpay_order_id=razorpay_order_id,
+            razorpay_payment_id=razorpay_payment_id,
+            payment_attempt_id=attempt.id,
             metadata={
                 "amount_paise": order.amount_paise,
                 "currency": order.currency,

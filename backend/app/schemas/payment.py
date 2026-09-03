@@ -1,7 +1,7 @@
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from enum import Enum
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 
 class CheckoutStatus(str, Enum):
@@ -107,14 +107,29 @@ class AuditEventResponse(BaseModel):
     actor_type: str
     session_id: str
     event_type: str
+    event_status: str = "succeeded"
     checkout_id: Optional[str] = None
     order_id: Optional[str] = None
     razorpay_order_id: Optional[str] = None
     razorpay_payment_id: Optional[str] = None
+    payment_attempt_id: Optional[str] = None
+    product_id: Optional[str] = None
+    correlation_id: Optional[str] = None
+    parent_event_id: Optional[str] = None
+    provider: Optional[str] = None
+    model: Optional[str] = None
+    request_id: Optional[str] = None
+    reason_code: Optional[str] = None
+    failure_code: Optional[str] = None
+    recovery_action: Optional[str] = None
     metadata_json: Optional[Dict[str, Any]] = None
     created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class AuditListResponse(BaseModel):
     total_events: int
+    limit: Optional[int] = 50
+    offset: Optional[int] = 0
     events: List[AuditEventResponse]

@@ -59,6 +59,17 @@ def search_products(
         offset=offset,
     )
 
+    from app.services.audit_service import AuditService
+    from app.schemas.audit import AuditEventType
+    AuditService.log_event(
+        db=db,
+        actor_type="BUYER",
+        session_id="catalog_browser",
+        event_type=AuditEventType.PRODUCT_SEARCHED.value,
+        event_status="succeeded",
+        metadata={"query": q, "results_count": total},
+    )
+
     return ProductListResponse(
         items=[ProductResponse.model_validate(p) for p in products],
         total=total,
@@ -79,6 +90,19 @@ def get_product(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Product with ID '{product_id}' not found.",
         )
+
+    from app.services.audit_service import AuditService
+    from app.schemas.audit import AuditEventType
+    AuditService.log_event(
+        db=db,
+        actor_type="BUYER",
+        session_id="catalog_browser",
+        event_type=AuditEventType.PRODUCT_VIEWED.value,
+        event_status="succeeded",
+        product_id=product.id,
+        metadata={"sku": product.sku, "name": product.name},
+    )
+
     return ProductResponse.model_validate(product)
 
 

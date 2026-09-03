@@ -8,6 +8,8 @@ from app.schemas.policy import (
     PolicyRuleReason,
     PolicyEvaluationResponse,
 )
+from app.services.audit_service import AuditService
+from app.schemas.audit import AuditEventType
 
 # Standard default policy configurations (in integer paise)
 DEFAULT_POLICIES: Dict[str, dict] = {
@@ -307,6 +309,43 @@ class PolicyService:
                 )
             )
             final_decision = "ALLOW"
+
+        AuditService.log_event(
+            db=db,
+            actor_type="SYSTEM",
+            session_id=session_id,
+            event_type=AuditEventType.POLICY_EVALUATED.value,
+            event_status="succeeded",
+            reason_code=final_decision,
+            metadata={
+                "policy_tier": policy.tier,
+                "cart_total_paise": cart.total_paise,
+                "decision": final_decision,
+                "authorization_required": policy.authorization_required,
+            },
+        )
+
+        if final_decision == "BLOCK":
+            AuditService.log_event(
+                db=db,
+                actor_type="SYSTEM",
+                session_id=session_id,
+                event_type=AuditEventType.POLICY_BLOCKED.value,
+                event_status="rejected",
+                failure_code="POLICY_LIMIT_EXCEEDED",
+                recovery_action="ADJUST_CART_QUANTITY_OR_REMOVE_ITEMS",
+                metadata={"cart_total_paise": cart.total_paise, "policy_tier": policy.tier},
+            )
+        elif final_decision == "AUTHORIZATION_REQUIRED":
+            AuditService.log_event(
+                db=db,
+                actor_type="SYSTEM",
+                session_id=session_id,
+                event_type=AuditEventType.AUTHORIZATION_REQUIRED.value,
+                event_status="pending",
+                recovery_action="BUYER_AUTHORIZATION_REQUIRED",
+                metadata={"cart_total_paise": cart.total_paise, "policy_tier": policy.tier},
+            )
 
         return PolicyEvaluationResponse(
             decision=final_decision,

@@ -75,6 +75,22 @@ class PaymentService:
             actor_type="SYSTEM",
             session_id=session_id,
             event_type="ORDER_CREATED",
+            event_status="succeeded",
+            checkout_id=checkout.id,
+            order_id=order.id,
+            razorpay_order_id=razorpay_order_id,
+            metadata={
+                "amount_paise": order.amount_paise,
+                "currency": order.currency,
+                "receipt": receipt,
+            },
+        )
+        AuditService.log_event(
+            db=db,
+            actor_type="SYSTEM",
+            session_id=session_id,
+            event_type="PAYMENT_ORDER_CREATED",
+            event_status="succeeded",
             checkout_id=checkout.id,
             order_id=order.id,
             razorpay_order_id=razorpay_order_id,
@@ -119,6 +135,18 @@ class PaymentService:
         """
         order = cls.get_payment_order(db, order_id, session_id)
         if order.status == "paid":
+            AuditService.log_event(
+                db=db,
+                actor_type="SYSTEM",
+                session_id=session_id,
+                event_type="PAYMENT_STATE_CONFLICT",
+                event_status="rejected",
+                order_id=order.id,
+                razorpay_order_id=order.razorpay_order_id,
+                failure_code="ORDER_ALREADY_PAID",
+                recovery_action="VIEW_COMPLETED_ORDER",
+                metadata={"reason": "Attempted to cancel an already completed payment order."},
+            )
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail={"code": "ORDER_ALREADY_PAID", "message": "Cannot cancel an already completed payment order."}
@@ -156,14 +184,19 @@ class PaymentService:
             actor_type="BUYER",
             session_id=session_id,
             event_type="PAYMENT_FAILED" if is_failure else "PAYMENT_CANCELLED",
+            event_status="failed" if is_failure else "succeeded",
             checkout_id=order.checkout_id,
             order_id=order.id,
             razorpay_order_id=order.razorpay_order_id,
             razorpay_payment_id=razorpay_payment_id,
+            reason_code=reason,
+            failure_code=failure_code,
+            recovery_action="RETRY_PAYMENT",
             metadata={
                 "reason": reason,
                 "failure_code": failure_code,
                 "failure_description": failure_description,
+                "retryable": True,
             },
         )
 
