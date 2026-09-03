@@ -86,3 +86,9 @@ temp/
 # Raw design exports & local artifacts
 stitch_*/
 stitch_*/**
+
+# Credentials, secret spreadsheets & keys
+*.csv
+*.xlsx
+*.xls
+razorpay_*
