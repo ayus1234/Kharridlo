@@ -15,6 +15,5 @@
     "**/inmemory/**": true
   },
   "python.pyrefly.disableTypeErrors": true,
-  "python.pyrefly.displayTypeErrors": "force-off",
   "python.pyrefly.typeCheckingMode": "off"
 }
