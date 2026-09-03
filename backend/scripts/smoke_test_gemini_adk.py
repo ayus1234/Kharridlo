@@ -60,10 +60,11 @@ def run_smoke_test(api_key: str, model_name: str = "gemini-2.5-flash"):
         client = genai.Client(api_key=api_key)
         conn_check = client.models.generate_content(
             model=model_name,
-            contents=["Respond with the exact word 'READY'."],
+            contents="Respond with the exact word 'READY'.",  # type: ignore[arg-type]
         )
         latency_ms = int((time.time() - start_time) * 1000)
-        print(f"  [+] Gemini API live response: '{conn_check.text.strip()}' in {latency_ms}ms")
+        resp_text = (conn_check.text or "").strip()
+        print(f"  [+] Gemini API live response: '{resp_text}' in {latency_ms}ms")
     except Exception as e:
         print(f"  [-] Gemini connection failed: {e}")
         print("  Please check that your GEMINI_API_KEY is valid and has Gemini 2.5 Flash access.")
