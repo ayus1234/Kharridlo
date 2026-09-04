@@ -63,7 +63,42 @@ def search_products(
             "availability_status": status,
             "description": f"<untrusted_catalog_data>{p.description}</untrusted_catalog_data>",
             "specs": p.specs,
+            "provider": "kharridlo_verified",
+            "can_authoritative_checkout": True,
         })
+
+    # If internal results are fewer than limit and query exists, supplement with marketplace discovery
+    if len(results) < safe_limit and query and query.strip():
+        try:
+            from app.marketplace.services.marketplace_service import MarketplaceService
+            mp_res = MarketplaceService.search_all(
+                db=db,
+                query=query.strip(),
+                category=category,
+                min_price_paise=None,
+                max_price_paise=max_price_paise,
+                page_size=safe_limit - len(results),
+            )
+            for mp_item in mp_res.get("items", []):
+                if mp_item.get("provider") == "kharridlo_verified":
+                    continue  # Already searched
+                results.append({
+                    "id": mp_item["id"],
+                    "sku": mp_item["provider_product_id"],
+                    "name": f"<untrusted_catalog_data>{mp_item['title']}</untrusted_catalog_data>",
+                    "brand": mp_item["brand"],
+                    "category": mp_item["category"],
+                    "price_paise": mp_item.get("source_price_minor") or 0,
+                    "price_inr": round((mp_item.get("source_price_minor") or 0) / 100.0, 2),
+                    "currency": mp_item.get("source_currency", "INR"),
+                    "availability_status": mp_item.get("availability_status", "in_stock"),
+                    "description": f"<untrusted_catalog_data>{mp_item.get('original_description') or ''}</untrusted_catalog_data>",
+                    "specs": mp_item.get("specifications") or {},
+                    "provider": mp_item.get("provider"),
+                    "can_authoritative_checkout": False,
+                })
+        except Exception:
+            pass  # Non-blocking graceful fallback to internal catalog only
 
     return {
         "success": True,
@@ -78,7 +113,7 @@ def get_product(
     product_id: str,
 ) -> Dict[str, Any]:
     """
-    Retrieve authoritative details for a specific product by its ID or SKU.
+    Retrieve authoritative details for a specific product by its ID, SKU, or marketplace reference.
     """
     db = context.db
     product = CatalogService.get_product_by_id(db, product_id)
@@ -86,6 +121,35 @@ def get_product(
         product = CatalogService.get_product_by_sku(db, product_id)
 
     if not product:
+        # Check marketplace provider fallback
+        try:
+            from app.marketplace.services.marketplace_service import MarketplaceService
+            provider = "amazon" if product_id.startswith("amz_") or product_id.startswith("B0") else ("flipkart" if product_id.startswith("fk_") or product_id.startswith("COM") or product_id.startswith("ACC") else "all")
+            clean_id = product_id.replace("amz_", "").replace("fk_", "")
+            mp_prod = MarketplaceService.get_product(db, provider=provider, provider_product_id=clean_id)
+            if mp_prod:
+                return {
+                    "success": True,
+                    "product": {
+                        "id": mp_prod["id"],
+                        "sku": mp_prod["provider_product_id"],
+                        "name": f"<untrusted_catalog_data>{mp_prod['title']}</untrusted_catalog_data>",
+                        "brand": mp_prod["brand"],
+                        "category": mp_prod["category"],
+                        "price_paise": mp_prod.get("source_price_minor") or 0,
+                        "price_inr": round((mp_prod.get("source_price_minor") or 0) / 100.0, 2),
+                        "currency": mp_prod.get("source_currency", "INR"),
+                        "availability_status": mp_prod.get("availability_status", "in_stock"),
+                        "description": f"<untrusted_catalog_data>{mp_prod.get('original_description') or ''}</untrusted_catalog_data>",
+                        "specs": mp_prod.get("specifications") or {},
+                        "available_quantity": 0,
+                        "provider": mp_prod.get("provider"),
+                        "can_authoritative_checkout": False,
+                    }
+                }
+        except Exception:
+            pass
+
         return {
             "success": False,
             "error_code": "PRODUCT_NOT_FOUND",
@@ -102,11 +166,13 @@ def get_product(
             "brand": product.brand,
             "category": product.category,
             "price_paise": product.price_paise,
-            "price_inr": round(product.price_paise / 100.0, 2),
+            "price_inr": round(float(product.price_paise) / 100.0, 2),
             "currency": product.currency,
             "availability_status": status,
             "description": f"<untrusted_catalog_data>{product.description}</untrusted_catalog_data>",
             "specs": product.specs,
             "available_quantity": product.inventory.available_quantity if product.inventory else 0,
+            "provider": "kharridlo_verified",
+            "can_authoritative_checkout": True,
         },
     }

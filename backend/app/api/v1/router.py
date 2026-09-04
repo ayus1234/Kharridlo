@@ -7,6 +7,7 @@ from app.api.v1.endpoints.policy import router as policy_router
 from app.api.v1.endpoints.agent import router as agent_router
 from app.api.v1.endpoints.checkout import router as checkout_router
 from app.api.v1.endpoints.payments import router as payments_router
+from app.api.v1.endpoints.marketplace import router as marketplace_router
 
 api_v1_router = APIRouter()
 
@@ -17,6 +18,7 @@ api_v1_router.include_router(policy_router)
 api_v1_router.include_router(agent_router)
 api_v1_router.include_router(checkout_router)
 api_v1_router.include_router(payments_router)
+api_v1_router.include_router(marketplace_router)
 
 
 @api_v1_router.get("/status", response_model=StatusResponse, tags=["Status"])

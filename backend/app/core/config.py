@@ -26,6 +26,25 @@ class Settings(BaseSettings):
     RAZORPAY_KEY_SECRET: str = ""
     RAZORPAY_WEBHOOK_SECRET: str = ""
 
+    # Marketplace Integration Settings (Milestone 9)
+    AMAZON_CREATORS_API_ENABLED: bool = False
+    AMAZON_PARTNER_TAG: str = ""
+    AMAZON_ACCESS_KEY: str = ""
+    AMAZON_SECRET_KEY: str = ""
+    AMAZON_REGION: str = "eu-west-1"
+    AMAZON_HOST: str = "webservices.amazon.in"
+    AMAZON_MARKETPLACE: str = "www.amazon.in"
+
+    FLIPKART_API_ENABLED: bool = False
+    FLIPKART_AFFILIATE_ID: str = ""
+    FLIPKART_AFFILIATE_TOKEN: str = ""
+    FLIPKART_API_BASE_URL: str = "https://affiliate-api.flipkart.net/affiliate/1.0"
+
+    # Marketplace Caching & Resilience
+    MARKETPLACE_SEARCH_CACHE_TTL_SECONDS: int = 900  # 15 minutes
+    MARKETPLACE_PRODUCT_CACHE_TTL_SECONDS: int = 1800  # 30 minutes
+    MARKETPLACE_RATE_LIMIT_PER_MINUTE: int = 30
+
     # Future Infrastructure Placeholders
     REDIS_URL: str = ""
 

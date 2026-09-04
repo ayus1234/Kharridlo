@@ -9,6 +9,16 @@ from app.models.payment import (
     WebhookEvent,
     AuditEvent,
 )
+from app.models.marketplace import (
+    MarketplaceProvider,
+    MarketplaceProduct,
+    MarketplaceProductImage,
+    MarketplaceOffer,
+    MarketplaceReviewSummary,
+    MarketplaceFinanceInformation,
+    MarketplaceFetchLog,
+    MarketplaceInternalMapping,
+)
 
 __all__ = [
     "Product",
@@ -22,4 +32,12 @@ __all__ = [
     "PaymentAttempt",
     "WebhookEvent",
     "AuditEvent",
+    "MarketplaceProvider",
+    "MarketplaceProduct",
+    "MarketplaceProductImage",
+    "MarketplaceOffer",
+    "MarketplaceReviewSummary",
+    "MarketplaceFinanceInformation",
+    "MarketplaceFetchLog",
+    "MarketplaceInternalMapping",
 ]
