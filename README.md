@@ -20,7 +20,7 @@ Kharridlo is an AI-native commerce platform that enables AI buyers to discover p
 * [x] **Milestone 5:** Gemini + Google ADK Agent & Bounded Tool Integration (7 Bounded Tools & Prompt Injection Isolation)
 * [x] **Milestone 6:** Razorpay Test Mode Payment Pipeline & Real Payment Verification
 * [x] **Milestone 7:** Immutable Audit Trail & Failure Handling Polish
-* [ ] **Milestone 8:** AI Buyer Experience (Stitch UI Implementation)
+* [x] **Milestone 8:** AI Buyer Experience & Merchant Operations (Complete 37-Screen Stitch UI Implementation & Kharridlo Rebrand)
 * [ ] **Milestone 9:** Real Marketplace Data Integration (Amazon Creators API + Flipkart Feed)
 * [ ] **Milestone 10:** Real Product Images & Media Quality
 * [ ] **Milestone 11:** Gemini & Groq Orchestration & Deterministic Fallback
@@ -33,11 +33,11 @@ Kharridlo is an AI-native commerce platform that enables AI buyers to discover p
 
 ## Tech Stack
 
-* **Frontend:** Next.js 14 (App Router), React 18, TypeScript, Vanilla CSS / Tailwind, Lucide Icons
+* **Frontend:** Next.js 14 (App Router), React 18, TypeScript, Vanilla CSS / Tailwind, Lucide Icons, Hanken Grotesk & Geist Mono Typography
 * **Backend:** Python 3.13, FastAPI, Pydantic v2, SQLAlchemy 2.0, Alembic, Psycopg 3
 * **Database:** PostgreSQL 16 (financial precision in integer paise, append-only immutability triggers)
-* **Testing:** Pytest (105 passed tests), Playwright E2E (6 passed tests), FastAPI TestClient
-* **AI Orchestration:** Google Gemini 2.5 Flash, Bounded Commerce Tools, Strict Context Injection
+* **Testing:** Pytest (105 passed backend tests), Playwright E2E (12 passed tests across Buyer & Merchant Stitch flows), FastAPI TestClient
+* **AI Orchestration:** Google Gemini 2.0 Flash, 7 Bounded Commerce Tools, Strict Context Injection
 
 ---
 
