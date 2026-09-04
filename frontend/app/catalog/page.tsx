@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { getOrCreateSessionId } from "@/lib/session";
 import AIAssistantDrawer from "@/components/AIAssistantDrawer";
+import BuyerNavbar from "@/components/BuyerNavbar";
+import BuyerFooter from "@/components/BuyerFooter";
 
 interface Product {
   id: string;
@@ -165,44 +167,7 @@ export default function CatalogPage() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
       {/* Top Navigation */}
-      <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <Link href="/" className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors text-sm font-medium">
-              <ArrowLeft className="w-4 h-4" />
-              Home
-            </Link>
-            <div className="h-4 w-px bg-slate-200" />
-            <div className="flex items-center space-x-2">
-              <span className="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
-                ख
-              </span>
-              <span className="font-bold text-lg text-slate-900">Kharridlo</span>
-              <span className="text-xs bg-indigo-50 text-indigo-700 font-semibold px-2 py-0.5 rounded border border-indigo-200">
-                Catalog Engine
-              </span>
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-4">
-            <div className="text-xs text-slate-500 font-mono hidden md:block">
-              Deterministic Commerce Layer • Milestone 3
-            </div>
-
-            {/* Cart Link with Badge */}
-            <Link
-              href="/cart"
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-sm"
-            >
-              <ShoppingBag className="w-4 h-4" />
-              <span>Cart</span>
-              <span className="px-1.5 py-0.2 bg-white text-indigo-700 rounded-full font-bold text-[11px]">
-                {cartCount}
-              </span>
-            </Link>
-          </div>
-        </div>
-      </header>
+      <BuyerNavbar />
 
       {/* Toast Notification */}
       {toastMsg && (
@@ -511,6 +476,7 @@ export default function CatalogPage() {
 
       {/* Floating AI Assistant Drawer */}
       <AIAssistantDrawer onCartUpdated={() => fetchCartCount(sessionId)} />
+      <BuyerFooter />
     </div>
   );
 }

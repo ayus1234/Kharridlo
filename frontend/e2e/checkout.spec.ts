@@ -82,10 +82,10 @@ test.describe("Kharridlo E2E Autonomous Commerce & Razorpay Checkout Pipeline", 
     await expect(page.locator("text=Autonomous Commerce Governance & Payment Audit Trail")).toBeVisible();
 
     // Verify Governance Metrics cards exist
-    await expect(page.locator("text=Total Audit Records")).toBeVisible();
-    await expect(page.locator("text=Zero AI Payment Authority")).toBeVisible();
-    await expect(page.locator("text=Razorpay Test Mode")).toBeVisible();
-    await expect(page.locator("text=Full Redaction Active")).toBeVisible();
+    await expect(page.locator("text=Total Audit Records").first()).toBeVisible();
+    await expect(page.locator("text=Zero AI Payment Authority").first()).toBeVisible();
+    await expect(page.locator("text=Razorpay Test Mode").first()).toBeVisible();
+    await expect(page.locator("text=Full Redaction Active").first()).toBeVisible();
 
     // Verify search and filter controls
     await expect(page.locator("input[placeholder*='Search by Order ID']")).toBeVisible();

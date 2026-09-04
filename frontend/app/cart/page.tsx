@@ -140,6 +140,7 @@ export default function CartPage() {
       const randomHex = Math.random().toString(36).substring(2, 10);
       const timestamp = Date.now().toString(36);
       const newSid = `sess_${randomHex}_${timestamp}`;
+      localStorage.setItem("kharridlo_session_id", newSid);
       localStorage.setItem("dhankriya_session_id", newSid);
       setSessionId(newSid);
       setCart(null);

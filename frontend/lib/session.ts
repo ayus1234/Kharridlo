@@ -9,14 +9,17 @@ export function getOrCreateSessionId(): string {
     return "server_session_placeholder";
   }
 
-  const STORAGE_KEY = "dhankriya_session_id";
-  let sessionId = localStorage.getItem(STORAGE_KEY);
+  const PRIMARY_KEY = "kharridlo_session_id";
+  const LEGACY_KEY = "dhankriya_session_id";
+  let sessionId = localStorage.getItem(PRIMARY_KEY) || localStorage.getItem(LEGACY_KEY);
 
   if (!sessionId) {
     const randomHex = Math.random().toString(36).substring(2, 10);
     const timestamp = Date.now().toString(36);
     sessionId = `sess_${randomHex}_${timestamp}`;
-    localStorage.setItem(STORAGE_KEY, sessionId);
+    localStorage.setItem(PRIMARY_KEY, sessionId);
+  } else if (!localStorage.getItem(PRIMARY_KEY)) {
+    localStorage.setItem(PRIMARY_KEY, sessionId);
   }
 
   return sessionId;
