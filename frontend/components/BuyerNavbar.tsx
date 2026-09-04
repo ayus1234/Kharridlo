@@ -149,7 +149,7 @@ export default function BuyerNavbar() {
             {/* Cart Icon with Counter */}
             <Link
               href="/cart"
-              className="relative inline-flex items-center justify-center p-2 rounded-xl text-navy-900 hover:bg-slate-100 transition-colors"
+              className="relative inline-flex items-center justify-center p-2 rounded-xl text-navy-900 hover:bg-slate-100 transition-colors min-h-[44px] min-w-[44px]"
               aria-label="View Cart"
             >
               <ShoppingCart className="h-5 w-5" />
@@ -177,7 +177,7 @@ export default function BuyerNavbar() {
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden p-1.5 rounded-lg text-slate-600 hover:bg-slate-100"
+              className="lg:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 min-h-[44px] min-w-[44px] flex items-center justify-center"
               aria-label="Toggle Navigation Menu"
             >
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -195,18 +195,18 @@ export default function BuyerNavbar() {
                   value={searchIntent}
                   onChange={(e) => setSearchIntent(e.target.value)}
                   placeholder="Ask AI Assistant..."
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-9 py-2 text-xs text-navy-900 focus:outline-none focus:border-ai-violet"
+                  className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 py-2.5 text-xs text-navy-900 focus:outline-none focus:border-ai-violet min-h-[44px]"
                 />
-                <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400" />
+                <Search className="absolute left-3.5 top-3.5 h-4 w-4 text-slate-400" />
               </div>
             </form>
-            <div className="grid grid-cols-2 gap-1.5">
+            <div className="grid grid-cols-2 gap-2">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100"
+                  className="flex items-center gap-2 px-3 py-3 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 min-h-[44px]"
                 >
                   <link.icon className="h-4 w-4 text-ai-violet" />
                   {link.label}
@@ -215,7 +215,7 @@ export default function BuyerNavbar() {
               <Link
                 href="/merchant"
                 onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-indigo-700 bg-indigo-50"
+                className="flex items-center gap-2 px-3 py-3 rounded-xl text-xs font-semibold text-indigo-700 bg-indigo-50 min-h-[44px]"
               >
                 <BarChart2 className="h-4 w-4" />
                 Merchant Portal

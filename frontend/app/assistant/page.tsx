@@ -328,12 +328,12 @@ function AssistantContent() {
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 placeholder="Ask about specs, compatibility, student discounts..."
-                className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs text-navy-900 placeholder:text-slate-400 focus:border-ai-violet focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-100"
+                className="flex-1 min-h-[44px] rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs text-navy-900 placeholder:text-slate-400 focus:border-ai-violet focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-100"
               />
               <button
                 type="submit"
                 disabled={!inputText.trim() || isLoading}
-                className="inline-flex items-center justify-center h-10 w-10 rounded-xl bg-navy-900 text-white hover:bg-ai-violet active:scale-95 disabled:opacity-50 transition-all shadow-sm flex-shrink-0"
+                className="inline-flex items-center justify-center min-h-[44px] min-w-[44px] h-11 w-11 rounded-xl bg-navy-900 text-white hover:bg-ai-violet active:scale-95 disabled:opacity-50 transition-all shadow-sm flex-shrink-0"
                 aria-label="Send message"
               >
                 <Send className="h-4 w-4" />

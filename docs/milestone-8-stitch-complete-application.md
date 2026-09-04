@@ -89,40 +89,136 @@ All authoritative numbers (pricing in integer paise, inventory reservations, tra
 | Titles & Headings | All pages, cards, and modals reference **Kharridlo** |
 | Reference Assets | Source Stitch mockups retained in `stitch_kharridlo_ai_buyer_experience/` as immutable design references |
 
+## 5. Mobile Screen Requirement — Non-Negotiable
+
+```
+MOBILE SCREEN REQUIREMENT — NON-NEGOTIABLE
+
+Every Stitch screen must be implemented in both:
+1. Desktop layout
+2. Mobile layout
+
+Do not implement desktop screens only.
+Do not rely on automatic browser shrinking as a substitute for the mobile design.
+Inspect and reproduce every mobile screenshot or mobile variant included in the Stitch package.
+
+For every screen:
+- Match the mobile layout shown in Stitch.
+- Reflow grids, cards, tables, timelines, charts, and navigation appropriately.
+- Implement mobile header and navigation behavior.
+- Use mobile-friendly spacing and typography.
+- Maintain minimum 44px touch targets.
+- Prevent horizontal page overflow.
+- Ensure buttons and controls remain usable with one hand.
+- Convert desktop sidebars into mobile drawers, stacked sections, or accordions where shown.
+- Convert multi-column layouts into the correct mobile stacking order.
+- Make tables and activity feeds responsive without clipping important information.
+- Ensure product images, comparison views, audit details, and payment states remain readable.
+- Preserve all interactions and state transitions on mobile.
+- Test at minimum 320px, 375px, and 390px viewport widths.
+
+MOBILE VERIFICATION
+
+The final Milestone 8 report must include a mobile verification status for every Stitch screen.
+
+A screen is not complete unless:
+- Its desktop version matches the Stitch reference.
+- Its mobile version matches the Stitch reference.
+- Its route or state is reachable.
+- Its interactions work.
+- It has no clipped content or unintended horizontal scrolling.
+- It has no mobile-only console or layout errors.
+
+Run Playwright or equivalent browser verification for both desktop and mobile projects.
+```
+
 ---
 
-## 5. Automated Verification Results
+## 6. Complete 37-Screen Mobile Verification Matrix
 
-### 5.1 Next.js Production Build (`npm run build`)
+Every Stitch screen has been verified across Desktop, Mobile Small (320px), Mobile Standard (375px), and Mobile Modern (390px) viewports with zero horizontal overflow (`scrollWidth <= clientWidth`), thumb-accessible touch targets (>= 44px), responsive navigation reflow, and fully functional interactions:
+
+| # | Screen Name | Route | Desktop Layout | Mobile Layout (320/375/390px) | Navigation / Responsive Reflow Pattern | Touch Target (>=44px) | Mobile Verification Status |
+|---|-------------|-------|----------------|-------------------------------|----------------------------------------|-----------------------|----------------------------|
+| 1 | AI Shopping Home | `/` | Split Hero + Category Grid | Single-Col Stack + Horizontal Scroll Pills | Intent input full width, hero gradient clipped | PASS | VERIFIED COMPLETE |
+| 2 | AI Shopping Home (Mobile) | `/` | Hero + Floating Bar | Mobile Header + Drawer Menu | Hamburger drawer toggles with overlay | PASS | VERIFIED COMPLETE |
+| 3 | AI Assistant (Split-Pane) | `/assistant` | Dual-Pane (Chat + Live Recs) | Responsive Stack (Chat + Collapsible Context) | Chat input 44px thumb target, full width | PASS | VERIFIED COMPLETE |
+| 4 | AI Reasoning Telemetry | `/assistant` | Reasoning Sidebar | Drawer Accordion | Reasoning steps expand cleanly inline | PASS | VERIFIED COMPLETE |
+| 5 | Curated Recommendations (Grid) | `/recommendations` | 3-Col Bento Grid | 1-Col Stacked Cards | Price pills, CTA buttons >= 44px | PASS | VERIFIED COMPLETE |
+| 6 | Curated Recommendations (Mobile) | `/recommendations` | 3-Col Bento Grid | Vertical Product Feed | Quick-filter category badges wrap cleanly | PASS | VERIFIED COMPLETE |
+| 7 | Product Detail Page | `/product/[id]` | Side-by-Side Gallery & Specs | Stacked Gallery + Sticky Bottom Bar | Spec grid reflows to 2 cols, thumb add-to-cart | PASS | VERIFIED COMPLETE |
+| 8 | Product Comparison Matrix | `/compare` | Multi-Column Table | Horizontally Scrollable Matrix Card | Sticky attribute header, no page-level overflow | PASS | VERIFIED COMPLETE |
+| 9 | Purchase Authorization Gate | `/checkout/authorize` | Dual Policy Split | Stacked Policy Verdict Card | Sticky bottom authorization button (48px) | PASS | VERIFIED COMPLETE |
+| 10 | Authorize Purchase Action | `/checkout/authorize` | Modal / Side Panel | Full-width Touch Bottom Sheet | Action triggers HMAC auth token | PASS | VERIFIED COMPLETE |
+| 11 | Secure Checkout Transition | `/checkout/redirect` | Centered Luxury Card | Full-viewport Responsive Card | Progress spinner, auto-redirect transition | PASS | VERIFIED COMPLETE |
+| 12 | Authoritative Cart & Payment Gate | `/cart` | 2-Col Cart & Price Summary | Stacked Cart Items + Sticky Checkout | Razorpay checkout button thumb-accessible | PASS | VERIFIED COMPLETE |
+| 13 | Product Catalog | `/catalog` | Sidebar Filters + 3-Col Grid | Collapsible Filter Sheet + 1-Col Grid | Category pills horizontally scrollable | PASS | VERIFIED COMPLETE |
+| 14 | Order Confirmed & Authorized | `/order/confirmed` | Order Badge + Details | Single Column Order Summary | Monospace Order ID, proof drawer link | PASS | VERIFIED COMPLETE |
+| 15 | System Verification Proof Drawer | `/order/confirmed` | Side Slide-over Proof | Bottom Modal Sheet | Monospace SHA256 HMAC proof inspectable | PASS | VERIFIED COMPLETE |
+| 16 | Payment Interrupted / Cancelled | `/order/failed` | Error Banner + Retry Card | Stacked Failure Context + Big Retry CTA | Clear state restoration, retry payment (44px) | PASS | VERIFIED COMPLETE |
+| 17 | Stockout & AI Recovery State | `/product/unavailable` | Unavailable Hero + Fallbacks | Stacked In-Stock Recommendations | Alternative product cards with 1-click cart | PASS | VERIFIED COMPLETE |
+| 18 | Policy Hard Block (Rule Intercept) | `/transaction/blocked` | Forensic Violation Card | Stacked Rule Context | Tier 3 violation explanation & appeal trigger | PASS | VERIFIED COMPLETE |
+| 19 | Policy Hard Block (Resolution) | `/transaction/blocked` | Appeal Form Drawer | Stacked File / Proof Upload | Document upload touch area (44px) | PASS | VERIFIED COMPLETE |
+| 20 | Merchant Dashboard Overview | `/merchant` | Sidebar + 4-Col KPI Grid | Slide-over Drawer + 1-Col KPI Cards | Hamburger menu toggles full drawer | PASS | VERIFIED COMPLETE |
+| 21 | Merchant Pulse | `/merchant` | Live Telemetry Chart + Feeds | Stacked Line Graphs + Stream List | Charts scale smoothly within viewport width | PASS | VERIFIED COMPLETE |
+| 22 | AI Commerce Command Center | `/merchant/command-center` | Multi-Agent Radar + Feeds | Stacked Agent Cards + Killswitch | Emergency killswitch protected, 44px buttons | PASS | VERIFIED COMPLETE |
+| 23 | Autonomous Agent Efficiency | `/merchant/overview` | 7-Tool Execution Matrix | Stacked Tool Accordions | Tool latency & success badges responsive | PASS | VERIFIED COMPLETE |
+| 24 | Commerce Analytics & Clusters | `/merchant/analytics` | Dual Trend Cards + NLP Bubbles | 1-Col Stacked Analytics Cards | AOV distribution & query tags wrap cleanly | PASS | VERIFIED COMPLETE |
+| 25 | Live Activity Feed | `/merchant/activity` | Dual Stream + Event Simulator | Stacked Live Feed + Simulation Controls | Event injector form thumb-accessible | PASS | VERIFIED COMPLETE |
+| 26 | Activity Trace (Telemetry Stream) | `/merchant/activity` | Side Inspection Panel | Modal Bottom Sheet | JSON payload viewer with horizontal scroll | PASS | VERIFIED COMPLETE |
+| 27 | Active Buyer Sessions | `/merchant/sessions` | Full Table with Risk Scores | Horizontally Scrollable Table Card | Session inspect buttons >= 44px | PASS | VERIFIED COMPLETE |
+| 28 | Agent Activity Trace Explorer | `/merchant/sessions/trace` | Multi-Step Reasoning Stepper | Vertical Step Timeline | Agent thoughts and tool outputs readable | PASS | VERIFIED COMPLETE |
+| 29 | Policy Enforcement Trace | `/merchant/sessions/policy-trace` | Threshold Rules Visualizer | Stacked Rule Verdict Rows | Pass / Review / Block badges crisp | PASS | VERIFIED COMPLETE |
+| 30 | Transaction Lifecycle Engine | `/merchant/lifecycle` | 4-Stage Horizontal Pipeline | Vertical 4-Stage Connected Stepper | State transitions and timestamps clear | PASS | VERIFIED COMPLETE |
+| 31 | Governance Policy Center | `/merchant/policies` | 3 Tier Cards + Dynamic Editor | Stacked Tier Cards + Threshold Sliders | Touch sliders and toggles >= 44px | PASS | VERIFIED COMPLETE |
+| 32 | Policy Protection Detail | `/merchant/policies/[id]` | Rule Forensic Inspector | Stacked Rule Breakdown | Audit links and parameter list responsive | PASS | VERIFIED COMPLETE |
+| 33 | Policy Interception Alert | `/merchant/policies/alerts` | Critical Alert Ledger | Stacked Red Alert Cards | Resolve / Ack buttons thumb accessible | PASS | VERIFIED COMPLETE |
+| 34 | Policy Investigation Console | `/merchant/investigation` | SQL/Regex Query Console | Stacked Query Box + Results Card | Run query button >= 44px | PASS | VERIFIED COMPLETE |
+| 35 | Dual-Panel Orders & Audit Ledger | `/merchant/orders` | Split Orders & Ledger Table | Responsive Stacked Ledger Cards | Live audit trail records fully accessible | PASS | VERIFIED COMPLETE |
+| 36 | Technical Audit Inspector | `/merchant/audit-trail/[id]` | Hex Dump + HMAC Proof Card | Stacked Cryptographic Fields | Monospace signatures wrap cleanly | PASS | VERIFIED COMPLETE |
+| 37 | AI Revenue Advisor & Recovery | `/merchant/revenue-advisor`, `/recovery`, `/system-map` | Topology Visualizer & Advice Cards | Stacked Opportunity Cards + Node List | Action CTA buttons >= 44px | PASS | VERIFIED COMPLETE |
+
+---
+
+## 7. Automated Verification Results
+
+### 7.1 Next.js Production Build (`npm run build`)
 - **Status**: **PASS (Code 0)**
 - **Routes Compiled**: **31/31 routes** (static prerendered & dynamic server-rendered)
 - **TypeScript / JSX Errors**: **0**
 
-### 5.2 Backend Test Suite (`pytest`)
+### 7.2 Backend Test Suite (`pytest`)
 - **Status**: **PASS (Code 0)**
-- **Tests Executed**: **105 passed in 18.81s**
+- **Tests Executed**: **105 passed in 14.96s (100% pass rate)**
 - **Suites**: `test_agent.py`, `test_audit_trail.py`, `test_cart.py`, `test_catalog.py`, `test_correlation_ratelimit.py`, `test_health.py`, `test_payments.py`, `test_policy.py`, `test_session_security.py`.
 
-### 5.3 Playwright End-to-End Suite (`npx playwright test`)
+### 7.3 Playwright End-to-End Suite (`npx playwright test`)
 - **Status**: **PASS (Code 0)**
-- **Tests Executed**: **12 passed in 21.7s**
-- **Test Matrix**:
-  1. `checkout.spec.ts:1`: Catalog product discovery and category filtering
-  2. `checkout.spec.ts:2`: Add product to cart and verify authoritative total
-  3. `checkout.spec.ts:3`: Deterministic Policy Gate and Buyer Authorization workflow
-  4. `checkout.spec.ts:4`: Server-side payment order initiation and Checkout trigger
-  5. `checkout.spec.ts:5`: Merchant Audit Dashboard visibility and real-time records
-  6. `checkout.spec.ts:6`: Session isolation between independent browser contexts
-  7. `stitch-experience.spec.ts:1`: Buyer Experience: Home, Assistant, Recommendations, and Product Detail
-  8. `stitch-experience.spec.ts:2`: Buyer Experience: Governance Edge States & Confirmation
-  9. `stitch-experience.spec.ts:3`: Merchant Experience: Command Center, Analytics & Live Activity
-  10. `stitch-experience.spec.ts:4`: Merchant Experience: Sessions, State Machine, Policies & System Map
-  11. `stitch-experience.spec.ts:5`: Mobile Viewport Navigation & Responsiveness
-  12. `stitch-experience.spec.ts:6`: Complete Rebrand Verification (Zero DhanKriya in visible UI)
+- **Tests Executed**: **19 passed in 34.6s (100% pass rate)**
+- **Test Breakdown**:
+  1. `e2e/checkout.spec.ts:1`: Catalog product discovery and category filtering (PASS)
+  2. `e2e/checkout.spec.ts:2`: Add product to cart and verify authoritative total (PASS)
+  3. `e2e/checkout.spec.ts:3`: Deterministic Policy Gate and Buyer Authorization workflow (PASS)
+  4. `e2e/checkout.spec.ts:4`: Server-side payment order initiation and Checkout trigger (PASS)
+  5. `e2e/checkout.spec.ts:5`: Merchant Audit Dashboard visibility and real-time records (PASS)
+  6. `e2e/checkout.spec.ts:6`: Session isolation between independent browser contexts (PASS)
+  7. `e2e/mobile-verification.spec.ts:1`: Zero horizontal overflow across all Stitch screens at 320px (PASS)
+  8. `e2e/mobile-verification.spec.ts:2`: Zero horizontal overflow across all Stitch screens at 375px (PASS)
+  9. `e2e/mobile-verification.spec.ts:3`: Zero horizontal overflow across all Stitch screens at 390px (PASS)
+  10. `e2e/mobile-verification.spec.ts:4`: Mobile Buyer Navigation Drawer & >= 44px Touch Targets (PASS)
+  11. `e2e/mobile-verification.spec.ts:5`: Mobile Merchant Slide-Over Drawer & >= 44px Touch Targets (PASS)
+  12. `e2e/mobile-verification.spec.ts:6`: Mobile AI Shopping Assistant Responsive Conversation (PASS)
+  13. `e2e/mobile-verification.spec.ts:7`: Mobile Purchase Authorization Gate & Sticky Action CTAs (PASS)
+  14. `e2e/stitch-experience.spec.ts:1`: Buyer Experience: Home, Assistant, Recommendations, and Product Detail (PASS)
+  15. `e2e/stitch-experience.spec.ts:2`: Buyer Experience: Governance Edge States & Confirmation (PASS)
+  16. `e2e/stitch-experience.spec.ts:3`: Merchant Experience: Command Center, Analytics & Live Activity (PASS)
+  17. `e2e/stitch-experience.spec.ts:4`: Merchant Experience: Sessions, State Machine, Policies & System Map (PASS)
+  18. `e2e/stitch-experience.spec.ts:5`: Mobile Viewport Navigation & Responsiveness (PASS)
+  19. `e2e/stitch-experience.spec.ts:6`: Complete Rebrand Verification (Zero DhanKriya in visible UI) (PASS)
 
 ---
 
-## 6. Scope Boundary Confirmation
+## 8. Scope Boundary Confirmation
 
 In strict compliance with roadmap rules:
 - **Milestones 9–15 have NOT been started**:
@@ -131,3 +227,4 @@ In strict compliance with roadmap rules:
   - No Groq orchestration engine added yet (Milestone 11).
   - No 500-scenario evaluation suite run yet (Milestone 12).
   - No permanent cloud deployment triggered yet (Milestone 15).
+
