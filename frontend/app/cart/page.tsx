@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { getOrCreateSessionId } from "@/lib/session";
 import AIAssistantDrawer from "@/components/AIAssistantDrawer";
+import Logo from "@/components/Logo";
 
 interface CartItem {
   id: string;
@@ -531,11 +532,8 @@ export default function CartPage() {
               Catalog
             </Link>
             <div className="h-4 w-px bg-slate-200" />
-            <div className="flex items-center space-x-2">
-              <span className="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
-                ख
-              </span>
-              <span className="font-bold text-lg text-slate-900">Kharridlo</span>
+            <div className="flex items-center space-x-3">
+              <Logo variant="compact" size="sm" href="/" />
               <span className="text-xs bg-emerald-50 text-emerald-700 font-semibold px-2 py-0.5 rounded border border-emerald-200">
                 Razorpay Test Mode Active
               </span>

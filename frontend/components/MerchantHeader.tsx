@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ShieldCheck, RefreshCw, Radio, Menu } from "lucide-react";
+import Logo from "@/components/Logo";
 
 interface MerchantHeaderProps {
   title: string;
@@ -39,6 +40,11 @@ export default function MerchantHeader({
         >
           <Menu className="h-5 w-5" />
         </button>
+
+        {/* Mobile Brand Icon */}
+        <div className="lg:hidden mr-2.5 flex items-center flex-shrink-0">
+          <Logo variant="icon" size="sm" href="/merchant" />
+        </div>
 
         <div className="min-w-0 flex-1">
           <nav className="flex items-center gap-1.5 text-[11px] text-slate-500 font-medium truncate">

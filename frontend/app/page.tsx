@@ -26,6 +26,7 @@ import BuyerFooter from "@/components/BuyerFooter";
 import ProductImage from "@/components/ProductImage";
 import BentoCard from "@/components/BentoCard";
 import AIAssistantDrawer from "@/components/AIAssistantDrawer";
+import Logo from "@/components/Logo";
 
 interface Product {
   id: string;
@@ -100,6 +101,11 @@ export default function HomePage() {
           <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-gradient-to-tr from-purple-200/40 via-emerald-100/30 to-transparent blur-3xl -z-10 pointer-events-none rounded-full" />
 
           <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 text-center">
+            {/* Kharridlo Full Logo Asset */}
+            <div className="flex justify-center mb-6">
+              <Logo variant="full" size="xl" asLink={false} priority />
+            </div>
+
             {/* Student AI Commerce Pill */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-navy-900 text-white text-xs font-semibold shadow-sm mb-6">
               <span className="h-2 w-2 rounded-full bg-growth-emerald animate-pulse" />

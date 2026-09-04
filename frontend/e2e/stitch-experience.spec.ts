@@ -160,4 +160,43 @@ test.describe("Kharridlo Stitch AI Buyer & Merchant Experience Verification", ()
       expect(textContent).not.toContain("DhanKriya");
     }
   });
+
+  test("7. Kharridlo Logo Integration Verification across Desktop, Tablet & Mobile", async ({ page }) => {
+    // 7.1 Desktop Hero & Navbar
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+
+    // Hero full logo
+    const heroLogo = page.locator("img[alt='Kharridlo — From AI intent to trusted transactions.']").first();
+    await expect(heroLogo).toBeVisible();
+
+    // Navbar compact logo
+    const navbarLogo = page.locator("header img[alt='Kharridlo']").first();
+    await expect(navbarLogo).toBeVisible();
+
+    // Footer full logo
+    const footerLogo = page.locator("footer img[alt='Kharridlo — From AI intent to trusted transactions.']").first();
+    await expect(footerLogo).toBeVisible();
+
+    // 7.2 Mobile Viewport (375px)
+    await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto("/");
+    await expect(page.locator("header img[alt='Kharridlo']").first()).toBeVisible();
+
+    // 7.3 Cart Page Logo
+    await page.goto("/cart");
+    await expect(page.locator("header img[alt='Kharridlo']").first()).toBeVisible();
+
+    // 7.4 Merchant Sidebar Logo (Desktop)
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/merchant");
+    const merchantLogo = page.locator("aside img[alt='Kharridlo']").first();
+    await expect(merchantLogo).toBeVisible();
+
+    // 7.5 Merchant Mobile Header Logo (375px)
+    await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto("/merchant");
+    const mobileMerchantLogo = page.locator("header img[alt='Kharridlo home']").first();
+    await expect(mobileMerchantLogo).toBeVisible();
+  });
 });

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { XCircle, RefreshCw, ShoppingCart, ArrowLeft, ShieldAlert, CreditCard } from "lucide-react";
 import BuyerNavbar from "@/components/BuyerNavbar";
 import BuyerFooter from "@/components/BuyerFooter";
+import Logo from "@/components/Logo";
 
 function PaymentFailedContent() {
   const searchParams = useSearchParams();
@@ -19,6 +20,10 @@ function PaymentFailedContent() {
       <main className="flex-1 flex items-center justify-center p-6">
         {/* Payment Failed Card (Stitch: payment_failed) */}
         <div className="w-full max-w-lg rounded-3xl border border-rose-200 bg-white p-8 sm:p-10 shadow-xl text-center">
+          <div className="flex justify-center mb-5">
+            <Logo variant="compact" size="sm" asLink={false} />
+          </div>
+
           <div className="mx-auto mb-6 h-16 w-16 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 shadow-sm">
             <XCircle className="h-10 w-10" />
           </div>

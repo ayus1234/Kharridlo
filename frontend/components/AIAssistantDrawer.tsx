@@ -15,6 +15,7 @@ import {
   Bot
 } from "lucide-react";
 import { getOrCreateSessionId } from "@/lib/session";
+import Logo from "@/components/Logo";
 
 interface ToolCall {
   tool_name: string;
@@ -168,8 +169,8 @@ export default function AIAssistantDrawer({ onCartUpdated }: AIAssistantDrawerPr
         {/* Drawer Header */}
         <div className="p-4 border-b border-slate-800 bg-slate-950/80 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-              <Bot className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-700/80 flex items-center justify-center p-1 shadow-inner flex-shrink-0">
+              <Logo variant="icon" theme="dark" size="sm" asLink={false} />
             </div>
             <div>
               <div className="flex items-center gap-2">

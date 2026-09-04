@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ShieldCheck, Lock, Sparkles, CheckCircle2 } from "lucide-react";
+import Logo from "@/components/Logo";
 
 export default function BuyerFooter() {
   return (
@@ -10,12 +11,7 @@ export default function BuyerFooter() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Info */}
           <div className="md:col-span-1 space-y-3">
-            <div className="flex items-center gap-2">
-              <div className="h-7 w-7 rounded-lg bg-navy-900 flex items-center justify-center text-white font-display font-bold text-sm">
-                ख
-              </div>
-              <span className="font-display font-bold text-lg text-navy-900">Kharridlo</span>
-            </div>
+            <Logo variant="full" size="md" href="/" />
             <p className="text-xs text-slate-500 leading-relaxed">
               From AI intent to trusted transactions. Kharridlo combines agentic search with deterministic policy enforcement and Razorpay Test Mode.
             </p>

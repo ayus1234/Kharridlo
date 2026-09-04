@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ShieldAlert, ArrowLeft, Lock, ArrowRight, CheckCircle2, UserCheck, HelpCircle } from "lucide-react";
 import BuyerNavbar from "@/components/BuyerNavbar";
 import BuyerFooter from "@/components/BuyerFooter";
+import Logo from "@/components/Logo";
 
 function TransactionBlockedContent() {
   const searchParams = useSearchParams();
@@ -20,6 +21,10 @@ function TransactionBlockedContent() {
       <main className="flex-1 flex items-center justify-center p-6">
         {/* Policy Hard Block Card (Stitch: transaction_blocked_1 & transaction_blocked_2) */}
         <div className="w-full max-w-xl rounded-3xl border-2 border-rose-200 bg-white p-8 sm:p-10 shadow-xl">
+          <div className="flex justify-center mb-6">
+            <Logo variant="compact" size="sm" asLink={false} />
+          </div>
+
           <div className="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
             <div className="h-14 w-14 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600 flex-shrink-0 shadow-sm">
               <ShieldAlert className="h-8 w-8" />

@@ -18,6 +18,8 @@ import {
 } from "lucide-react";
 import { getOrCreateSessionId } from "@/lib/session";
 
+import Logo from "@/components/Logo";
+
 export default function BuyerNavbar() {
   const pathname = usePathname();
   const router = useRouter();
@@ -63,30 +65,7 @@ export default function BuyerNavbar() {
         <div className="flex h-16 items-center justify-between gap-4">
           {/* Logo & Brand Wordmark */}
           <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="relative h-9 w-9 overflow-hidden rounded-xl bg-navy-900 flex items-center justify-center text-white font-bold text-lg shadow-md group-hover:scale-105 transition-transform">
-                <Image 
-                  src="/assets/brand-logo.png" 
-                  alt="Kharridlo Logo" 
-                  width={36} 
-                  height={36} 
-                  className="object-cover"
-                  onError={(e) => {
-                    // Fallback to text icon if image fails
-                    (e.target as HTMLElement).style.display = 'none';
-                  }}
-                />
-                <span className="absolute text-emerald-400 font-display font-black text-sm">ख</span>
-              </div>
-              <div className="flex flex-col">
-                <span className="font-display font-bold text-xl tracking-tight text-navy-900 group-hover:text-ai-violet transition-colors">
-                  Kharridlo
-                </span>
-                <span className="text-[10px] font-medium text-slate-500 -mt-1 hidden sm:block">
-                  AI Intent to Trusted Transactions
-                </span>
-              </div>
-            </Link>
+            <Logo variant="compact" size="md" priority href="/" />
           </div>
 
           {/* AI Search & Intent Input */}

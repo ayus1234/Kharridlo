@@ -21,6 +21,8 @@ import {
   X
 } from "lucide-react";
 
+import Logo from "@/components/Logo";
+
 export default function MerchantSidebar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -130,19 +132,12 @@ export default function MerchantSidebar() {
         <div>
           {/* Merchant Brand Header */}
           <div className="p-6 border-b border-slate-800/80 flex items-center justify-between">
-            <Link href="/merchant" className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-xl bg-growth-emerald/10 border border-growth-emerald/30 flex items-center justify-center text-growth-emerald font-display font-bold text-lg shadow-sm">
-                ख
-              </div>
-              <div>
-                <span className="font-display font-bold text-lg text-white tracking-tight block">
-                  Kharridlo
-                </span>
-                <span className="text-[10px] font-mono-data tracking-wider uppercase text-emerald-400 font-semibold block -mt-0.5">
-                  Merchant Intellect
-                </span>
-              </div>
-            </Link>
+            <div className="flex items-center gap-3">
+              <Logo variant="compact" theme="dark" size="sm" href="/merchant" />
+              <span className="text-[10px] font-mono-data tracking-wider uppercase text-emerald-400 font-semibold px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
+                Ops
+              </span>
+            </div>
           </div>
 
           {renderNavLinks()}
@@ -164,19 +159,12 @@ export default function MerchantSidebar() {
           {/* Drawer Panel */}
           <div className="relative flex-1 flex flex-col max-w-xs w-full bg-navy-900 text-slate-300 shadow-2xl border-r border-slate-800 z-10 animate-in slide-in-from-left duration-200 overflow-y-auto">
             <div className="p-4 border-b border-slate-800 flex items-center justify-between">
-              <Link href="/merchant" onClick={() => setMobileOpen(false)} className="flex items-center gap-2.5">
-                <div className="h-8 w-8 rounded-xl bg-growth-emerald/10 border border-growth-emerald/30 flex items-center justify-center text-growth-emerald font-display font-bold text-base">
-                  ख
-                </div>
-                <div>
-                  <span className="font-display font-bold text-base text-white tracking-tight block">
-                    Kharridlo
-                  </span>
-                  <span className="text-[9px] font-mono-data uppercase text-emerald-400 font-semibold block">
-                    Merchant Intellect
-                  </span>
-                </div>
-              </Link>
+              <div className="flex items-center gap-2.5">
+                <Logo variant="compact" theme="dark" size="sm" href="/merchant" />
+                <span className="text-[9px] font-mono-data uppercase text-emerald-400 font-semibold px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
+                  Ops
+                </span>
+              </div>
 
               <button
                 onClick={() => setMobileOpen(false)}

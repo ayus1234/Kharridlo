@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ShieldCheck, Lock, RefreshCw, CheckCircle2, ArrowRight, ExternalLink } from "lucide-react";
 import BuyerNavbar from "@/components/BuyerNavbar";
 import BuyerFooter from "@/components/BuyerFooter";
+import Logo from "@/components/Logo";
 import { getOrCreateSessionId } from "@/lib/session";
 
 export default function SecureCheckoutTransitionPage() {
@@ -62,6 +63,11 @@ export default function SecureCheckoutTransitionPage() {
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-growth-emerald/10 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative z-10 text-center">
+            {/* Brand Logo */}
+            <div className="flex justify-center mb-6">
+              <Logo variant="compact" theme="dark" size="sm" asLink={false} />
+            </div>
+
             {/* Animated Shield Container */}
             <div className="mx-auto mb-6 h-20 w-20 rounded-2xl bg-slate-800/80 border border-slate-700/60 flex items-center justify-center text-growth-emerald shadow-inner relative">
               <ShieldCheck className="h-10 w-10 animate-pulse" />

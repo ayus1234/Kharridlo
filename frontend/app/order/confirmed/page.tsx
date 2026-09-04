@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import BuyerNavbar from "@/components/BuyerNavbar";
 import BuyerFooter from "@/components/BuyerFooter";
+import Logo from "@/components/Logo";
 
 function OrderConfirmedContent() {
   const searchParams = useSearchParams();
@@ -40,6 +41,10 @@ function OrderConfirmedContent() {
         <div className="rounded-3xl border border-slate-200 bg-white shadow-xl overflow-hidden">
           {/* Header Banner */}
           <div className="bg-gradient-to-r from-navy-950 via-navy-900 to-navy-950 p-8 sm:p-10 text-white text-center relative overflow-hidden">
+            <div className="flex justify-center mb-4">
+              <Logo variant="compact" theme="dark" size="sm" asLink={false} />
+            </div>
+
             <div className="mx-auto mb-4 h-16 w-16 rounded-2xl bg-emerald-500/10 border border-growth-emerald/40 flex items-center justify-center text-growth-emerald shadow-lg">
               <CheckCircle2 className="h-10 w-10 animate-in zoom-in" />
             </div>
