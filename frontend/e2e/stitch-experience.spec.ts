@@ -5,7 +5,6 @@ test.describe("Kharridlo Stitch AI Buyer & Merchant Experience Verification", ()
     // 1.1 Home page
     await page.goto("/");
     await expect(page.locator("text=Kharridlo").first()).toBeVisible();
-    await expect(page.locator("text=Kharridlo AI Commerce Engine").first()).toBeVisible();
     await expect(page.locator("text=AI proposes.").first()).toBeVisible();
 
     // 1.2 Assistant page
@@ -166,8 +165,8 @@ test.describe("Kharridlo Stitch AI Buyer & Merchant Experience Verification", ()
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto("/");
 
-    // Hero full logo
-    const heroLogo = page.locator("img[alt='Kharridlo — From AI intent to trusted transactions.']").first();
+    // Hero compact logo (tagline hidden)
+    const heroLogo = page.locator("section img[alt='Kharridlo']").first();
     await expect(heroLogo).toBeVisible();
 
     // Navbar compact logo
@@ -187,11 +186,12 @@ test.describe("Kharridlo Stitch AI Buyer & Merchant Experience Verification", ()
     await page.goto("/cart");
     await expect(page.locator("header img[alt='Kharridlo']").first()).toBeVisible();
 
-    // 7.4 Merchant Sidebar Logo (Desktop)
+    // 7.4 Merchant Sidebar Logo (Desktop) & Ayush Nathani Profile
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto("/merchant");
     const merchantLogo = page.locator("aside img[alt='Kharridlo']").first();
     await expect(merchantLogo).toBeVisible();
+    await expect(page.locator("text=Ayush Nathani")).toBeVisible();
 
     // 7.5 Merchant Mobile Header Logo (375px)
     await page.setViewportSize({ width: 375, height: 667 });

@@ -143,7 +143,7 @@ export default function BuyerNavbar() {
             <div className="relative h-8 w-8 rounded-full overflow-hidden border border-slate-200 bg-slate-100 flex-shrink-0">
               <Image 
                 src="/assets/user-avatar.png" 
-                alt="Student Profile" 
+                alt="Ayush Nathani" 
                 width={32} 
                 height={32} 
                 className="object-cover"

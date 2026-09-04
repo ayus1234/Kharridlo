@@ -101,17 +101,9 @@ export default function HomePage() {
           <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-gradient-to-tr from-purple-200/40 via-emerald-100/30 to-transparent blur-3xl -z-10 pointer-events-none rounded-full" />
 
           <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 text-center">
-            {/* Kharridlo Full Logo Asset */}
+            {/* Kharridlo Brand Logo (Tagline hidden) */}
             <div className="flex justify-center mb-6">
-              <Logo variant="full" size="xl" asLink={false} priority />
-            </div>
-
-            {/* Student AI Commerce Pill */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-navy-900 text-white text-xs font-semibold shadow-sm mb-6">
-              <span className="h-2 w-2 rounded-full bg-growth-emerald animate-pulse" />
-              <span>Kharridlo AI Commerce Engine</span>
-              <span className="text-slate-400">•</span>
-              <span className="text-slate-300 font-mono-data text-[11px]">Precision-Luxury</span>
+              <Logo variant="compact" size="xl" asLink={false} priority />
             </div>
 
             {/* Main Headline */}
@@ -350,28 +342,6 @@ export default function HomePage() {
                   <p className="text-xs text-slate-500 mt-1">Loading synthetic hardware inventory...</p>
                 </div>
               )}
-            </div>
-          </div>
-        </section>
-
-        {/* System Trust & Connectivity Strip */}
-        <section className="py-8 bg-slate-900 text-slate-300 border-t border-slate-800">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono-data">
-              <div className="flex items-center gap-3">
-                <div className="h-2 w-2 rounded-full bg-growth-emerald animate-pulse" />
-                <span>Deterministic Security Engine: Active</span>
-                <span className="text-slate-600">|</span>
-                <span className="text-slate-400">PostgreSQL 16 Engine</span>
-              </div>
-              <div className="flex items-center gap-4">
-                <Link href="/merchant/system-map" className="text-emerald-400 hover:underline flex items-center gap-1">
-                  <Server className="h-3.5 w-3.5" /> View System Connectivity Map
-                </Link>
-                <Link href="/merchant" className="text-slate-400 hover:text-white">
-                  Merchant Portal →
-                </Link>
-              </div>
             </div>
           </div>
         </section>

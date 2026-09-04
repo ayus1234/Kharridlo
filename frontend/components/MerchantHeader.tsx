@@ -101,7 +101,7 @@ export default function MerchantHeader({
           <div className="relative h-8 w-8 rounded-full overflow-hidden border border-slate-200 bg-slate-100 flex-shrink-0">
             <Image
               src="/assets/user-avatar.png"
-              alt="Merchant Lead"
+              alt="Ayush Nathani"
               width={32}
               height={32}
               className="object-cover"
@@ -111,7 +111,7 @@ export default function MerchantHeader({
             />
           </div>
           <div className="hidden lg:block text-left">
-            <div className="text-xs font-semibold text-navy-900 leading-none">Priya Sharma</div>
+            <div className="text-xs font-semibold text-navy-900 leading-none">Ayush Nathani</div>
             <div className="text-[10px] font-mono-data text-slate-400 mt-0.5">Merchant Ops Lead</div>
           </div>
         </div>
