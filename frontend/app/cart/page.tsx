@@ -171,18 +171,30 @@ export default function CartPage() {
   };
 
   const updateQuantity = async (productId: string, newQty: number) => {
+    if (newQty <= 0) {
+      await removeItem(productId);
+      return;
+    }
     setActionLoading(productId);
     setError(null);
     setPolicyResult(null); // Invalidate prior policy check on cart modification
     setBuyerApproved(false);
     try {
-      const res = await fetch(`${apiBaseUrl}/api/v1/cart/${sessionId}/items`, {
-        method: "PUT",
+      const sid = sessionId || getOrCreateSessionId();
+      let res = await fetch(`${apiBaseUrl}/api/v1/cart/${sid}/items/${productId}`, {
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ product_id: productId, quantity: newQty }),
+        body: JSON.stringify({ quantity: newQty }),
       });
+      if (!res.ok && (res.status === 404 || res.status === 405)) {
+        res = await fetch(`${apiBaseUrl}/api/v1/cart/${sid}/items`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ product_id: productId, quantity: newQty }),
+        });
+      }
       if (!res.ok) {
-        const errData = await res.json();
+        const errData = await res.json().catch(() => null);
         throw new Error(errData?.detail?.message || "Failed to update quantity");
       }
       const updatedCart: CartResponse = await res.json();
@@ -200,11 +212,17 @@ export default function CartPage() {
     setPolicyResult(null);
     setBuyerApproved(false);
     try {
-      const res = await fetch(`${apiBaseUrl}/api/v1/cart/${sessionId}/items/${productId}`, {
+      const sid = sessionId || getOrCreateSessionId();
+      const res = await fetch(`${apiBaseUrl}/api/v1/cart/${sid}/items/${productId}`, {
         method: "DELETE",
       });
       if (!res.ok) {
-        const errData = await res.json();
+        const errData = await res.json().catch(() => null);
+        // If expired (410) or item not found (404), reload the authoritative cart state
+        if (res.status === 410 || res.status === 404) {
+          await fetchCart(sid);
+          return;
+        }
         throw new Error(errData?.detail?.message || "Failed to remove item");
       }
       const updatedCart: CartResponse = await res.json();
@@ -222,11 +240,22 @@ export default function CartPage() {
     setPolicyResult(null);
     setBuyerApproved(false);
     try {
-      const res = await fetch(`${apiBaseUrl}/api/v1/cart/${sessionId}/clear`, {
-        method: "POST",
+      const sid = sessionId || getOrCreateSessionId();
+      let res = await fetch(`${apiBaseUrl}/api/v1/cart/${sid}`, {
+        method: "DELETE",
       });
       if (!res.ok) {
-        throw new Error("Failed to clear cart");
+        res = await fetch(`${apiBaseUrl}/api/v1/cart/${sid}/clear`, {
+          method: "POST",
+        });
+      }
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        if (res.status === 404 || res.status === 410) {
+          await fetchCart(sid);
+          return;
+        }
+        throw new Error(errData?.detail?.message || "Failed to clear cart");
       }
       const updatedCart: CartResponse = await res.json();
       setCart(updatedCart);
@@ -242,7 +271,8 @@ export default function CartPage() {
     setBuyerApproved(false);
     setPaymentState({ status: "IDLE" });
     try {
-      await fetch(`${apiBaseUrl}/api/v1/policy/${sessionId}/tier`, {
+      const sid = sessionId || getOrCreateSessionId();
+      await fetch(`${apiBaseUrl}/api/v1/policy/${sid}/tier`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tier: newTier }),
@@ -261,7 +291,8 @@ export default function CartPage() {
     setBuyerApproved(false);
     setPaymentState({ status: "IDLE" });
     try {
-      const res = await fetch(`${apiBaseUrl}/api/v1/policy/evaluate/${sessionId}`, {
+      const sid = sessionId || getOrCreateSessionId();
+      const res = await fetch(`${apiBaseUrl}/api/v1/policy/evaluate/${sid}`, {
         method: "POST",
       });
       if (!res.ok) {
@@ -302,12 +333,13 @@ export default function CartPage() {
     setError(null);
 
     try {
+      const sid = sessionId || getOrCreateSessionId();
       // 1. Confirm checkout authorization on server
-      const confirmRes = await fetch(`${apiBaseUrl}/api/v1/checkout/confirm?session_id=${sessionId}`, {
+      const confirmRes = await fetch(`${apiBaseUrl}/api/v1/checkout/confirm?session_id=${sid}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Session-ID": sessionId,
+          "X-Session-ID": sid,
         },
         body: JSON.stringify({ buyer_confirmed: true }),
       });
@@ -319,11 +351,11 @@ export default function CartPage() {
       const checkoutData = await confirmRes.json();
 
       // 2. Server creates Razorpay Order
-      const orderRes = await fetch(`${apiBaseUrl}/api/v1/payments/orders?session_id=${sessionId}`, {
+      const orderRes = await fetch(`${apiBaseUrl}/api/v1/payments/orders?session_id=${sid}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-Session-ID": sessionId,
+          "X-Session-ID": sid,
         },
         body: JSON.stringify({ checkout_id: checkoutData.id }),
       });

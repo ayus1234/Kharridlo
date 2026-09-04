@@ -12,6 +12,11 @@ class UpdateCartItemRequest(BaseModel):
     quantity: int = Field(..., ge=1, le=100, description="New target quantity for the item (must be >= 1)")
 
 
+class PutCartItemRequest(BaseModel):
+    product_id: Optional[str] = Field(None, description="Unique product ID or SKU")
+    quantity: int = Field(..., description="Target quantity for the item")
+
+
 class CartItemResponse(BaseModel):
     id: str
     cart_id: str

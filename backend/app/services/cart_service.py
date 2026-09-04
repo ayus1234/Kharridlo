@@ -299,12 +299,10 @@ class CartService:
 
     @classmethod
     def remove_item(cls, db: Session, session_id: str, product_id: str) -> Cart:
-        """Remove product from cart and release its entire inventory reservation."""
+        """Remove product from cart and release its inventory reservation safely (even on expired sessions)."""
         cart = cls.get_cart(db, session_id)
         if not cart:
             raise CartNotFoundException(f"Cart for session '{session_id}' not found.", code="CART_NOT_FOUND")
-        if cart.status == "expired" or cart.is_expired:
-            raise CartExpiredException("Cart session has expired.", code="CART_EXPIRED")
 
         item = next(
             (i for i in cart.items if i.product_id == product_id or (i.product and i.product.sku == product_id)),
@@ -313,16 +311,27 @@ class CartService:
         if not item:
             raise ItemNotFoundInCartException(f"Product '{product_id}' not found in cart.", code="ITEM_NOT_FOUND_IN_CART")
 
-        # Release reservation
-        inventory = (
-            db.query(Inventory)
-            .filter(Inventory.product_id == item.product_id)
-            .with_for_update()
-            .first()
-        )
-        if inventory:
-            inventory.available_quantity += item.quantity
-            inventory.reserved_quantity = max(0, inventory.reserved_quantity - item.quantity)
+        # Release reservation if cart was active (if expired, reservations were already released by get_cart)
+        if cart.status == "active" and not cart.is_expired:
+            inventory = (
+                db.query(Inventory)
+                .filter(Inventory.product_id == item.product_id)
+                .with_for_update()
+                .first()
+            )
+            if inventory:
+                inventory.available_quantity += item.quantity
+                inventory.reserved_quantity = max(0, inventory.reserved_quantity - item.quantity)
+
+            AuditService.log_event(
+                db=db,
+                actor_type="BUYER",
+                session_id=session_id,
+                event_type=AuditEventType.INVENTORY_RESERVATION_RELEASED.value,
+                event_status="succeeded",
+                product_id=item.product_id,
+                metadata={"released_quantity": item.quantity},
+            )
 
         saved_product_id = item.product_id
         saved_qty = item.quantity
@@ -331,20 +340,13 @@ class CartService:
 
         cart.subtotal_paise = sum(i.line_total_paise for i in cart.items)
         cart.total_paise = cart.subtotal_paise
+        if len(cart.items) == 0:
+            cart.status = "active"
         cart.expires_at = get_default_cart_expiry()
 
         db.commit()
         db.refresh(cart)
 
-        AuditService.log_event(
-            db=db,
-            actor_type="BUYER",
-            session_id=session_id,
-            event_type=AuditEventType.INVENTORY_RESERVATION_RELEASED.value,
-            event_status="succeeded",
-            product_id=saved_product_id,
-            metadata={"released_quantity": saved_qty},
-        )
         AuditService.log_event(
             db=db,
             actor_type="BUYER",

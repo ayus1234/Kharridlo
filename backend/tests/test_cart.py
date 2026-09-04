@@ -300,3 +300,35 @@ def test_exact_paise_arithmetic_bundle_demo(test_session_id):
     assert lp_inv.reserved_quantity == lp_before
     assert ms_inv.reserved_quantity == ms_before
     db.close()
+
+
+def test_put_cart_items_and_post_clear(test_session_id):
+    """Test compatibility routes: PUT /items and POST /clear."""
+    # Add initial item
+    res = client.post(f"/api/v1/cart/{test_session_id}/items", json={"product_id": "prod_mouse_01", "quantity": 1})
+    assert res.status_code == 200
+
+    # PUT update quantity
+    put_res = client.put(f"/api/v1/cart/{test_session_id}/items", json={"product_id": "prod_mouse_01", "quantity": 3})
+    assert put_res.status_code == 200
+    assert put_res.json()["items"][0]["quantity"] == 3
+
+    # POST /clear
+    clear_res = client.post(f"/api/v1/cart/{test_session_id}/clear")
+    assert clear_res.status_code == 200
+    assert len(clear_res.json()["items"]) == 0
+    assert clear_res.json()["subtotal_paise"] == 0
+
+
+def test_remove_item_from_expired_cart_resets_gracefully(test_session_id):
+    """Test that removing an item from an expired cart succeeds without raising 410."""
+    client.post(f"/api/v1/cart/{test_session_id}/items", json={"product_id": "prod_mouse_01", "quantity": 1})
+    # Force expire cart
+    exp_res = client.post(f"/api/v1/cart/{test_session_id}/expire")
+    assert exp_res.status_code == 200
+
+    # Delete item from expired cart must succeed cleanly
+    del_res = client.delete(f"/api/v1/cart/{test_session_id}/items/prod_mouse_01")
+    assert del_res.status_code == 200
+    assert len(del_res.json()["items"]) == 0
+    assert del_res.json()["total_paise"] == 0

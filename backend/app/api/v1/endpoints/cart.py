@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.db.session import get_db
@@ -16,6 +17,7 @@ from app.services.cart_service import (
 from app.schemas.cart import (
     AddCartItemRequest,
     UpdateCartItemRequest,
+    PutCartItemRequest,
     CartItemResponse,
     CartResponse,
     CartValidationResponse,
@@ -118,6 +120,42 @@ def update_cart_item(
         raise HTTPException(status_code=status.HTTP_410_GONE, detail={"code": e.code, "message": str(e)})
 
 
+@router.put("/{session_id}/items", response_model=CartResponse)
+@router.put("/{session_id}/items/{product_id}", response_model=CartResponse)
+def put_cart_item(
+    session_id: str,
+    payload: PutCartItemRequest,
+    product_id: Optional[str] = None,
+    db: Session = Depends(get_db),
+) -> CartResponse:
+    """Update line item quantity or remove if quantity <= 0 (supports both /items and /items/{product_id})."""
+    target_pid = product_id or payload.product_id
+    if not target_pid:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail={"code": "MISSING_PRODUCT_ID", "message": "Product ID is required in path or body."},
+        )
+    try:
+        if payload.quantity <= 0:
+            cart = CartService.remove_item(db=db, session_id=session_id, product_id=target_pid)
+        else:
+            cart = CartService.update_item_quantity(
+                db=db,
+                session_id=session_id,
+                product_id=target_pid,
+                quantity=payload.quantity,
+            )
+        return _to_cart_response(cart)
+    except (CartNotFoundException, ItemNotFoundInCartException) as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail={"code": e.code, "message": str(e)})
+    except (OutOfStockException, InsufficientStockException) as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail={"code": e.code, "message": str(e)})
+    except InvalidQuantityException as e:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail={"code": e.code, "message": str(e)})
+    except CartExpiredException as e:
+        raise HTTPException(status_code=status.HTTP_410_GONE, detail={"code": e.code, "message": str(e)})
+
+
 @router.delete("/{session_id}/items/{product_id}", response_model=CartResponse)
 def remove_cart_item(
     session_id: str,
@@ -138,6 +176,8 @@ def remove_cart_item(
         raise HTTPException(status_code=status.HTTP_410_GONE, detail={"code": e.code, "message": str(e)})
 
 
+@router.post("/{session_id}/clear", response_model=CartResponse)
+@router.delete("/{session_id}/clear", response_model=CartResponse)
 @router.delete("/{session_id}", response_model=CartResponse)
 def clear_cart(session_id: str, db: Session = Depends(get_db)) -> CartResponse:
     """Clear all items from the cart and release all held reservations."""
