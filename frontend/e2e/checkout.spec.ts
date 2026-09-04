@@ -25,6 +25,7 @@ test.describe("Kharridlo E2E Autonomous Commerce & Razorpay Checkout Pipeline", 
     const addBtn = page.locator("button:has-text('Add to Cart')").first();
     await expect(addBtn).toBeVisible();
     await addBtn.click();
+    await expect(page.locator("text=Added")).toBeVisible();
 
     // Navigate to cart
     await page.goto("/cart");
@@ -34,7 +35,10 @@ test.describe("Kharridlo E2E Autonomous Commerce & Razorpay Checkout Pipeline", 
 
   test("3. Deterministic Policy Gate and Buyer Authorization workflow", async ({ page }) => {
     await page.goto("/catalog");
-    await page.locator("button:has-text('Add to Cart')").first().click();
+    const addBtn = page.locator("button:has-text('Add to Cart')").first();
+    await expect(addBtn).toBeVisible();
+    await addBtn.click();
+    await expect(page.locator("text=Added")).toBeVisible();
 
     await page.goto("/cart");
 
