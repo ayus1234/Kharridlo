@@ -183,10 +183,37 @@ export default function CartPage() {
           setCart(data);
           return;
         }
-        throw new Error(`Failed to load cart: ${res?.status || "offline"}`);
       }
-      const data: CartResponse = await res.json();
+      let data: CartResponse = await res.json();
+      if ((!data.items || data.items.length === 0) && typeof window !== "undefined") {
+        try {
+          const cached = localStorage.getItem("kharridlo_client_cart");
+          if (cached) {
+            const cachedItems = JSON.parse(cached);
+            if (Array.isArray(cachedItems) && cachedItems.length > 0) {
+              for (const itm of cachedItems) {
+                const pid = itm.product_id || itm.id;
+                const qty = itm.quantity || 1;
+                await fetch(`/api/cart/${sid}/items`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ product_id: pid, quantity: qty }),
+                });
+              }
+              const reRes = await fetch(`/api/cart/${sid}`, { cache: "no-store" });
+              if (reRes.ok) {
+                data = await reRes.json();
+              }
+            }
+          }
+        } catch {}
+      }
       setCart(data);
+      if (typeof window !== "undefined" && data.items && data.items.length > 0) {
+        try {
+          localStorage.setItem("kharridlo_client_cart", JSON.stringify(data.items));
+        } catch {}
+      }
     } catch (err: any) {
       setError(err?.message || "Unable to reach cart service");
     } finally {
@@ -289,6 +316,11 @@ export default function CartPage() {
       if (res && res.ok) {
         const updatedCart: CartResponse = await res.json();
         setCart(updatedCart);
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.setItem("kharridlo_client_cart", JSON.stringify(updatedCart.items || []));
+          } catch {}
+        }
         window.dispatchEvent(new Event("cart-updated"));
       } else {
         await fetchCart(sid);
@@ -327,6 +359,11 @@ export default function CartPage() {
       if (res && res.ok) {
         const updatedCart: CartResponse = await res.json();
         setCart(updatedCart);
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.removeItem("kharridlo_client_cart");
+          } catch {}
+        }
         window.dispatchEvent(new Event("cart-updated"));
       } else {
         await fetchCart(sid);

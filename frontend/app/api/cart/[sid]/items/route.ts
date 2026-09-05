@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { addItemToServerCart } from "@/lib/server-cart";
+import { addItemToServerCart, serializeCartCookie } from "@/lib/server-cart";
 
 export const dynamic = "force-dynamic";
 
@@ -17,8 +17,11 @@ export async function POST(
       return NextResponse.json({ error: "product_id is required" }, { status: 400 });
     }
 
-    const updatedCart = addItemToServerCart(sid, productId, quantity);
-    return NextResponse.json(updatedCart);
+    const cookieHeader = request.headers.get("cookie");
+    const updatedCart = addItemToServerCart(sid, productId, quantity, cookieHeader);
+    const response = NextResponse.json(updatedCart);
+    response.cookies.set("kharridlo_cart", serializeCartCookie(updatedCart.items), { path: "/", maxAge: 86400 });
+    return response;
   } catch (err: any) {
     return NextResponse.json({ error: err?.message || "Failed to add item" }, { status: 500 });
   }

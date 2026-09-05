@@ -166,6 +166,20 @@ export default function RecommendationsPage() {
           });
         }
       }
+      if (typeof window !== "undefined") {
+        try {
+          const cached = localStorage.getItem("kharridlo_client_cart");
+          let list = cached ? JSON.parse(cached) : [];
+          if (!Array.isArray(list)) list = [];
+          const existing = list.find((i: any) => (i.product_id || i.id) === product.id);
+          if (existing) {
+            existing.quantity = (existing.quantity || 1) + 1;
+          } else {
+            list.push({ product_id: product.id, quantity: 1 });
+          }
+          localStorage.setItem("kharridlo_client_cart", JSON.stringify(list));
+        } catch {}
+      }
       window.dispatchEvent(new Event("cart-updated"));
       setToastMsg(`Added "${product.name}" to cart.`);
       setTimeout(() => setToastMsg(null), 3000);

@@ -29,17 +29,36 @@ export interface ServerCart {
   is_expired: boolean;
 }
 
+export interface StoredItem {
+  id: string;
+  q: number;
+}
+
 // In-memory cart store keyed by sessionId
 const globalCartStore: Map<string, ServerCart> = new Map();
 const sessionTierMap: Map<string, string> = new Map();
 
-export function getOrCreateServerCart(sessionId: string): ServerCart {
-  const existing = globalCartStore.get(sessionId);
-  if (existing) {
-    return existing;
+export function parseCartCookie(cookieHeader: string | null | undefined): StoredItem[] {
+  if (!cookieHeader) return [];
+  try {
+    const match = cookieHeader.split(";").map(c => c.trim()).find(c => c.startsWith("kharridlo_cart="));
+    if (!match) return [];
+    const val = decodeURIComponent(match.substring("kharridlo_cart=".length));
+    const parsed = JSON.parse(val);
+    if (Array.isArray(parsed)) return parsed;
+    return [];
+  } catch {
+    return [];
   }
+}
 
-  const newCart: ServerCart = {
+export function serializeCartCookie(items: ServerCartItem[]): string {
+  const compact = items.map(i => ({ id: i.product_id, q: i.quantity }));
+  return encodeURIComponent(JSON.stringify(compact));
+}
+
+export function buildCartFromStoredItems(sessionId: string, storedItems: StoredItem[]): ServerCart {
+  const cart: ServerCart = {
     id: `cart_${sessionId}`,
     session_id: sessionId,
     status: "active",
@@ -52,8 +71,60 @@ export function getOrCreateServerCart(sessionId: string): ServerCart {
     is_expired: false,
   };
 
-  globalCartStore.set(sessionId, newCart);
-  return newCart;
+  for (const s of storedItems) {
+    const product = getCuratedProductById(s.id) ||
+      CURATED_MARKETPLACE_PRODUCTS.find(p => p.id === s.id || p.provider_product_id === s.id);
+    const unitPricePaise = product?.source_price_minor || 
+      (product?.source_price_inr ? Math.round(product.source_price_inr * 100) : 49900);
+
+    cart.items.push({
+      id: `ci_${s.id}_${s.q}`,
+      cart_id: cart.id,
+      product_id: product?.id || s.id,
+      sku: product?.provider_product_id || s.id,
+      name: product?.title || "Curated Developer Hardware",
+      brand: product?.brand || "Verified",
+      category: product?.category || "gear",
+      image_url: product?.primary_image_url || product?.images?.[0]?.source_url || "/assets/laptop-product.png",
+      provider: product?.provider || "kharridlo_verified",
+      quantity: s.q,
+      unit_price_paise: unitPricePaise,
+      line_total_paise: unitPricePaise * s.q,
+      availability_status: "in_stock",
+    });
+  }
+
+  return recalculateCartTotals(cart);
+}
+
+export function getOrCreateServerCart(sessionId: string, cookieHeader?: string | null): ServerCart {
+  let cart = globalCartStore.get(sessionId);
+  if (!cart) {
+    cart = {
+      id: `cart_${sessionId}`,
+      session_id: sessionId,
+      status: "active",
+      currency: "INR",
+      subtotal_paise: 0,
+      total_paise: 0,
+      total_items_count: 0,
+      items: [],
+      expires_at: new Date(Date.now() + 3600000).toISOString(),
+      is_expired: false,
+    };
+    globalCartStore.set(sessionId, cart);
+  }
+
+  if (cart.items.length === 0 && cookieHeader) {
+    const stored = parseCartCookie(cookieHeader);
+    if (stored.length > 0) {
+      const restored = buildCartFromStoredItems(sessionId, stored);
+      cart.items = restored.items;
+      recalculateCartTotals(cart);
+    }
+  }
+
+  return cart;
 }
 
 function recalculateCartTotals(cart: ServerCart): ServerCart {
@@ -70,8 +141,8 @@ function recalculateCartTotals(cart: ServerCart): ServerCart {
   return cart;
 }
 
-export function addItemToServerCart(sessionId: string, productId: string, quantity: number = 1): ServerCart {
-  const cart = getOrCreateServerCart(sessionId);
+export function addItemToServerCart(sessionId: string, productId: string, quantity: number = 1, cookieHeader?: string | null): ServerCart {
+  const cart = getOrCreateServerCart(sessionId, cookieHeader);
 
   // Resolve product
   const product = getCuratedProductById(productId) ||
@@ -107,21 +178,22 @@ export function addItemToServerCart(sessionId: string, productId: string, quanti
   return recalculateCartTotals(cart);
 }
 
-export function updateServerCartQuantity(sessionId: string, productId: string, quantity: number): ServerCart {
-  const cart = getOrCreateServerCart(sessionId);
+export function updateServerCartQuantity(sessionId: string, productId: string, quantity: number, cookieHeader?: string | null): ServerCart {
+  const cart = getOrCreateServerCart(sessionId, cookieHeader);
   if (quantity <= 0) {
     cart.items = cart.items.filter(i => i.product_id !== productId && i.sku !== productId);
   } else {
     const item = cart.items.find(i => i.product_id === productId || i.sku === productId);
     if (item) {
       item.quantity = quantity;
+      item.line_total_paise = item.unit_price_paise * quantity;
     }
   }
   return recalculateCartTotals(cart);
 }
 
-export function removeItemFromServerCart(sessionId: string, productId: string): ServerCart {
-  const cart = getOrCreateServerCart(sessionId);
+export function removeItemFromServerCart(sessionId: string, productId: string, cookieHeader?: string | null): ServerCart {
+  const cart = getOrCreateServerCart(sessionId, cookieHeader);
   cart.items = cart.items.filter(i => i.product_id !== productId && i.sku !== productId);
   return recalculateCartTotals(cart);
 }
@@ -132,7 +204,7 @@ export function clearServerCart(sessionId: string): ServerCart {
   return recalculateCartTotals(cart);
 }
 
-export function setSessionPolicyTier(sessionId: string, tier: string) {
+export function setSessionPolicyTier(sessionId: string, tier: string): void {
   sessionTierMap.set(sessionId, tier);
 }
 
@@ -169,8 +241,8 @@ export function getPolicyTiersData() {
   ];
 }
 
-export function evaluateSessionPolicy(sessionId: string) {
-  const cart = getOrCreateServerCart(sessionId);
+export function evaluateSessionPolicy(sessionId: string, cookieHeader?: string | null) {
+  const cart = getOrCreateServerCart(sessionId, cookieHeader);
   const tierCode = getSessionPolicyTier(sessionId);
   const tiers = getPolicyTiersData();
   const currentTier = tiers.find(t => t.code === tierCode) || tiers[1];

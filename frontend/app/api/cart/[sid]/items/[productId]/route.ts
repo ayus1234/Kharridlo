@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { updateServerCartQuantity, removeItemFromServerCart } from "@/lib/server-cart";
+import { updateServerCartQuantity, removeItemFromServerCart, serializeCartCookie } from "@/lib/server-cart";
 
 export const dynamic = "force-dynamic";
 
@@ -11,8 +11,11 @@ export async function PATCH(
   try {
     const body = await request.json();
     const quantity = parseInt(body.quantity || "1", 10);
-    const updatedCart = updateServerCartQuantity(sid, productId, quantity);
-    return NextResponse.json(updatedCart);
+    const cookieHeader = request.headers.get("cookie");
+    const updatedCart = updateServerCartQuantity(sid, productId, quantity, cookieHeader);
+    const response = NextResponse.json(updatedCart);
+    response.cookies.set("kharridlo_cart", serializeCartCookie(updatedCart.items), { path: "/", maxAge: 86400 });
+    return response;
   } catch (err: any) {
     return NextResponse.json({ error: err?.message || "Failed to update quantity" }, { status: 500 });
   }
@@ -30,6 +33,9 @@ export async function DELETE(
   { params }: { params: { sid: string; productId: string } }
 ) {
   const { sid, productId } = params;
-  const updatedCart = removeItemFromServerCart(sid, productId);
-  return NextResponse.json(updatedCart);
+  const cookieHeader = request.headers.get("cookie");
+  const updatedCart = removeItemFromServerCart(sid, productId, cookieHeader);
+  const response = NextResponse.json(updatedCart);
+  response.cookies.set("kharridlo_cart", serializeCartCookie(updatedCart.items), { path: "/", maxAge: 86400 });
+  return response;
 }

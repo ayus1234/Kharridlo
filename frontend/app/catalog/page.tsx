@@ -185,6 +185,13 @@ export default function CatalogPage() {
       }
 
       const updatedCart = await res.json();
+      if (typeof window !== "undefined") {
+        try {
+          const items = updatedCart.items || [{ product_id: product.id, quantity: 1 }];
+          localStorage.setItem("kharridlo_client_cart", JSON.stringify(items));
+        } catch {}
+      }
+      window.dispatchEvent(new Event("cart-updated"));
       setCartCount(updatedCart.total_items_count || (cartCount + 1));
       setToastMsg(`Added "${product.title}" to cart!`);
       setTimeout(() => setToastMsg(null), 3000);

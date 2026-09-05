@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getOrCreateServerCart, clearServerCart } from "@/lib/server-cart";
+import { getOrCreateServerCart, clearServerCart, serializeCartCookie } from "@/lib/server-cart";
 
 export const dynamic = "force-dynamic";
 
@@ -8,8 +8,11 @@ export async function GET(
   { params }: { params: { sid: string } }
 ) {
   const sid = params.sid;
-  const cart = getOrCreateServerCart(sid);
-  return NextResponse.json(cart);
+  const cookieHeader = request.headers.get("cookie");
+  const cart = getOrCreateServerCart(sid, cookieHeader);
+  const response = NextResponse.json(cart);
+  response.cookies.set("kharridlo_cart", serializeCartCookie(cart.items), { path: "/", maxAge: 86400 });
+  return response;
 }
 
 export async function DELETE(
@@ -18,5 +21,7 @@ export async function DELETE(
 ) {
   const sid = params.sid;
   const cart = clearServerCart(sid);
-  return NextResponse.json(cart);
+  const response = NextResponse.json(cart);
+  response.cookies.set("kharridlo_cart", "", { path: "/", maxAge: 0 });
+  return response;
 }

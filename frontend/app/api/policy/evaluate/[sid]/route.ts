@@ -8,6 +8,7 @@ export async function POST(
   { params }: { params: { sid: string } }
 ) {
   const sid = params.sid;
-  const result = evaluateSessionPolicy(sid);
+  const cookieHeader = request.headers.get("cookie");
+  const result = evaluateSessionPolicy(sid, cookieHeader);
   return NextResponse.json(result);
 }

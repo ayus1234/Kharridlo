@@ -6,7 +6,8 @@ export const dynamic = "force-dynamic";
 export async function POST(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const sessionId = searchParams.get("session_id") || request.headers.get("X-Session-ID") || "default_session";
-  const cart = getOrCreateServerCart(sessionId);
+  const cookieHeader = request.headers.get("cookie");
+  const cart = getOrCreateServerCart(sessionId, cookieHeader);
 
   const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_1DP5mmOlF5G5ag";
   const internalOrderId = `ord_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
