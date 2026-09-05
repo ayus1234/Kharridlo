@@ -17,9 +17,9 @@ export async function POST(request: NextRequest) {
   }
 
   const policy = evaluateSessionPolicy(sessionId, cookieHeader);
-  if (policy.status !== "PASSED") {
+  if (policy.decision === "BLOCK") {
     return NextResponse.json(
-      { detail: { message: policy.reason } },
+      { detail: { message: policy.reasons[0]?.message || "Policy check blocked transaction." } },
       { status: 403 }
     );
   }
