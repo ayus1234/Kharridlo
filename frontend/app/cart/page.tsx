@@ -385,13 +385,17 @@ export default function CartPage() {
       const url = (isHttps && apiBaseUrl.startsWith("http://localhost"))
         ? `/api/policy/${sid}/tier`
         : `${apiBaseUrl}/api/v1/policy/${sid}/tier`;
+      let tierRes: Response | null = null;
       try {
-        await fetch(url, {
+        tierRes = await fetch(url, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ tier: newTier }),
         });
       } catch {
+        tierRes = null;
+      }
+      if (!tierRes || !tierRes.ok) {
         await fetch(`/api/policy/${sid}/tier`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
