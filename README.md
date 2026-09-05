@@ -4,6 +4,7 @@
 *AI proposes. Deterministic systems verify. You authorize.*
 
 [![Live Web App](https://img.shields.io/badge/Live_App-kharridlo.vercel.app-7C3AED?style=for-the-badge&logo=vercel&logoColor=white)](https://kharridlo.vercel.app)
+[![Demo Video](https://img.shields.io/badge/Demo_Video-Watch_Now-E11D48?style=for-the-badge&logo=youtube&logoColor=white)](YOUR_DEMO_VIDEO_URL_HERE)
 [![Backend API](https://img.shields.io/badge/Backend_API-Render-22C55E?style=for-the-badge&logo=fastapi&logoColor=white)](https://kharridlo-backend.onrender.com)
 [![API Docs](https://img.shields.io/badge/Swagger_Docs-API_v1-0284C7?style=for-the-badge&logo=swagger&logoColor=white)](https://kharridlo-backend.onrender.com/docs)
 [![License: MIT](https://img.shields.io/badge/License-MIT-slate.svg?style=for-the-badge)](LICENSE)
@@ -18,6 +19,16 @@
 * **Production Web App:** [https://kharridlo.vercel.app](https://kharridlo.vercel.app)
 * **Backend API Base:** [https://kharridlo-backend.onrender.com](https://kharridlo-backend.onrender.com)
 * **Core Philosophy:** **"AI proposes. Deterministic systems verify and authorize."**
+
+---
+
+## 🎬 Live Demo Video
+
+[![Kharridlo Demo Video](https://img.shields.io/badge/▶_Watch_Demo_Video-YouTube-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](YOUR_DEMO_VIDEO_URL_HERE)
+
+> 📺 **Demo Walkthrough Video:** [**Click here to watch the full Kharridlo demo video**](YOUR_DEMO_VIDEO_URL_HERE)
+> 
+> *A comprehensive demonstration showcasing natural language hardware discovery with Gemini 2.0, multi-product spec comparison, deterministic policy enforcement, 30-minute atomic inventory reservations, Razorpay Test Mode checkout with HMAC verification, and the merchant governance command center.*
 
 ---
 
