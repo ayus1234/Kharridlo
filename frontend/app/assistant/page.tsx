@@ -33,6 +33,7 @@ interface ChatMessage {
   timestamp: string;
   toolCalls?: { name: string; args: any }[];
   recommendedProductIds?: string[];
+  recommendedProducts?: Product[];
 }
 
 interface Product {
@@ -43,8 +44,13 @@ interface Product {
   category: string;
   price_paise: number;
   price_inr: number;
-  description: string;
+  description?: string;
   image_url?: string;
+  specs?: Record<string, unknown>;
+  provider?: string;
+  provider_product_id?: string;
+  canonical_url?: string;
+  can_authoritative_checkout?: boolean;
   matchScore?: number;
   matchReason?: string;
 }
@@ -55,6 +61,52 @@ const STARTER_PROMPTS = [
   "What is the best 27-inch 4K developer monitor for dual display setups?",
   "Suggest a complete student productivity bundle for less than ₹80,000",
 ];
+
+function normalizeProduct(raw: any, index = 0): Product | null {
+  const id = raw?.id ?? raw?.provider_product_id ?? raw?.sku;
+  const name = raw?.name ?? raw?.title;
+  if (!id || !name) return null;
+  const priceInr = Number(raw.price_inr ?? raw.source_price_inr ?? (raw.price_paise ?? raw.source_price_minor ?? 0) / 100);
+  return {
+    id: String(id),
+    sku: String(raw.sku ?? raw.provider_product_id ?? id),
+    name: String(name),
+    brand: String(raw.brand ?? "Unknown brand"),
+    category: String(raw.category ?? "Electronics"),
+    description: raw.description ?? raw.normalized_description ?? raw.original_description ?? "",
+    specs: raw.specs ?? raw.specifications ?? {},
+    price_paise: Number(raw.price_paise ?? raw.source_price_minor ?? Math.round(priceInr * 100)),
+    price_inr: Number.isFinite(priceInr) ? priceInr : 0,
+    image_url: raw.image_url ?? raw.primary_image_url ?? raw.images?.[0]?.source_url,
+    provider: raw.provider,
+    provider_product_id: raw.provider_product_id,
+    canonical_url: raw.canonical_url,
+    can_authoritative_checkout: raw.can_authoritative_checkout ?? raw.mapping?.can_authoritative_checkout,
+    matchScore: Number(raw.matchScore ?? raw.match_score ?? Math.max(72, 98 - index * 6)),
+    matchReason: raw.matchReason ?? raw.match_reason,
+  };
+}
+
+function extractRecommendedProducts(data: any, toolCalls: { name: string; args: any; result?: any }[]) {
+  const candidates = [
+    ...(Array.isArray(data?.recommended_products) ? data.recommended_products : []),
+    ...(Array.isArray(data?.products) ? data.products : []),
+    ...toolCalls.flatMap((call) => {
+      const result = call.result ?? {};
+      return Array.isArray(result.products) ? result.products : Array.isArray(result.items) ? result.items : [];
+    }),
+  ];
+  const seen = new Set<string>();
+  return candidates
+    .map((product, index) => normalizeProduct(product, index))
+    .filter((product): product is Product => Boolean(product))
+    .filter((product) => {
+      if (seen.has(product.id)) return false;
+      seen.add(product.id);
+      return true;
+    })
+    .slice(0, 4);
+}
 
 function AssistantContent() {
   const searchParams = useSearchParams();
@@ -93,14 +145,17 @@ function AssistantContent() {
 
   const loadRecommendedProducts = async () => {
     try {
-      const res = await fetch(`${apiBaseUrl}/api/v1/products?limit=4`, { cache: "no-store" });
+      const res = await fetch("/api/marketplace/search?page_size=4", { cache: "no-store" });
       if (res.ok) {
         const data = await res.json();
-        const enriched = (data.items || []).map((p: Product, idx: number) => ({
-          ...p,
-          matchScore: 98 - idx * 4,
-          matchReason: idx === 0 ? "Best Match for CS & Engineering" : "High Value Student Spec",
-        }));
+        const enriched = (data.items || [])
+          .map((product: any, index: number) => normalizeProduct(product, index))
+          .filter((product: Product | null): product is Product => Boolean(product))
+          .map((product: Product, index: number) => ({
+            ...product,
+            matchScore: 98 - index * 4,
+            matchReason: index === 0 ? "Best Match for CS & Engineering" : "High Value Student Spec",
+          }));
         setActiveContextProducts(enriched);
       }
     } catch {
@@ -123,7 +178,7 @@ function AssistantContent() {
     setIsLoading(true);
 
     try {
-      const res = await fetch(`${apiBaseUrl}/api/v1/agent/chat`, {
+      const res = await fetch("/api/agent/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -137,19 +192,28 @@ function AssistantContent() {
       }
 
       const data = await res.json();
+      const toolCalls = Array.isArray(data.tool_calls)
+        ? data.tool_calls.map((call: any) => ({
+            name: call.name ?? call.tool_name ?? "commerce_tool",
+            args: call.args ?? call.arguments ?? {},
+            result: call.result,
+          }))
+        : [];
+      const recommendedProducts = extractRecommendedProducts(data, toolCalls);
       const modelMsg: ChatMessage = {
         id: `msg_model_${Date.now()}`,
         role: "model",
-        content: data.reply || "I've reviewed the catalog against your query.",
+        content: data.message ?? data.reply ?? "I've reviewed the catalog against your query.",
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        toolCalls: data.tool_calls || [],
+        toolCalls,
+        recommendedProducts,
       };
 
       setMessages((prev) => [...prev, modelMsg]);
 
       // If search tool was invoked, refresh context products
-      if (data.recommended_products && data.recommended_products.length > 0) {
-        setActiveContextProducts(data.recommended_products);
+      if (recommendedProducts.length > 0) {
+        setActiveContextProducts(recommendedProducts);
       }
     } catch (err: any) {
       const errorMsg: ChatMessage = {
@@ -291,6 +355,32 @@ function AssistantContent() {
                           ))}
                         </div>
                       )}
+
+                      {m.recommendedProducts && m.recommendedProducts.length > 0 && (
+                        <div className="mt-3 grid gap-2 border-t border-slate-200/70 pt-3 sm:grid-cols-2">
+                          {m.recommendedProducts.map((product) => (
+                            <div key={product.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white p-2.5 shadow-sm">
+                              <div className="flex gap-2.5">
+                                <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-slate-100 bg-slate-50">
+                                  <ProductImage src={product.image_url} alt={product.name} category={product.category} width={48} height={48} className="h-full w-full" />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <p className="line-clamp-2 text-[11px] font-bold leading-snug text-navy-900">{product.name}</p>
+                                  <p className="mt-1 text-[11px] font-bold text-ai-violet">₹{product.price_inr.toLocaleString("en-IN")}</p>
+                                </div>
+                              </div>
+                              <div className="mt-2 flex items-center gap-1.5">
+                                <Link href={`/compare?ids=${encodeURIComponent(product.id)}`} className="inline-flex flex-1 items-center justify-center gap-1 rounded-md border border-slate-200 px-2 py-1.5 text-[10px] font-semibold text-slate-700 hover:border-purple-200 hover:text-ai-violet">
+                                  <GitCompare className="h-3 w-3" /> Compare
+                                </Link>
+                                <button onClick={() => handleAddToCart(product)} className="inline-flex flex-1 items-center justify-center gap-1 rounded-md bg-navy-900 px-2 py-1.5 text-[10px] font-semibold text-white hover:bg-ai-violet">
+                                  <Plus className="h-3 w-3" /> Add
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     <div className="text-[10px] text-slate-400 px-1 font-mono-data">
@@ -383,8 +473,9 @@ function AssistantContent() {
                   <div className="flex gap-3">
                     <div className="h-16 w-16 rounded-lg overflow-hidden bg-white border border-slate-200 flex-shrink-0">
                       <ProductImage
-                        src={p.image_url || "/assets/laptop-product.png"}
+                        src={p.image_url}
                         alt={p.name}
+                        category={p.category}
                         width={64}
                         height={64}
                         className="h-full w-full object-cover"
@@ -418,7 +509,7 @@ function AssistantContent() {
 
                   <div className="mt-3 pt-2 border-t border-slate-200/60 flex items-center justify-between gap-2">
                     <Link
-                      href={`/compare?id1=${p.id}`}
+                      href={`/compare?ids=${encodeURIComponent(p.id)}`}
                       className="text-[10px] font-semibold text-slate-600 hover:text-navy-900 flex items-center gap-1"
                     >
                       <GitCompare className="h-3 w-3" /> Compare

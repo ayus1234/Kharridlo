@@ -269,7 +269,7 @@ export default function RecommendationsPage() {
             products.map((p) => (
               <div
                 key={p.id}
-                className="group relative flex flex-col rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm hover:shadow-md hover:border-purple-300 transition-all"
+                className="group relative flex flex-col rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm hover:shadow-2xl hover:shadow-indigo-500/15 hover:border-purple-300 hover:-translate-y-1.5 transition-all duration-300 ease-out"
               >
                 {/* Top Badge & Match Score */}
                 <div className="flex items-center justify-between gap-2 mb-3">

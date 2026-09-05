@@ -39,10 +39,10 @@ export default function BentoCard({
 
   return (
     <div
-      className={`relative rounded-xl border bg-white p-5 transition-all ${
+      className={`relative rounded-2xl border bg-white p-5 transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-300/30 ${
         aiInsight
-          ? "border-purple-300 shadow-md shadow-purple-500/5 ring-1 ring-purple-100"
-          : "border-slate-200/90 shadow-sm hover:shadow-md"
+          ? "border-purple-300 shadow-md shadow-purple-500/5 ring-1 ring-purple-100 hover:border-purple-400 hover:shadow-purple-500/15"
+          : "border-slate-200/90 shadow-sm hover:border-slate-300"
       } ${className}`}
     >
       {/* Top AI Indicator Accent */}

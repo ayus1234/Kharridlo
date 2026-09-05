@@ -125,3 +125,46 @@ export function getProviderBadge(provider: string) {
       };
   }
 }
+
+/**
+ * Generates an authoritative, working external redirect link for Amazon & Flipkart.
+ * Prevents broken 404 links by falling back to targeted keyword search if direct SKU/slug is unavailable.
+ */
+export function formatMarketplaceUrl(
+  provider: string,
+  productId?: string,
+  title?: string,
+  canonicalUrl?: string
+): string {
+  if (provider === "amazon") {
+    const productAsin = productId?.match(/^[A-Z0-9]{10}$/i)?.[0];
+    const canonicalAsin = canonicalUrl?.match(/\/dp\/([A-Z0-9]{10})(?:[/?]|$)/i)?.[1];
+    const asin = productAsin || canonicalAsin;
+    if (asin) return `https://www.amazon.in/dp/${asin.toUpperCase()}?tag=kharridlo-21`;
+    const q = encodeURIComponent(title || productId || "student laptop");
+    return `https://www.amazon.in/s?k=${q}&tag=kharridlo-21`;
+  }
+
+  if (provider === "flipkart") {
+    if (canonicalUrl) {
+      try {
+        const url = new URL(canonicalUrl);
+        const isFlipkart = url.hostname === "flipkart.com" || url.hostname.endsWith(".flipkart.com");
+        const isProductPage = /\/p\/itm[a-z0-9]{8,}/i.test(url.pathname);
+        if (isFlipkart && isProductPage) {
+          url.searchParams.set("affid", "kharridlo");
+          return url.toString();
+        }
+      } catch {
+        // An invalid or incomplete canonical URL is intentionally replaced by a safe search URL.
+      }
+    }
+    const q = encodeURIComponent(title || productId || "electronics");
+    return `https://www.flipkart.com/search?q=${q}&affid=kharridlo`;
+  }
+
+  return canonicalUrl || `/product/${productId || ""}`;
+}
+
+// Backwards-compatible name used by existing product pages.
+export const getMarketplaceRedirectUrl = formatMarketplaceUrl;

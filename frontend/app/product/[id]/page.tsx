@@ -26,7 +26,7 @@ import BuyerFooter from "@/components/BuyerFooter";
 import ProductImage from "@/components/ProductImage";
 import BentoCard from "@/components/BentoCard";
 import { getOrCreateSessionId } from "@/lib/session";
-import { getProviderBadge } from "@/lib/marketplace";
+import { getProviderBadge, getMarketplaceRedirectUrl } from "@/lib/marketplace";
 import { getCuratedProductById } from "@/lib/curated-catalog";
 
 interface ProductDetail {
@@ -631,7 +631,7 @@ export default function ProductDetailPage() {
 
                 {p.canonical_url && (
                   <a
-                    href={p.canonical_url}
+                    href={getMarketplaceRedirectUrl(p.provider || "kharridlo_verified", p.id || p.sku, p.name, p.canonical_url)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs transition-all flex items-center justify-center gap-2 border border-slate-200/80"

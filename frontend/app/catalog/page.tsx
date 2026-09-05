@@ -15,7 +15,8 @@ import {
   ShieldCheck,
   Tag,
   Store,
-  Layers
+  Layers,
+  GitCompare
 } from "lucide-react";
 import { getOrCreateSessionId } from "@/lib/session";
 import AIAssistantDrawer from "@/components/AIAssistantDrawer";
@@ -25,7 +26,8 @@ import ProductImage from "@/components/ProductImage";
 import { 
   MarketplaceProduct, 
   MarketplaceSearchResponse, 
-  getProviderBadge 
+  getProviderBadge,
+  getMarketplaceRedirectUrl 
 } from "@/lib/marketplace";
 import { getFilteredCatalog } from "@/lib/curated-catalog";
 
@@ -396,7 +398,7 @@ export default function CatalogPage() {
                 <div
                   key={product.id}
                   onClick={() => setSelectedProduct(product)}
-                  className="group bg-white rounded-2xl border border-slate-200 p-4 flex flex-col justify-between hover:shadow-lg hover:border-indigo-300 transition-all cursor-pointer relative"
+                  className="group bg-white rounded-2xl border border-slate-200/90 p-4 flex flex-col justify-between shadow-sm hover:shadow-2xl hover:shadow-indigo-500/15 hover:border-indigo-300 hover:-translate-y-1.5 transition-all duration-300 ease-out cursor-pointer relative"
                 >
                   {/* Card Header: Provider Badge & Availability */}
                   <div>
@@ -487,7 +489,7 @@ export default function CatalogPage() {
                       </button>
                       {product.canonical_url && (product.provider === "amazon" || product.provider === "flipkart") && (
                         <a
-                          href={product.canonical_url}
+                          href={getMarketplaceRedirectUrl(product.provider, product.provider_product_id, product.title, product.canonical_url)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-xs font-medium inline-flex items-center gap-1 text-slate-700 bg-slate-100 hover:bg-slate-200 px-2 py-1.5 rounded-xl transition-colors"
@@ -497,6 +499,14 @@ export default function CatalogPage() {
                           <ExternalLink className="w-3 h-3" />
                         </a>
                       )}
+                      <Link
+                        href={`/compare?id1=${encodeURIComponent(product.id || product.provider_product_id)}`}
+                        className="text-xs font-medium inline-flex items-center gap-1 text-purple-700 bg-purple-50 hover:bg-purple-100 border border-purple-200 px-2 py-1.5 rounded-xl transition-colors"
+                        title="Compare with other devices"
+                      >
+                        <GitCompare className="w-3.5 h-3.5" />
+                        <span className="hidden xl:inline text-[10px]">Compare</span>
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -657,7 +667,7 @@ export default function CatalogPage() {
             {/* Modal Actions */}
             <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
               <a
-                href={selectedProduct.canonical_url}
+                href={getMarketplaceRedirectUrl(selectedProduct.provider, selectedProduct.provider_product_id, selectedProduct.title, selectedProduct.canonical_url)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors inline-flex items-center gap-1.5"
