@@ -11,7 +11,7 @@ export async function GET(
   const cookieHeader = request.headers.get("cookie");
   const cart = getOrCreateServerCart(sid, cookieHeader);
   const response = NextResponse.json(cart);
-  response.cookies.set("kharridlo_cart", serializeCartCookie(cart.items), { path: "/", maxAge: 86400 });
+  response.cookies.set("kharridlo_cart", serializeCartCookie(cart.items, sid), { path: "/", maxAge: 86400 });
   return response;
 }
 
@@ -22,6 +22,6 @@ export async function DELETE(
   const sid = params.sid;
   const cart = clearServerCart(sid);
   const response = NextResponse.json(cart);
-  response.cookies.set("kharridlo_cart", "", { path: "/", maxAge: 0 });
+  response.cookies.set("kharridlo_cart", "", { path: "/", maxAge: 0, expires: new Date(0) });
   return response;
 }

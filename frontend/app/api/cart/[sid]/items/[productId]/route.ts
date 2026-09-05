@@ -14,7 +14,7 @@ export async function PATCH(
     const cookieHeader = request.headers.get("cookie");
     const updatedCart = updateServerCartQuantity(sid, productId, quantity, cookieHeader);
     const response = NextResponse.json(updatedCart);
-    response.cookies.set("kharridlo_cart", serializeCartCookie(updatedCart.items), { path: "/", maxAge: 86400 });
+    response.cookies.set("kharridlo_cart", serializeCartCookie(updatedCart.items, sid), { path: "/", maxAge: 86400 });
     return response;
   } catch (err: any) {
     return NextResponse.json({ error: err?.message || "Failed to update quantity" }, { status: 500 });
@@ -36,6 +36,6 @@ export async function DELETE(
   const cookieHeader = request.headers.get("cookie");
   const updatedCart = removeItemFromServerCart(sid, productId, cookieHeader);
   const response = NextResponse.json(updatedCart);
-  response.cookies.set("kharridlo_cart", serializeCartCookie(updatedCart.items), { path: "/", maxAge: 86400 });
+  response.cookies.set("kharridlo_cart", serializeCartCookie(updatedCart.items, sid), { path: "/", maxAge: 86400 });
   return response;
 }

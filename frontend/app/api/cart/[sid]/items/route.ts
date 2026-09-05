@@ -20,7 +20,7 @@ export async function POST(
     const cookieHeader = request.headers.get("cookie");
     const updatedCart = addItemToServerCart(sid, productId, quantity, cookieHeader);
     const response = NextResponse.json(updatedCart);
-    response.cookies.set("kharridlo_cart", serializeCartCookie(updatedCart.items), { path: "/", maxAge: 86400 });
+    response.cookies.set("kharridlo_cart", serializeCartCookie(updatedCart.items, sid), { path: "/", maxAge: 86400 });
     return response;
   } catch (err: any) {
     return NextResponse.json({ error: err?.message || "Failed to add item" }, { status: 500 });

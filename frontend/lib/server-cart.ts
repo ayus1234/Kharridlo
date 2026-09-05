@@ -45,23 +45,30 @@ export interface PolicyRuleReason {
 const globalCartStore: Map<string, ServerCart> = new Map();
 const sessionTierMap: Map<string, string> = new Map();
 
-export function parseCartCookie(cookieHeader: string | null | undefined): StoredItem[] {
+export function parseCartCookie(cookieHeader: string | null | undefined, expectedSessionId?: string): StoredItem[] {
   if (!cookieHeader) return [];
   try {
     const match = cookieHeader.split(";").map(c => c.trim()).find(c => c.startsWith("kharridlo_cart="));
     if (!match) return [];
     const val = decodeURIComponent(match.substring("kharridlo_cart=".length));
     const parsed = JSON.parse(val);
-    if (Array.isArray(parsed)) return parsed;
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      if (expectedSessionId && parsed.sid && parsed.sid !== expectedSessionId) {
+        return []; // Different session: do NOT leak items across sessions
+      }
+      return Array.isArray(parsed.items) ? parsed.items : [];
+    }
+    // For legacy cookie format, only allow if no expectedSessionId specified
+    if (!expectedSessionId && Array.isArray(parsed)) return parsed;
     return [];
   } catch {
     return [];
   }
 }
 
-export function serializeCartCookie(items: ServerCartItem[]): string {
+export function serializeCartCookie(items: ServerCartItem[], sessionId?: string): string {
   const compact = items.map(i => ({ id: i.product_id, q: i.quantity }));
-  return encodeURIComponent(JSON.stringify(compact));
+  return encodeURIComponent(JSON.stringify({ sid: sessionId || null, items: compact }));
 }
 
 export function buildCartFromStoredItems(sessionId: string, storedItems: StoredItem[]): ServerCart {
@@ -123,7 +130,7 @@ export function getOrCreateServerCart(sessionId: string, cookieHeader?: string |
   }
 
   if (cart.items.length === 0 && cookieHeader) {
-    const stored = parseCartCookie(cookieHeader);
+    const stored = parseCartCookie(cookieHeader, sessionId);
     if (stored.length > 0) {
       const restored = buildCartFromStoredItems(sessionId, stored);
       cart.items = restored.items;
