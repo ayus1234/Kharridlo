@@ -1,8 +1,4 @@
-<div align="center">
-
 # Kharridlo
-
-<div align="center">
 
 ### **From AI intent to trusted transactions.**
 *AI proposes. Deterministic systems verify. You authorize.*
