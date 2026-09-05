@@ -28,7 +28,7 @@ def verify_amazon_live() -> Dict[str, Any]:
     has_legacy = bool(settings.AMAZON_ACCESS_KEY and settings.AMAZON_SECRET_KEY)
 
     configured = (has_client_id and has_client_secret and has_partner_tag) or (has_legacy and has_partner_tag)
-    enabled = bool(settings.AMAZON_CREATORS_API_ENABLED)
+    enabled = settings.AMAZON_CREATORS_API_ENABLED
 
     if not enabled or not configured:
         return {
@@ -132,7 +132,7 @@ def verify_flipkart_live() -> Dict[str, Any]:
 
     has_affiliate_id = bool(settings.FLIPKART_AFFILIATE_ID and settings.FLIPKART_AFFILIATE_ID.strip())
     has_affiliate_token = bool(settings.FLIPKART_AFFILIATE_TOKEN and settings.FLIPKART_AFFILIATE_TOKEN.strip())
-    enabled = bool(settings.FLIPKART_API_ENABLED)
+    enabled = settings.FLIPKART_API_ENABLED
 
     if not enabled or not (has_affiliate_id and has_affiliate_token):
         return {

@@ -27,7 +27,7 @@ class AmazonCreatorsAdapter(BaseMarketplaceAdapter):
     _oauth_token_expiry: float = 0.0
 
     def is_enabled(self) -> bool:
-        return bool(settings.AMAZON_CREATORS_API_ENABLED)
+        return settings.AMAZON_CREATORS_API_ENABLED
 
     def is_live_configured(self) -> bool:
         has_creators_oauth = bool(
@@ -307,7 +307,7 @@ class AmazonCreatorsAdapter(BaseMarketplaceAdapter):
         if offers_v2:
             saving_basis = offers_v2[0].get("SavingBasis", {})
             if saving_basis.get("Amount") is not None:
-                source_mrp_minor = int(round(float(saving_basis["Amount"]) * 100))
+                source_mrp_minor = round(float(saving_basis["Amount"]) * 100)
 
         # Specifications mapping
         specs: Dict[str, Any] = {}
@@ -362,11 +362,11 @@ class AmazonCreatorsAdapter(BaseMarketplaceAdapter):
         """Normalizes an individual Amazon OffersV2 listing."""
         price_obj = raw_offer.get("Price", {})
         price_amount = price_obj.get("Amount")
-        price_minor = int(round(float(price_amount) * 100)) if price_amount is not None else None
+        price_minor = round(float(price_amount) * 100) if price_amount is not None else None
 
         savings_obj = price_obj.get("Savings", {})
         discount_amount = savings_obj.get("Amount")
-        discount_minor = int(round(float(discount_amount) * 100)) if discount_amount is not None else None
+        discount_minor = round(float(discount_amount) * 100) if discount_amount is not None else None
         discount_pct = savings_obj.get("Percentage")
 
         seller = raw_offer.get("MerchantInfo", {}).get("Name")
