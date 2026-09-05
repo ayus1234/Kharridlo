@@ -30,7 +30,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": null,
-        "source_url": "https://m.media-amazon.com/images/I/61Dw5Z8LzJL._SL1000_.jpg",
+        "source_url": "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": 1000,
         "height": 667,
@@ -40,7 +40,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
       },
       {
         "id": null,
-        "source_url": "https://m.media-amazon.com/images/I/71Y8Kk7E7+L._SL1500_.jpg",
+        "source_url": "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=600&auto=format&fit=crop&q=80",
         "image_type": "gallery",
         "width": 1500,
         "height": 1000,
@@ -50,7 +50,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
       },
       {
         "id": null,
-        "source_url": "https://m.media-amazon.com/images/I/61bK6PMOC3L._SL1000_.jpg",
+        "source_url": "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=600&auto=format&fit=crop&q=80",
         "image_type": "gallery",
         "width": 1000,
         "height": 667,
@@ -59,7 +59,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": false
       }
     ],
-    "primary_image_url": "https://m.media-amazon.com/images/I/61Dw5Z8LzJL._SL1000_.jpg",
+    "primary_image_url": "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": null,
@@ -130,7 +130,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": null,
-        "source_url": "https://m.media-amazon.com/images/I/71jG+e7roXL._SL1500_.jpg",
+        "source_url": "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": 1500,
         "height": 1000,
@@ -140,7 +140,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
       },
       {
         "id": null,
-        "source_url": "https://m.media-amazon.com/images/I/61kL56F+7SL._SL1500_.jpg",
+        "source_url": "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=600&auto=format&fit=crop&q=80",
         "image_type": "gallery",
         "width": 1500,
         "height": 1000,
@@ -149,7 +149,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": false
       }
     ],
-    "primary_image_url": "https://m.media-amazon.com/images/I/71jG+e7roXL._SL1500_.jpg",
+    "primary_image_url": "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": null,
@@ -219,7 +219,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": null,
-        "source_url": "https://m.media-amazon.com/images/I/710TJuHTMhL._SL1500_.jpg",
+        "source_url": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": 1500,
         "height": 1000,
@@ -228,7 +228,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "https://m.media-amazon.com/images/I/710TJuHTMhL._SL1500_.jpg",
+    "primary_image_url": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": null,
@@ -298,7 +298,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": null,
-        "source_url": "https://m.media-amazon.com/images/I/61mNnQ6+q7L._SL1080_.jpg",
+        "source_url": "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": 1080,
         "height": 1080,
@@ -307,7 +307,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "https://m.media-amazon.com/images/I/61mNnQ6+q7L._SL1080_.jpg",
+    "primary_image_url": "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": null,
@@ -376,7 +376,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": null,
-        "source_url": "https://m.media-amazon.com/images/I/71v1c-qB2tL._SL1500_.jpg",
+        "source_url": "https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": 1500,
         "height": 1000,
@@ -385,7 +385,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "https://m.media-amazon.com/images/I/71v1c-qB2tL._SL1500_.jpg",
+    "primary_image_url": "https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": null,
@@ -455,7 +455,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": null,
-        "source_url": "https://m.media-amazon.com/images/I/61+btxzpfDL._SL1500_.jpg",
+        "source_url": "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": 1500,
         "height": 1500,
@@ -464,7 +464,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "https://m.media-amazon.com/images/I/61+btxzpfDL._SL1500_.jpg",
+    "primary_image_url": "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": null,
@@ -533,7 +533,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": null,
-        "source_url": "https://m.media-amazon.com/images/I/51xxA+6E+xL._SL1500_.jpg",
+        "source_url": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": 1500,
         "height": 1500,
@@ -542,7 +542,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "https://m.media-amazon.com/images/I/51xxA+6E+xL._SL1500_.jpg",
+    "primary_image_url": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": null,
@@ -611,7 +611,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": null,
-        "source_url": "https://m.media-amazon.com/images/I/61SUj2aKoEL._SL1500_.jpg",
+        "source_url": "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": 1500,
         "height": 1500,
@@ -620,7 +620,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "https://m.media-amazon.com/images/I/61SUj2aKoEL._SL1500_.jpg",
+    "primary_image_url": "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": null,
@@ -690,7 +690,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": null,
-        "source_url": "https://m.media-amazon.com/images/I/61LTuTh3KNL._SL1500_.jpg",
+        "source_url": "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": 1500,
         "height": 1500,
@@ -699,7 +699,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "https://m.media-amazon.com/images/I/61LTuTh3KNL._SL1500_.jpg",
+    "primary_image_url": "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": null,
@@ -768,7 +768,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": null,
-        "source_url": "https://m.media-amazon.com/images/I/61ni3t1ryQL._SL1500_.jpg",
+        "source_url": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": 1500,
         "height": 1500,
@@ -777,7 +777,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "https://m.media-amazon.com/images/I/61ni3t1ryQL._SL1500_.jpg",
+    "primary_image_url": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": null,
@@ -846,7 +846,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": null,
-        "source_url": "https://m.media-amazon.com/images/I/71G10b1LzRL._SL1500_.jpg",
+        "source_url": "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": 1500,
         "height": 1000,
@@ -855,7 +855,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "https://m.media-amazon.com/images/I/71G10b1LzRL._SL1500_.jpg",
+    "primary_image_url": "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": null,
@@ -924,7 +924,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": null,
-        "source_url": "https://m.media-amazon.com/images/I/71s8L5q5xRL._SL1500_.jpg",
+        "source_url": "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": 1500,
         "height": 1000,
@@ -933,7 +933,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "https://m.media-amazon.com/images/I/71s8L5q5xRL._SL1500_.jpg",
+    "primary_image_url": "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": null,
@@ -1002,7 +1002,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": null,
-        "source_url": "https://m.media-amazon.com/images/I/81TjRLHaz1L._SL1500_.jpg",
+        "source_url": "https://images.unsplash.com/photo-1585792180666-f7347c490ee2?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": 1500,
         "height": 1000,
@@ -1011,7 +1011,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "https://m.media-amazon.com/images/I/81TjRLHaz1L._SL1500_.jpg",
+    "primary_image_url": "https://images.unsplash.com/photo-1585792180666-f7347c490ee2?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": null,
@@ -1080,7 +1080,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": null,
-        "source_url": "https://m.media-amazon.com/images/I/712+OQd0o7L._SL1500_.jpg",
+        "source_url": "https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": 1500,
         "height": 1500,
@@ -1089,7 +1089,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "https://m.media-amazon.com/images/I/712+OQd0o7L._SL1500_.jpg",
+    "primary_image_url": "https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": null,
@@ -1158,7 +1158,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": null,
-        "source_url": "https://m.media-amazon.com/images/I/61r-GzXnSFL._SL1500_.jpg",
+        "source_url": "https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": 1500,
         "height": 1500,
@@ -1167,7 +1167,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "https://m.media-amazon.com/images/I/61r-GzXnSFL._SL1500_.jpg",
+    "primary_image_url": "https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": null,
@@ -1236,7 +1236,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": null,
-        "source_url": "https://m.media-amazon.com/images/I/51ePfZ0n2jL._SL1200_.jpg",
+        "source_url": "https://images.unsplash.com/photo-1625842268584-8f3296236761?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": 1200,
         "height": 1200,
@@ -1245,7 +1245,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "https://m.media-amazon.com/images/I/51ePfZ0n2jL._SL1200_.jpg",
+    "primary_image_url": "https://images.unsplash.com/photo-1625842268584-8f3296236761?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": null,
@@ -1318,7 +1318,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": null,
-        "source_url": "https://rukminim2.flixcart.com/image/800/800/xif0q/computer/m/b/n/-original-imagfdfpnfhzhyzg.jpeg",
+        "source_url": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": null,
         "height": null,
@@ -1328,7 +1328,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
       },
       {
         "id": null,
-        "source_url": "https://rukminim2.flixcart.com/image/400/400/xif0q/computer/m/b/n/-original-imagfdfpnfhzhyzg.jpeg",
+        "source_url": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=600&auto=format&fit=crop&q=80",
         "image_type": "gallery",
         "width": null,
         "height": null,
@@ -1337,7 +1337,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": false
       }
     ],
-    "primary_image_url": "https://rukminim2.flixcart.com/image/800/800/xif0q/computer/m/b/n/-original-imagfdfpnfhzhyzg.jpeg",
+    "primary_image_url": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": null,
@@ -1422,7 +1422,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": null,
-        "source_url": "https://rukminim2.flixcart.com/image/400/400/xif0q/keyboard/desktop-keyboard/o/k/o/150-wireless-mouse-and-keyboard-combo-hp-original-imaghyw3v6v3y7he.jpeg",
+        "source_url": "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": null,
         "height": null,
@@ -1431,7 +1431,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "https://rukminim2.flixcart.com/image/400/400/xif0q/keyboard/desktop-keyboard/o/k/o/150-wireless-mouse-and-keyboard-combo-hp-original-imaghyw3v6v3y7he.jpeg",
+    "primary_image_url": "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&auto=format&fit=crop&q=80",
     "offers": [],
     "review_summary": null,
     "finance_info": null,
@@ -1486,7 +1486,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": null,
-        "source_url": "https://rukminim2.flixcart.com/image/800/800/xif0q/computer/h/i/e/-original-imah4h2pwhfzgb7k.jpeg",
+        "source_url": "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": null,
         "height": null,
@@ -1496,7 +1496,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
       },
       {
         "id": null,
-        "source_url": "https://rukminim2.flixcart.com/image/400/400/xif0q/computer/h/i/e/-original-imah4h2pwhfzgb7k.jpeg",
+        "source_url": "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=600&auto=format&fit=crop&q=80",
         "image_type": "gallery",
         "width": null,
         "height": null,
@@ -1505,7 +1505,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": false
       }
     ],
-    "primary_image_url": "https://rukminim2.flixcart.com/image/800/800/xif0q/computer/h/i/e/-original-imah4h2pwhfzgb7k.jpeg",
+    "primary_image_url": "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=600&auto=format&fit=crop&q=80",
     "offers": [],
     "review_summary": null,
     "finance_info": null,
@@ -1558,7 +1558,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": null,
-        "source_url": "https://rukminim2.flixcart.com/image/400/400/xif0q/headphone/p/r/z/airdopes-141-boat-original-imaggy25gz8zvyzh.jpeg",
+        "source_url": "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": null,
         "height": null,
@@ -1567,7 +1567,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "https://rukminim2.flixcart.com/image/400/400/xif0q/headphone/p/r/z/airdopes-141-boat-original-imaggy25gz8zvyzh.jpeg",
+    "primary_image_url": "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600&auto=format&fit=crop&q=80",
     "offers": [],
     "review_summary": null,
     "finance_info": null,
@@ -1621,7 +1621,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": null,
-        "source_url": "https://rukminim2.flixcart.com/image/400/400/xif0q/tablet/f/z/j/-original-imagu3j2yhqwh3hy.jpeg",
+        "source_url": "https://images.unsplash.com/photo-1561154464-82e9adf32764?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": null,
         "height": null,
@@ -1630,7 +1630,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "https://rukminim2.flixcart.com/image/400/400/xif0q/tablet/f/z/j/-original-imagu3j2yhqwh3hy.jpeg",
+    "primary_image_url": "https://images.unsplash.com/photo-1561154464-82e9adf32764?w=600&auto=format&fit=crop&q=80",
     "offers": [],
     "review_summary": null,
     "finance_info": null,
@@ -1683,7 +1683,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": null,
-        "source_url": "https://rukminim2.flixcart.com/image/400/400/xif0q/power-bank/t/k/u/-original-imagg5z5gf4fzgzg.jpeg",
+        "source_url": "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": null,
         "height": null,
@@ -1692,7 +1692,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "https://rukminim2.flixcart.com/image/400/400/xif0q/power-bank/t/k/u/-original-imagg5z5gf4fzgzg.jpeg",
+    "primary_image_url": "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=600&auto=format&fit=crop&q=80",
     "offers": [],
     "review_summary": null,
     "finance_info": null,
@@ -1745,7 +1745,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": "img_prod_mouse_05",
-        "source_url": "/images/products/bytemouse_simple.png",
+        "source_url": "https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": null,
         "height": null,
@@ -1754,7 +1754,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "/images/products/bytemouse_simple.png",
+    "primary_image_url": "https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": "offer_kharridlo_prod_mouse_05",
@@ -1823,7 +1823,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": "img_prod_acc_09",
-        "source_url": "/images/products/cable_organizer.png",
+        "source_url": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": null,
         "height": null,
@@ -1832,7 +1832,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "/images/products/cable_organizer.png",
+    "primary_image_url": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": "offer_kharridlo_prod_acc_09",
@@ -1899,7 +1899,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": "img_prod_acc_11",
-        "source_url": "/images/products/cleaning_kit.png",
+        "source_url": "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": null,
         "height": null,
@@ -1908,7 +1908,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "/images/products/cleaning_kit.png",
+    "primary_image_url": "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": "offer_kharridlo_prod_acc_11",
@@ -1977,7 +1977,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": "img_prod_acc_06",
-        "source_url": "/images/products/usbc_cable_2m.png",
+        "source_url": "https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": null,
         "height": null,
@@ -1986,7 +1986,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "/images/products/usbc_cable_2m.png",
+    "primary_image_url": "https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": "offer_kharridlo_prod_acc_06",
@@ -2055,7 +2055,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": "img_prod_acc_04",
-        "source_url": "/images/products/kriyamat_xl.png",
+        "source_url": "https://images.unsplash.com/photo-1616440347437-b1c73416efc2?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": null,
         "height": null,
@@ -2064,7 +2064,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "/images/products/kriyamat_xl.png",
+    "primary_image_url": "https://images.unsplash.com/photo-1616440347437-b1c73416efc2?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": "offer_kharridlo_prod_acc_04",
@@ -2133,7 +2133,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": "img_prod_kb_06",
-        "source_url": "/images/products/bytekeys_essential.png",
+        "source_url": "https://images.unsplash.com/photo-1511467687858-23d96c32e4ae?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": null,
         "height": null,
@@ -2142,7 +2142,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "/images/products/bytekeys_essential.png",
+    "primary_image_url": "https://images.unsplash.com/photo-1511467687858-23d96c32e4ae?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": "offer_kharridlo_prod_kb_06",
@@ -2211,7 +2211,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": "img_prod_acc_10",
-        "source_url": "/images/products/sleeve_pro_15.png",
+        "source_url": "https://images.unsplash.com/photo-1544816155-12df9643f363?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": null,
         "height": null,
@@ -2220,7 +2220,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "/images/products/sleeve_pro_15.png",
+    "primary_image_url": "https://images.unsplash.com/photo-1544816155-12df9643f363?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": "offer_kharridlo_prod_acc_10",
@@ -2289,7 +2289,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": "img_prod_mouse_07",
-        "source_url": "/images/products/aether_pebble.png",
+        "source_url": "https://images.unsplash.com/photo-1613141411244-0e4ac259d217?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": null,
         "height": null,
@@ -2298,7 +2298,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "/images/products/aether_pebble.png",
+    "primary_image_url": "https://images.unsplash.com/photo-1613141411244-0e4ac259d217?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": "offer_kharridlo_prod_mouse_07",
@@ -2367,7 +2367,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": "img_prod_acc_03",
-        "source_url": "/images/products/laptop_stand_alum.png",
+        "source_url": "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": null,
         "height": null,
@@ -2376,7 +2376,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "/images/products/laptop_stand_alum.png",
+    "primary_image_url": "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": "offer_kharridlo_prod_acc_03",
@@ -2445,7 +2445,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": "img_prod_hp_05",
-        "source_url": "/images/products/bytesound_usb.png",
+        "source_url": "https://images.unsplash.com/photo-1577174881658-0f30ed549adc?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": null,
         "height": null,
@@ -2454,7 +2454,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "/images/products/bytesound_usb.png",
+    "primary_image_url": "https://images.unsplash.com/photo-1577174881658-0f30ed549adc?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": "offer_kharridlo_prod_hp_05",
@@ -2525,7 +2525,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": "img_prod_mouse_01",
-        "source_url": "/images/products/precision_mouse.png",
+        "source_url": "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": null,
         "height": null,
@@ -2534,7 +2534,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "/images/products/precision_mouse.png",
+    "primary_image_url": "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": "offer_kharridlo_prod_mouse_01",
@@ -2603,7 +2603,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": "img_prod_mouse_09",
-        "source_url": "/images/products/titan_heavy_mouse.png",
+        "source_url": "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": null,
         "height": null,
@@ -2612,7 +2612,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "/images/products/titan_heavy_mouse.png",
+    "primary_image_url": "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": "offer_kharridlo_prod_mouse_09",
@@ -2681,7 +2681,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": "img_prod_kb_08",
-        "source_url": "/images/products/omnitype_dual.png",
+        "source_url": "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": null,
         "height": null,
@@ -2690,7 +2690,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "/images/products/omnitype_dual.png",
+    "primary_image_url": "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": "offer_kharridlo_prod_kb_08",
@@ -2760,7 +2760,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": "img_prod_kb_02",
-        "source_url": "/images/products/slimtype_wireless.png",
+        "source_url": "https://images.unsplash.com/photo-1595225476474-87563907a212?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": null,
         "height": null,
@@ -2769,7 +2769,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "/images/products/slimtype_wireless.png",
+    "primary_image_url": "https://images.unsplash.com/photo-1595225476474-87563907a212?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": "offer_kharridlo_prod_kb_02",
@@ -2838,7 +2838,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": "img_prod_mouse_10",
-        "source_url": "/images/products/omni_presenter_mouse.png",
+        "source_url": "https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": null,
         "height": null,
@@ -2847,7 +2847,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "/images/products/omni_presenter_mouse.png",
+    "primary_image_url": "https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": "offer_kharridlo_prod_mouse_10",
@@ -2916,7 +2916,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": "img_prod_kb_07",
-        "source_url": "/images/products/aether_foldkey.png",
+        "source_url": "https://images.unsplash.com/photo-1563245372-f21724e3856d?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": null,
         "height": null,
@@ -2925,7 +2925,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "/images/products/aether_foldkey.png",
+    "primary_image_url": "https://images.unsplash.com/photo-1563245372-f21724e3856d?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": "offer_kharridlo_prod_kb_07",
@@ -2994,7 +2994,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": "img_prod_acc_02",
-        "source_url": "/images/products/gan_charger_100w.png",
+        "source_url": "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": null,
         "height": null,
@@ -3003,7 +3003,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "/images/products/gan_charger_100w.png",
+    "primary_image_url": "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": "offer_kharridlo_prod_acc_02",
@@ -3073,7 +3073,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": "img_prod_hp_02",
-        "source_url": "/images/products/airbuds_dev.png",
+        "source_url": "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": null,
         "height": null,
@@ -3082,7 +3082,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "/images/products/airbuds_dev.png",
+    "primary_image_url": "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": "offer_kharridlo_prod_hp_02",
@@ -3150,7 +3150,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": "img_prod_acc_01",
-        "source_url": "/images/products/usbc_hub_10in1.png",
+        "source_url": "https://images.unsplash.com/photo-1625842268584-8f3296236761?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": null,
         "height": null,
@@ -3159,7 +3159,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "/images/products/usbc_hub_10in1.png",
+    "primary_image_url": "https://images.unsplash.com/photo-1625842268584-8f3296236761?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": "offer_kharridlo_prod_acc_01",
@@ -3229,7 +3229,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "images": [
       {
         "id": "img_prod_mouse_02",
-        "source_url": "/images/products/ergovertical_mouse.png",
+        "source_url": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=600&auto=format&fit=crop&q=80",
         "image_type": "primary",
         "width": null,
         "height": null,
@@ -3238,7 +3238,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "is_primary": true
       }
     ],
-    "primary_image_url": "/images/products/ergovertical_mouse.png",
+    "primary_image_url": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=600&auto=format&fit=crop&q=80",
     "offers": [
       {
         "id": "offer_kharridlo_prod_mouse_02",

@@ -409,8 +409,10 @@ export default function ProductDetailPage() {
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm overflow-hidden">
               <div className="relative aspect-video rounded-xl overflow-hidden bg-slate-50 border border-slate-100 flex items-center justify-center">
                 <ProductImage
-                  src={p.image_url || "/assets/laptop-product.png"}
+                  src={p.image_url}
                   alt={p.name}
+                  category={p.category}
+                  productId={p.id}
                   width={600}
                   height={400}
                   priority={true}

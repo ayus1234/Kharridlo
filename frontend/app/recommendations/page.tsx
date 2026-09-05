@@ -297,8 +297,10 @@ export default function RecommendationsPage() {
                 {/* Image */}
                 <Link href={`/product/${p.id}`} className="block overflow-hidden rounded-xl bg-slate-50 mb-4 aspect-video">
                   <ProductImage
-                    src={p.image_url || "/assets/laptop-product.png"}
+                    src={p.image_url}
                     alt={p.name}
+                    category={p.category}
+                    productId={p.id}
                     className="h-full w-full object-cover"
                   />
                 </Link>

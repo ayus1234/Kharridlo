@@ -362,7 +362,15 @@ function AssistantContent() {
                             <div key={product.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white p-2.5 shadow-sm">
                               <div className="flex gap-2.5">
                                 <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-slate-100 bg-slate-50">
-                                  <ProductImage src={product.image_url} alt={product.name} category={product.category} width={48} height={48} className="h-full w-full" />
+                                  <ProductImage
+                                    src={product.image_url}
+                                    alt={product.name}
+                                    category={product.category}
+                                    productId={product.id}
+                                    width={48}
+                                    height={48}
+                                    className="h-full w-full"
+                                  />
                                 </div>
                                 <div className="min-w-0 flex-1">
                                   <p className="line-clamp-2 text-[11px] font-bold leading-snug text-navy-900">{product.name}</p>
@@ -476,6 +484,7 @@ function AssistantContent() {
                         src={p.image_url}
                         alt={p.name}
                         category={p.category}
+                        productId={p.id}
                         width={64}
                         height={64}
                         className="h-full w-full object-cover"
