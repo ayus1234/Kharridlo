@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     PORT: int = 8000
     HOST: str = "0.0.0.0"
-    CORS_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000"
+    CORS_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000,https://kharridlo.vercel.app"
 
     # PostgreSQL Database Configuration
     DATABASE_URL: str = "postgresql+psycopg://postgres:postgres@localhost:5432/dhankriya"
@@ -62,6 +62,15 @@ class Settings(BaseSettings):
     @property
     def cors_origins_list(self) -> List[str]:
         return [origin.strip() for origin in self.CORS_ORIGINS.split(",") if origin.strip()]
+
+    @property
+    def normalized_database_url(self) -> str:
+        url = self.DATABASE_URL
+        if url.startswith("postgres://"):
+            return url.replace("postgres://", "postgresql+psycopg://", 1)
+        if url.startswith("postgresql://") and not url.startswith("postgresql+"):
+            return url.replace("postgresql://", "postgresql+psycopg://", 1)
+        return url
 
 
 settings = Settings()
