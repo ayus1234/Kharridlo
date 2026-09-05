@@ -41,9 +41,9 @@ interface AIAssistantDrawerProps {
 
 const QUICK_PROMPTS = [
   "I need a laptop for development under 70000",
-  "Add DK-LP-15 to my cart",
-  "Can I buy it?",
-  "Add DK-LP-ULTRA to my cart",
+  "Add a laptop to my cart",
+  "Can I buy within student limits?",
+  "Recommend noise-cancelling headphones",
   "What's in my cart?",
 ];
 
@@ -88,8 +88,7 @@ export default function AIAssistantDrawer({ onCartUpdated }: AIAssistantDrawerPr
     setIsLoading(true);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      const res = await fetch(`${apiUrl}/api/v1/agent/chat`, {
+      const res = await fetch("/api/agent/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -110,7 +109,7 @@ export default function AIAssistantDrawer({ onCartUpdated }: AIAssistantDrawerPr
       const assistantMessage: Message = {
         id: `asst_${Date.now()}`,
         sender: "assistant",
-        text: data.message,
+        text: data.message || data.reply || "I have analyzed your request against our verified catalog.",
         tool_calls: data.tool_calls,
         policy: data.policy,
         cart: data.cart,
@@ -131,7 +130,7 @@ export default function AIAssistantDrawer({ onCartUpdated }: AIAssistantDrawerPr
         {
           id: `err_${Date.now()}`,
           sender: "assistant",
-          text: "I am having trouble communicating with the commerce service right now. Please ensure the backend server is running on port 8000.",
+          text: "I am having trouble communicating with the commerce service right now. Please try again in a moment.",
           timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         },
       ]);

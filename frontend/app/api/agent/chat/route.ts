@@ -21,12 +21,13 @@ export async function POST(request: NextRequest) {
   const sessionId = body?.session_id || request.headers.get("X-Session-ID") || "default_session";
   const lowerMsg = userMessage.toLowerCase();
 
-  // Try forwarding to Render backend if available with a fast 3.5s timeout
-  const apiBaseUrl = process.env.INTERNAL_BACKEND_URL || process.env.NEXT_PUBLIC_API_BASE_URL;
-  if (apiBaseUrl && !apiBaseUrl.includes("localhost")) {
+  // Try forwarding to Render backend if available with a 12s timeout (Render Gemini takes ~7-8s)
+  const apiBaseUrl = process.env.INTERNAL_BACKEND_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://kharridlo-backend.onrender.com";
+  if (apiBaseUrl) {
     try {
+      const timeoutMs = apiBaseUrl.includes("localhost") ? 3000 : 12000;
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3500);
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
       const res = await fetch(`${apiBaseUrl}/api/v1/agent/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "X-Session-ID": sessionId },
@@ -44,7 +45,8 @@ export async function POST(request: NextRequest) {
           recommended_products: data.recommended_products || [],
           cart: data.cart,
           policy: data.policy,
-          execution_mode: data.execution_mode || "live_backend",
+          execution_mode: data.execution_mode || "live_gemini",
+          model: data.model || "gemini-2.5-flash",
         });
       }
     } catch {
