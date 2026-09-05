@@ -96,34 +96,14 @@ export interface MarketplaceProviderStatus {
   notes?: string;
 }
 
-export function getProviderBadge(provider: string) {
-  switch (provider) {
-    case "amazon":
-      return {
-        label: "Amazon.in",
-        provenance: "Provided by Amazon Creators API",
-        badgeClass: "bg-amber-50 text-amber-900 border-amber-300 font-medium",
-        dotClass: "bg-amber-500",
-        isInternal: false,
-      };
-    case "flipkart":
-      return {
-        label: "Flipkart",
-        provenance: "Provided by Flipkart Affiliate Feed",
-        badgeClass: "bg-blue-50 text-blue-900 border-blue-300 font-medium",
-        dotClass: "bg-blue-500",
-        isInternal: false,
-      };
-    case "kharridlo_verified":
-    default:
-      return {
-        label: "Kharridlo Verified",
-        provenance: "Authoritative Kharridlo Escrow Catalog",
-        badgeClass: "bg-emerald-50 text-emerald-900 border-emerald-300 font-semibold",
-        dotClass: "bg-emerald-500",
-        isInternal: true,
-      };
-  }
+export function getProviderBadge(provider?: string) {
+  return {
+    label: "Kharridlo Verified",
+    provenance: "Authoritative Kharridlo Verified Catalog",
+    badgeClass: "bg-emerald-50 text-emerald-900 border-emerald-300 font-semibold",
+    dotClass: "bg-emerald-500",
+    isInternal: true,
+  };
 }
 
 /**

@@ -18,15 +18,14 @@ import {
   Layers,
   Zap,
   Check,
-  AlertCircle,
-  ExternalLink
+  AlertCircle
 } from "lucide-react";
 import BuyerNavbar from "@/components/BuyerNavbar";
 import BuyerFooter from "@/components/BuyerFooter";
 import ProductImage from "@/components/ProductImage";
 import BentoCard from "@/components/BentoCard";
 import { getOrCreateSessionId } from "@/lib/session";
-import { getProviderBadge, getMarketplaceRedirectUrl } from "@/lib/marketplace";
+import { getProviderBadge } from "@/lib/marketplace";
 import { getCuratedProductById } from "@/lib/curated-catalog";
 
 interface ProductDetail {
@@ -419,7 +418,7 @@ export default function ProductDetailPage() {
                   className="h-full w-full object-cover"
                 />
                 <span className="absolute top-3 left-3 text-[10px] font-mono-data font-bold uppercase tracking-wider text-growth-dark bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 shadow-2xs">
-                  {p.provider === "amazon" ? "Amazon Creators Catalog" : p.provider === "flipkart" ? "Flipkart Affiliate Feed" : "Student Tier Verified"}
+                  Kharridlo Verified
                 </span>
               </div>
             </div>
@@ -487,7 +486,7 @@ export default function ProductDetailPage() {
               {activeTab === "original" && (
                 <div className="space-y-2">
                   <div className="text-[11px] font-mono text-slate-400 uppercase tracking-wider">
-                    Exact provider text ({getProviderBadge(p.provider || "kharridlo_verified").label}):
+                    Verified Product Details:
                   </div>
                   <div className="text-xs text-slate-700 leading-relaxed whitespace-pre-line bg-slate-50 p-4 rounded-xl border border-slate-100 max-h-60 overflow-y-auto">
                     {p.original_description || p.description || "Original description not provided by marketplace"}
@@ -630,18 +629,6 @@ export default function ProductDetailPage() {
                     <span>Compare</span>
                   </Link>
                 </div>
-
-                {p.canonical_url && (
-                  <a
-                    href={getMarketplaceRedirectUrl(p.provider || "kharridlo_verified", p.id || p.sku, p.name, p.canonical_url)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs transition-all flex items-center justify-center gap-2 border border-slate-200/80"
-                  >
-                    <span>View original on {getProviderBadge(p.provider || "").label}</span>
-                    <ExternalLink className="h-3.5 w-3.5 text-slate-500" />
-                  </a>
-                )}
               </div>
             </div>
 

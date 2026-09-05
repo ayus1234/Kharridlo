@@ -228,7 +228,7 @@ export default function RecommendationsPage() {
                 AI Recommended Hardware
               </h1>
               <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                Curated from Amazon, Flipkart, and verified gear against student spending limits and performance benchmarks.
+                Personalized AI suggestions and verified gear against student spending limits and performance benchmarks.
               </p>
             </div>
 
@@ -277,16 +277,10 @@ export default function RecommendationsPage() {
                     {p.badge}
                   </span>
                   <div className="flex items-center gap-1.5">
-                    {p.provider === "amazon" && (
-                      <span className="text-[10px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
-                        Amazon
-                      </span>
-                    )}
-                    {p.provider === "flipkart" && (
-                      <span className="text-[10px] font-semibold text-blue-800 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">
-                        Flipkart
-                      </span>
-                    )}
+                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      Kharridlo Verified
+                    </span>
                     <span className="inline-flex items-center gap-1 text-[11px] font-mono-data font-bold text-growth-dark bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                       <Star className="h-3 w-3 fill-growth-emerald text-growth-emerald" />
                       {p.matchScore}% Match

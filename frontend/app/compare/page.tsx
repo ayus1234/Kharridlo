@@ -6,7 +6,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
   CheckCircle2,
-  ExternalLink,
   GitCompare,
   Plus,
   Search,
@@ -17,7 +16,7 @@ import {
 import BuyerNavbar from "@/components/BuyerNavbar";
 import BuyerFooter from "@/components/BuyerFooter";
 import ProductImage from "@/components/ProductImage";
-import { getMarketplaceRedirectUrl, getProviderBadge } from "@/lib/marketplace";
+import { getProviderBadge } from "@/lib/marketplace";
 import { getOrCreateSessionId } from "@/lib/session";
 
 interface Product {
@@ -293,7 +292,7 @@ function CompareContent() {
                     <div className="relative mb-2 h-32 overflow-hidden rounded-xl bg-slate-100"><ProductImage src={product.image_url} alt={product.name} category={product.category} productId={product.id} className="h-full w-full" /><span className={`absolute left-2 top-2 inline-flex items-center gap-1 rounded border px-2 py-0.5 text-[9px] font-semibold shadow-sm ${badge.badgeClass}`}><span className={`h-1.5 w-1.5 rounded-full ${badge.dotClass}`} />{badge.label}</span></div>
                     <h3 className="line-clamp-2 font-display text-sm font-bold text-navy-900">{product.name}</h3>
                     <div className="font-display text-base font-bold text-navy-900">₹{product.price_inr.toLocaleString("en-IN")}</div>
-                    {product.can_authoritative_checkout === false ? <a href={getMarketplaceRedirectUrl(product.provider || "", product.provider_product_id || product.sku, product.name, product.canonical_url)} target="_blank" rel="noopener noreferrer" className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-800 transition-colors hover:bg-slate-200">View on {badge.label}<ExternalLink className="h-3 w-3" /></a> : <button onClick={() => handleAddToCart(product)} className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-navy-900 px-3 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-ai-violet"><Plus className="h-3 w-3" /> Add to cart</button>}
+                    <button onClick={() => handleAddToCart(product)} className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-navy-900 px-3 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-ai-violet"><Plus className="h-3 w-3" /> Add to cart</button>
                   </div></th>;
                 })}
               </tr></thead>
@@ -303,7 +302,7 @@ function CompareContent() {
                   const hasDifference = new Set(values.map((value) => value.trim().toLowerCase())).size > 1;
                   return <tr key={row.label} className="transition-colors hover:bg-slate-50/50"><td className="bg-slate-50/40 p-4 font-mono-data font-semibold text-slate-500">{row.label}</td>{values.map((value, index) => <td key={`${comparedProducts[index].id}-${row.label}`} className={`p-4 font-medium text-navy-900 ${highlightDifferences && hasDifference ? "bg-amber-50/70" : ""}`}>{value}</td>)}</tr>;
                 })}
-                <tr><td className="bg-slate-50/40 p-4 font-mono-data font-semibold text-slate-500">Checkout</td>{comparedProducts.map((product) => <td key={product.id} className="p-4">{product.can_authoritative_checkout === false ? <span className="inline-flex items-center gap-1 rounded border border-amber-200 bg-amber-50 px-2 py-0.5 font-mono-data text-[10px] font-semibold text-amber-800">External retailer</span> : <span className="inline-flex items-center gap-1 rounded border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-mono-data text-[10px] font-semibold text-growth-dark"><ShieldCheck className="h-3 w-3" /> Verified checkout</span>}</td>)}</tr>
+                <tr><td className="bg-slate-50/40 p-4 font-mono-data font-semibold text-slate-500">Checkout</td>{comparedProducts.map((product) => <td key={product.id} className="p-4"><span className="inline-flex items-center gap-1 rounded border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-mono-data text-[10px] font-semibold text-growth-dark"><ShieldCheck className="h-3 w-3" /> Verified checkout</span></td>)}</tr>
               </tbody>
             </table>
           </div>

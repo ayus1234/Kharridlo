@@ -142,12 +142,12 @@ export async function POST(request: NextRequest) {
     responseText = `Based on your requirements, I recommend the **${topPick?.name}** at ${formattedPrice}.\n\n` +
       `• **Curriculum Fit**: Ideal for Computer Science coursework, concurrent development, VS Code, and containerized Docker builds.\n` +
       `• **Policy Compliance**: Fully qualifies under your **${currentTier.name}** (single-transaction limit ₹${(currentTier.max_single_transaction_inr).toLocaleString("en-IN")}).\n` +
-      `• **Multi-Marketplace Options**: Checked across Amazon.in, Flipkart, and Kharridlo Verified. You can add it directly to your escrow cart below or compare it side-by-side with alternatives.`;
+      `• **Kharridlo Verified**: Sourced and verified with guaranteed escrow protection. You can add it directly to your escrow cart below or compare it side-by-side with alternatives.`;
   } else if (matchedCategory) {
     responseText = `Here are the top-rated verified **${matchedCategory}** options that match your budget and student spending limits.\n\n` +
       `All listed items are covered by Kharridlo's deterministic policy engine and eligible for instant Razorpay test settlement.`;
   } else {
-    responseText = `I searched the multi-marketplace catalog for *"${userMessage}"*. Here are the top verified hardware recommendations matching your current **${currentTier.name}** policy.`;
+    responseText = `I searched the verified catalog for *"${userMessage}"*. Here are the top hardware recommendations matching your current **${currentTier.name}** policy.`;
   }
 
   return NextResponse.json({

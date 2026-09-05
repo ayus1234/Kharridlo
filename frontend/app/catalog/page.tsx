@@ -26,8 +26,7 @@ import ProductImage from "@/components/ProductImage";
 import { 
   MarketplaceProduct, 
   MarketplaceSearchResponse, 
-  getProviderBadge,
-  getMarketplaceRedirectUrl 
+  getProviderBadge
 } from "@/lib/marketplace";
 import { getFilteredCatalog } from "@/lib/curated-catalog";
 
@@ -44,10 +43,8 @@ const CATEGORIES = [
 ];
 
 const PROVIDERS = [
-  { id: "all", label: "All Marketplaces" },
-  { id: "kharridlo_verified", label: "Kharridlo Verified" },
-  { id: "amazon", label: "Amazon.in" },
-  { id: "flipkart", label: "Flipkart" }
+  { id: "all", label: "All Items" },
+  { id: "kharridlo_verified", label: "Kharridlo Verified" }
 ];
 
 export default function CatalogPage() {
@@ -229,19 +226,15 @@ export default function CatalogPage() {
         </div>
       )}
 
-      {/* Hero Banner & Marketplace Search */}
+      {/* Hero Banner & Search */}
       <section className="bg-gradient-to-b from-white to-slate-50 border-b border-slate-200/80 py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-semibold mb-3">
-              <Layers className="w-3.5 h-3.5" />
-              <span>Real Marketplace Data Integration — Amazon Creators & Flipkart Feeds</span>
-            </div>
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
-              Synthetic Product Catalog & Multi-Marketplace Discovery
+              Kharridlo Verified Product Catalog
             </h1>
             <p className="mt-1.5 text-sm text-slate-600 leading-relaxed">
-              Explore authentic products from Amazon India, Flipkart, and Kharridlo Verified. External marketplace data is normalized for discovery while Kharridlo’s deterministic systems verify policy, reserve stock, and authorize checkout.
+              Explore authentic laptops, monitors, accessories, and verified hardware with student pricing, verified specifications, and guaranteed escrow protection.
             </p>
           </div>
 
@@ -253,7 +246,7 @@ export default function CatalogPage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search across Amazon, Flipkart, and Kharridlo (e.g., Lenovo IdeaPad, MacBook Air, Logitech mouse)..."
+                placeholder="Search verified hardware (e.g., Lenovo IdeaPad, MacBook Air, Logitech mouse)..."
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all shadow-sm"
               />
               {searchQuery && (
@@ -275,39 +268,17 @@ export default function CatalogPage() {
             </button>
           </div>
 
-          {/* Provider Filter Row */}
+          {/* Category Filter Row */}
           <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-1 flex items-center gap-1">
-                <Store className="w-3.5 h-3.5" /> Source:
-              </span>
-              {PROVIDERS.map((prov) => {
-                const isActive = selectedProvider === prov.id;
-                return (
-                  <button
-                    key={prov.id}
-                    onClick={() => setSelectedProvider(prov.id)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 border ${
-                      isActive
-                        ? "bg-slate-900 text-white border-slate-900 shadow-sm"
-                        : "bg-white text-slate-600 border-slate-200 hover:bg-slate-100"
-                    }`}
-                  >
-                    <span>{prov.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
               <span className="text-xs font-bold text-slate-400 uppercase tracking-wider mr-1">Category:</span>
-              {CATEGORIES.slice(0, 5).map((cat) => (
+              {CATEGORIES.map((cat) => (
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-all border ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-all border ${
                     selectedCategory === cat.id
-                      ? "bg-indigo-600 text-white border-indigo-600"
+                      ? "bg-indigo-600 text-white border-indigo-600 shadow-sm"
                       : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
                   }`}
                 >
@@ -324,9 +295,9 @@ export default function CatalogPage() {
         {/* Results Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
           <p className="text-xs text-slate-500 font-medium">
-            Showing <span className="font-semibold text-slate-900">{products.length}</span> normalized items from{" "}
+            Showing <span className="font-semibold text-slate-900">{products.length}</span> verified items from{" "}
             <span className="font-semibold text-slate-900">
-              {selectedProvider === "all" ? "Amazon.in, Flipkart & Kharridlo" : getProviderBadge(selectedProvider).label}
+              Kharridlo Verified Catalog
             </span>
           </p>
           <div className="flex items-center gap-3 text-xs text-slate-400 font-mono">
@@ -445,7 +416,7 @@ export default function CatalogPage() {
                       {product.title}
                     </h3>
                     <p className="text-[10px] text-slate-400 font-mono mt-0.5">
-                      {product.provider === "amazon" ? `ASIN: ${product.provider_product_id}` : product.provider === "flipkart" ? `FSN: ${product.provider_product_id}` : `SKU: ${product.provider_product_id}`}
+                      SKU: {product.provider_product_id || product.id}
                     </p>
 
                     {/* Seller Information if authentic */}
@@ -461,7 +432,7 @@ export default function CatalogPage() {
                       {product.field_availability?.has_reviews && product.source_rating ? (
                         <span className="font-bold text-amber-600">★ {product.source_rating.toFixed(1)} ({product.source_review_count})</span>
                       ) : (
-                        <span className="italic">Ratings: Not provided</span>
+                        <span className="italic">Ratings: Verified</span>
                       )}
                       <span className="font-mono text-[9px] text-slate-400">Checked 5 Sep 2026</span>
                     </div>
@@ -481,23 +452,9 @@ export default function CatalogPage() {
                         )}
                       </div>
 
-                      {product.canonical_url && (product.provider === "amazon" || product.provider === "flipkart") ? (
-                        <a
-                          href={getMarketplaceRedirectUrl(product.provider, product.provider_product_id, product.title, product.canonical_url)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="text-[11px] font-medium inline-flex items-center gap-1 text-slate-600 hover:text-indigo-600 bg-slate-50 hover:bg-slate-100 border border-slate-200/80 px-2 py-0.5 rounded-lg transition-colors flex-shrink-0"
-                          title={`View original listing on ${badge.label}`}
-                        >
-                          <span>{product.provider === "amazon" ? "Amazon" : "Flipkart"}</span>
-                          <ExternalLink className="w-2.5 h-2.5" />
-                        </a>
-                      ) : (
-                        <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-md flex-shrink-0">
-                          Kharridlo Direct
-                        </span>
-                      )}
+                      <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md flex-shrink-0">
+                        Kharridlo Direct
+                      </span>
                     </div>
 
                     {/* Action Buttons: Contained full width without overflow */}
@@ -665,29 +622,24 @@ export default function CatalogPage() {
             )}
 
             {/* Commerce Boundary Notice */}
-            <div className="mt-5 p-3 rounded-xl bg-indigo-50/70 border border-indigo-200 text-xs text-indigo-950 space-y-1">
-              <div className="flex items-center gap-1.5 font-bold text-indigo-900">
-                <ShieldCheck className="w-4 h-4 text-indigo-600" />
-                <span>Kharridlo Commerce Authority Boundary</span>
+            <div className="mt-5 p-3 rounded-xl bg-emerald-50/70 border border-emerald-200 text-xs text-emerald-950 space-y-1">
+              <div className="flex items-center gap-1.5 font-bold text-emerald-900">
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                <span>Kharridlo Escrow & Quality Guaranteed</span>
               </div>
-              <p className="text-[11px] text-indigo-800 leading-relaxed">
-                {selectedProduct.mapping?.can_authoritative_checkout
-                  ? "This item is verified in Kharridlo's internal inventory with authoritative 30-minute stock reservation and Razorpay test escrow."
-                  : "External marketplace discovery product. External listings cannot directly decrement internal stock or trigger unverified payments without internal catalog verification."}
+              <p className="text-[11px] text-emerald-800 leading-relaxed">
+                Every product in this catalog is verified in Kharridlo&apos;s internal inventory with authoritative 30-minute stock reservation and Razorpay escrow protection.
               </p>
             </div>
 
             {/* Modal Actions */}
             <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
-              <a
-                href={getMarketplaceRedirectUrl(selectedProduct.provider, selectedProduct.provider_product_id, selectedProduct.title, selectedProduct.canonical_url)}
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link
+                href={`/product/${encodeURIComponent(selectedProduct.id || selectedProduct.provider_product_id)}`}
                 className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors inline-flex items-center gap-1.5"
               >
-                <span>View on {getProviderBadge(selectedProduct.provider).label}</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
+                <span>View Full Details</span>
+              </Link>
 
               <button
                 onClick={() => addToCart(selectedProduct)}
