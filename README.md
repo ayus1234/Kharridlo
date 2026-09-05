@@ -137,6 +137,8 @@ Traditional online shopping is plagued by decision paralysis: students and devel
 
 ### Part 1: Autonomous AI Buyer Experience
 
+---
+
 #### 1. AI Intent Landing & Natural Language Discovery
 ![AI Intent Landing & Natural Language Discovery](docs/screenshots/01-landing-intent-engine.png)
 *Natural language intent search bar allowing students and developers to describe technical setups in plain conversational language.*
@@ -162,6 +164,8 @@ Traditional online shopping is plagued by decision paralysis: students and devel
 ---
 
 ### Part 2: Merchant Governance, Telemetry & Agentic Operations
+
+---
 
 #### 5. Merchant Dashboard & Governance Overview
 ![Merchant Dashboard & Governance Overview](docs/screenshots/05-merchant-governance-overview.png)
