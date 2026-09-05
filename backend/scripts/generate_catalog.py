@@ -69,14 +69,14 @@ catalog = [
     {
         "id": "prod_lp_05",
         "sku": "DK-LP-05",
-        "name": "KriyaBook 15 SE",
-        "brand": "KriyaTech",
+        "name": "NovaBook 15 SE",
+        "brand": "TechNova",
         "category": "laptop",
         "price_paise": 5299900,  # ₹52,999
         "currency": "INR",
         "description": "Reliable budget developer laptop with 16GB dual-channel memory and Ryzen 5 processor for smooth full-stack coding.",
         "specs": {"processor": "AMD Ryzen 5 7535HS", "ram_gb": 16, "storage_gb": 512, "display": "15.6-inch FHD 144Hz", "weight_kg": 1.7},
-        "image_url": "/images/products/kriyabook_15.png",
+        "image_url": "/images/products/novabook_15.png",
         "available_quantity": 25,
         "reserved_quantity": 0,
         "low_stock_threshold": 5
@@ -159,14 +159,14 @@ catalog = [
     {
         "id": "prod_lp_11",
         "sku": "DK-LP-11",
-        "name": "KriyaBook AI Edition",
-        "brand": "KriyaTech",
+        "name": "NovaBook AI Edition",
+        "brand": "TechNova",
         "category": "laptop",
         "price_paise": 6699900,  # ₹66,999 (Under ₹70k)
         "currency": "INR",
         "description": "Dedicated NPU-accelerated laptop featuring Ryzen AI processor for on-device AI agent execution and fast local compilation.",
         "specs": {"processor": "AMD Ryzen 7 8845HS", "ram_gb": 16, "storage_gb": 512, "display": "15.6-inch 2.5K 120Hz", "weight_kg": 1.65},
-        "image_url": "/images/products/kriyabook_ai.png",
+        "image_url": "/images/products/novabook_ai.png",
         "available_quantity": 16,
         "reserved_quantity": 2,
         "low_stock_threshold": 4
@@ -358,14 +358,14 @@ catalog = [
     {
         "id": "prod_ph_04",
         "sku": "DK-PH-04",
-        "name": "KriyaPhone Lite",
-        "brand": "KriyaTech",
+        "name": "NovaPhone Lite",
+        "brand": "TechNova",
         "category": "smartphone",
         "price_paise": 1499900,  # ₹14,999
         "currency": "INR",
         "description": "Value-first 5G phone with long battery life, 33W charging, and 3.5mm audio jack.",
         "specs": {"processor": "MediaTek Dimensity 6100+", "ram_gb": 6, "storage_gb": 128, "display": "6.56-inch 90Hz LCD", "camera": "50MP Main", "battery_mah": 5000},
-        "image_url": "/images/products/kriyaphone_lite.png",
+        "image_url": "/images/products/novaphone_lite.png",
         "available_quantity": 50,
         "reserved_quantity": 4,
         "low_stock_threshold": 10
@@ -497,14 +497,14 @@ catalog = [
     {
         "id": "prod_mon_03",
         "sku": "DK-MON-03",
-        "name": "KriyaVision 24 Developer",
-        "brand": "KriyaTech",
+        "name": "NovaVision 24 Developer",
+        "brand": "TechNova",
         "category": "monitor",
         "price_paise": 1149900,  # ₹11,499
         "currency": "INR",
         "description": "Crisp 24-inch Full HD monitor with vertical pivot stand, ideal as a dedicated vertical code-reading secondary display.",
         "specs": {"size_inches": 24, "resolution": "1920x1080 (FHD)", "panel": "IPS 100Hz", "stand": "Pivot 90 deg, Height, Swivel", "ports": "HDMI, DisplayPort"},
-        "image_url": "/images/products/kriyavision_24.png",
+        "image_url": "/images/products/novavision_24.png",
         "available_quantity": 28,
         "reserved_quantity": 3,
         "low_stock_threshold": 5
@@ -651,14 +651,14 @@ catalog = [
     {
         "id": "prod_kb_03",
         "sku": "DK-KB-03",
-        "name": "KriyaType Ergo Split",
-        "brand": "KriyaTech",
+        "name": "NovaType Ergo Split",
+        "brand": "TechNova",
         "category": "keyboard",
         "price_paise": 899900,  # ₹8,999
         "currency": "INR",
         "description": "Ergonomic split-column mechanical keyboard designed to relieve wrist strain during marathon software sprints.",
         "specs": {"layout": "Split Ortholinear", "connectivity": "USB-C Wired + TRRS", "switches": "Gateron Brown Tactile"},
-        "image_url": "/images/products/kriyatype_ergo.png",
+        "image_url": "/images/products/novatype_ergo.png",
         "available_quantity": 8,
         "reserved_quantity": 0,
         "low_stock_threshold": 3
@@ -775,14 +775,14 @@ catalog = [
     {
         "id": "prod_mouse_03",
         "sku": "DK-MS-03",
-        "name": "KriyaTrack Thumb Trackball",
-        "brand": "KriyaTech",
+        "name": "NovaTrack Thumb Trackball",
+        "brand": "TechNova",
         "category": "mouse",
         "price_paise": 379900,  # ₹3,799
         "currency": "INR",
         "description": "Stationary ergonomic trackball mouse that eliminates arm movement across tight desks.",
         "specs": {"ball_diameter_mm": 34, "connectivity": "Bluetooth + USB Dongle", "dpi_levels": "500/1000/1600"},
-        "image_url": "/images/products/kriyatrack_mouse.png",
+        "image_url": "/images/products/novatrack_mouse.png",
         "available_quantity": 12,
         "reserved_quantity": 0,
         "low_stock_threshold": 3
@@ -929,14 +929,14 @@ catalog = [
     {
         "id": "prod_hp_03",
         "sku": "DK-HP-03",
-        "name": "KriyaAcoustic OpenEar Studio",
-        "brand": "KriyaTech",
+        "name": "NovaAcoustic OpenEar Studio",
+        "brand": "TechNova",
         "category": "headphones",
         "price_paise": 1199900,  # ₹11,999
         "currency": "INR",
         "description": "Open-back reference headphones offering wide, natural soundstage and breathable velour earpads.",
         "specs": {"type": "Open-Back Dynamic", "impedance_ohm": 80, "frequency_hz": "5 - 35,000", "cable": "3m Detachable Oxygen-Free"},
-        "image_url": "/images/products/kriya_openear.png",
+        "image_url": "/images/products/nova_openear.png",
         "available_quantity": 8,
         "reserved_quantity": 0,
         "low_stock_threshold": 2
@@ -1053,14 +1053,14 @@ catalog = [
     {
         "id": "prod_tab_03",
         "sku": "DK-TAB-03",
-        "name": "KriyaNote E-Ink Reader",
-        "brand": "KriyaTech",
+        "name": "NovaNote E-Ink Reader",
+        "brand": "TechNova",
         "category": "tablet",
         "price_paise": 2499900,  # ₹24,999
         "currency": "INR",
         "description": "10.3-inch glare-free Carta 1200 E-Ink tablet for deep reading, technical whitepapers, and natural paper note-taking.",
         "specs": {"display": "10.3-inch E-Ink Carta 300 PPI", "storage_gb": 64, "battery_weeks": 4, "pen": "Wacom EMR Battery-Free Stylus"},
-        "image_url": "/images/products/kriyanote_eink.png",
+        "image_url": "/images/products/novanote_eink.png",
         "available_quantity": 18,
         "reserved_quantity": 1,
         "low_stock_threshold": 4
@@ -1162,14 +1162,14 @@ catalog = [
     {
         "id": "prod_acc_04",
         "sku": "DK-ACC-04",
-        "name": "KriyaMat Desk Pad XL",
-        "brand": "KriyaTech",
+        "name": "DeskMat Pro Desk Pad XL",
+        "brand": "TechNova",
         "category": "accessories",
         "price_paise": 79900,  # ₹799
         "currency": "INR",
         "description": "900x400mm waterproof vegan leather desk mat with micro-textured glide surface for mice and keyboards.",
         "specs": {"dimensions_mm": "900 x 400 x 2", "material": "PU Leather Dual-Sided", "waterproof": True},
-        "image_url": "/images/products/kriyamat_xl.png",
+        "image_url": "/images/products/novamat_xl.png",
         "available_quantity": 60,
         "reserved_quantity": 0,
         "low_stock_threshold": 12

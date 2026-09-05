@@ -2033,8 +2033,8 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
     "provider": "kharridlo_verified",
     "provider_product_id": "DK-ACC-04",
     "canonical_url": "/product/prod_acc_04",
-    "title": "KriyaMat Desk Pad XL",
-    "brand": "KriyaTech",
+    "title": "TechNova DeskMat Pro Vegan Leather XL",
+    "brand": "TechNova",
     "category": "accessories",
     "subcategory": null,
     "original_description": "900x400mm waterproof vegan leather desk mat with micro-textured glide surface for mice and keyboards.",
@@ -2059,7 +2059,7 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
         "image_type": "primary",
         "width": null,
         "height": null,
-        "alt_text": "KriyaMat Desk Pad XL",
+        "alt_text": "TechNova DeskMat Pro Vegan Leather XL",
         "sort_order": 0,
         "is_primary": true
       }
