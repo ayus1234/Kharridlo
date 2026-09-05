@@ -409,13 +409,14 @@ export default function CatalogPage() {
                       </div>
                     )}
 
-                    {/* Reviews & Ratings: Honest Provenance */}
-                    <div className="mt-2 text-[10px]">
+                    {/* Reviews & Ratings: Honest Provenance & Freshness */}
+                    <div className="mt-2 text-[10px] flex items-center justify-between text-slate-400">
                       {product.field_availability?.has_reviews && product.source_rating ? (
-                        <span className="font-bold text-amber-600">★ {product.source_rating.toFixed(1)} ({product.source_review_count} reviews)</span>
+                        <span className="font-bold text-amber-600">★ {product.source_rating.toFixed(1)} ({product.source_review_count})</span>
                       ) : (
-                        <span className="text-slate-400 italic">Ratings: Not provided by marketplace</span>
+                        <span className="italic">Ratings: Not provided</span>
                       )}
+                      <span className="font-mono text-[9px] text-slate-400">Checked 5 Sep 2026</span>
                     </div>
                   </div>
 
@@ -442,13 +443,25 @@ export default function CatalogPage() {
                         {isOOS ? "OOS" : isAdding ? "Adding..." : "Add to Cart"}
                       </button>
                     ) : (
-                      <button
-                        onClick={() => setSelectedProduct(product)}
-                        className="text-xs font-medium inline-flex items-center gap-1 text-slate-700 bg-slate-100 hover:bg-slate-200 px-2.5 py-1.5 rounded-xl transition-colors"
-                      >
-                        <span>Details</span>
-                        <ExternalLink className="w-3 h-3 text-slate-500" />
-                      </button>
+                      <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          onClick={() => setSelectedProduct(product)}
+                          className="text-xs font-medium inline-flex items-center gap-1 text-slate-700 bg-slate-100 hover:bg-slate-200 px-2.5 py-1.5 rounded-xl transition-colors"
+                          title="View specifications & provenance"
+                        >
+                          <span>Specs</span>
+                        </button>
+                        <a
+                          href={product.canonical_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs font-semibold inline-flex items-center gap-1 text-white bg-slate-900 hover:bg-indigo-600 px-3 py-1.5 rounded-xl transition-colors shadow-sm"
+                          title={`View on ${badge.label}`}
+                        >
+                          <span>{product.provider === "amazon" ? "Amazon" : product.provider === "flipkart" ? "Flipkart" : "Store"}</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </div>
                     )}
                   </div>
                 </div>

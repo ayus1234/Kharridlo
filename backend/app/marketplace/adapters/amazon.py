@@ -121,9 +121,9 @@ class AmazonCreatorsAdapter(BaseMarketplaceAdapter):
                 normalized = self._search_fixtures(query, min_price_paise, max_price_paise)
         else:
             # Deterministic authentic fixture fallback for offline/development mode
-            normalized = self._search_fixtures(query, min_price_paise, max_price_paise)
+            normalized = self._search_fixtures(query, category=category, min_price_paise=min_price_paise, max_price_paise=max_price_paise)
 
-        # Apply client-side price filtering if needed
+        # Apply client-side price and category filtering if needed
         filtered = []
         for p in normalized:
             price = p.get("source_price_minor")
@@ -131,6 +131,13 @@ class AmazonCreatorsAdapter(BaseMarketplaceAdapter):
                 continue
             if max_price_paise is not None and price is not None and price > max_price_paise:
                 continue
+            if category:
+                cat_lower = category.lower().strip()
+                p_cat = (p.get("category") or "").lower()
+                p_subcat = (p.get("subcategory") or "").lower()
+                p_title = (p.get("title") or "").lower()
+                if cat_lower not in p_cat and cat_lower not in p_subcat and cat_lower not in p_title:
+                    continue
             filtered.append(p)
 
         sliced = filtered[offset : offset + limit]
@@ -166,6 +173,7 @@ class AmazonCreatorsAdapter(BaseMarketplaceAdapter):
     def _search_fixtures(
         self,
         query: str,
+        category: Optional[str] = None,
         min_price_paise: Optional[int] = None,
         max_price_paise: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
@@ -330,11 +338,18 @@ class AmazonCreatorsAdapter(BaseMarketplaceAdapter):
             "has_specifications": bool(specs),
         }
 
+        dp_url = raw_payload.get("DetailPageURL")
+        tag = settings.AMAZON_PARTNER_TAG or "kharridlo-21"
+        if dp_url:
+            canonical_url = dp_url if f"tag={tag}" in dp_url else (f"{dp_url}&tag={tag}" if "?" in dp_url else f"{dp_url}?tag={tag}")
+        else:
+            canonical_url = f"https://www.amazon.in/dp/{asin}?tag={tag}"
+
         return {
             "id": f"amz_{asin}",
             "provider": self.provider_code,
             "provider_product_id": asin,
-            "canonical_url": raw_payload.get("DetailPageURL", f"https://www.amazon.in/dp/{asin}"),
+            "canonical_url": canonical_url,
             "title": title,
             "brand": brand,
             "category": category,

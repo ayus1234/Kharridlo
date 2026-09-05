@@ -67,7 +67,7 @@ class FlipkartAffiliateAdapter(BaseMarketplaceAdapter):
                 warnings.append("Flipkart affiliate feed temporarily unavailable; falling back to verified catalog.")
                 normalized = self._search_fixtures(query, min_price_paise, max_price_paise)
         else:
-            normalized = self._search_fixtures(query, min_price_paise, max_price_paise)
+            normalized = self._search_fixtures(query, category=category, min_price_paise=min_price_paise, max_price_paise=max_price_paise)
 
         filtered = []
         for p in normalized:
@@ -76,6 +76,13 @@ class FlipkartAffiliateAdapter(BaseMarketplaceAdapter):
                 continue
             if max_price_paise is not None and price is not None and price > max_price_paise:
                 continue
+            if category:
+                cat_lower = category.lower().strip()
+                p_cat = (p.get("category") or "").lower()
+                p_subcat = (p.get("subcategory") or "").lower()
+                p_title = (p.get("title") or "").lower()
+                if cat_lower not in p_cat and cat_lower not in p_subcat and cat_lower not in p_title:
+                    continue
             filtered.append(p)
 
         sliced = filtered[offset : offset + limit]
@@ -111,6 +118,7 @@ class FlipkartAffiliateAdapter(BaseMarketplaceAdapter):
     def _search_fixtures(
         self,
         query: str,
+        category: Optional[str] = None,
         min_price_paise: Optional[int] = None,
         max_price_paise: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
