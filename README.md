@@ -45,6 +45,8 @@ Traditional online shopping is plagued by decision paralysis: students and devel
 * Understands nuanced student requirements (e.g., *"Laptop for AI/ML coursework under ₹70k with at least 16GB RAM and matching mechanical keyboard"*).
 * Evaluates technical trade-offs, compute constraints, and provides explainable rationale without hallucinating inventory.
 
+---
+
 ### 2. 🛡️ Deterministic Policy Engine (`/merchant/policies`)
 * Enforces strict, rule-based governance on the backend:
   * **Tier 1 (Instant):** Up to ₹10,000 — frictionless student checkout.
@@ -53,24 +55,34 @@ Traditional online shopping is plagued by decision paralysis: students and devel
   * **Enterprise Limits:** Standard ₹70,000, Elevated ₹1,50,000.
 * **Zero payment credentials or card data ever touch the AI context.**
 
+---
+
 ### 3. ⏱️ 30-Minute Atomic Inventory Reservation
 * Real-time inventory hold state machine prevents race conditions and cart conflicts.
 * Visual countdown timer gives buyers 30 minutes of guaranteed pricing and stock availability before automatic release.
+
+---
 
 ### 4. 💳 Razorpay Test Mode Payment Pipeline
 * Secure, production-grade checkout modal configured with Razorpay Test Mode credentials (`rzp_test_...`).
 * Server-side cryptographic signature verification via **HMAC-SHA256**.
 * Idempotent webhook processing to capture asynchronous payment confirmations.
 
+---
+
 ### 5. ⚖️ Interactive Multi-Product Spec Compare Matrix (`/compare`)
 * Direct side-by-side spec comparison (CPU, RAM, GPU, Battery, Display, Price).
 * Clear visual distinction between items without noisy banner ads or affiliate clutter.
 * 1-click Add to Cart directly from comparison tables.
 
+---
+
 ### 6. 🖼️ Authentic Hardware Photography & Unified Branding
 * 100% genuine local product photography across all SKUs (Laptops, Keyboards, Mice, Monitors, Headsets, Powerbanks, Hubs, Audio, Accessories).
 * Standardized emerald **Kharridlo Verified** quality badges.
 * Zero broken links, fallback boxes, or generic clip-art placeholders.
+
+---
 
 ### 7. 📜 Two-Tier Immutable Audit Trail (`/merchant`)
 * **Database Layer:** PostgreSQL trigger (`trg_audit_events_immutable`) prevents raw SQL `UPDATE` or `DELETE`.
@@ -138,7 +150,7 @@ Traditional online shopping is plagued by decision paralysis: students and devel
 
 [![Watch the Kharridlo Demo Video](docs/screenshots/01-landing-intent-engine.png)](Kharridlo_Demo_Video.mp4)
 
-### 📺 **[▶️ Click Here to Watch the Full Kharridlo Demo Video](Kharridlo_Demo_Video.mp4)**
+### **[▶️ Click Here to Watch the Full Kharridlo Demo Video](Kharridlo_Demo_Video.mp4)**
 *(Click above to stream [`Kharridlo_Demo_Video.mp4`](Kharridlo_Demo_Video.mp4) directly on GitHub, or replace with your YouTube / Loom link)*
 
 *A comprehensive end-to-end demonstration of Kharridlo: natural language AI intent discovery, multi-product spec comparison, deterministic policy checks, 30-minute inventory locks, and cryptographically verified Razorpay Test Mode escrow settlement.*
