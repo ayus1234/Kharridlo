@@ -64,7 +64,7 @@ export default function ProductDetailPage() {
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"specs" | "original" | "ai">("specs");
 
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://kharridlo-backend.onrender.com";
 
   useEffect(() => {
     fetchProduct();

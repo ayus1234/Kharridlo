@@ -14,7 +14,7 @@ export default function SecureCheckoutTransitionPage() {
   const [status, setStatus] = useState<"CONNECTING" | "INITIATING" | "READY">("CONNECTING");
   const [orderData, setOrderData] = useState<any>(null);
 
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://kharridlo-backend.onrender.com";
 
   useEffect(() => {
     const initiatePayment = async () => {

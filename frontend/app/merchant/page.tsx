@@ -59,7 +59,7 @@ export default function MerchantDashboardOverviewPage() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
 
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://kharridlo-backend.onrender.com";
 
   const fetchAuditTrail = async () => {
     setLoading(true);

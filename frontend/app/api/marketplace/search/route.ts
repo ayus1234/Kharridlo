@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
   const page = parseInt(searchParams.get("page") || "1", 10);
   const pageSize = Math.min(parseInt(searchParams.get("page_size") || "50", 10), 50);
 
-  const backendUrl = process.env.INTERNAL_BACKEND_URL || process.env.NEXT_PUBLIC_API_BASE_URL;
+  const backendUrl = process.env.INTERNAL_BACKEND_URL || process.env.NEXT_PUBLIC_API_BASE_URL || "https://kharridlo-backend.onrender.com";
 
   // If a valid non-localhost backend URL is configured, try proxying to live backend
   if (backendUrl && !backendUrl.includes("localhost") && !backendUrl.includes("127.0.0.1")) {

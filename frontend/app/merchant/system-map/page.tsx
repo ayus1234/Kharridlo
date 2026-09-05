@@ -27,7 +27,7 @@ export default function SystemConnectivityMapPage() {
   const [probing, setProbing] = useState(false);
   const [gatewayLatency, setGatewayLatency] = useState<number | null>(null);
 
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://kharridlo-backend.onrender.com";
 
   const probeBackend = async () => {
     setProbing(true);

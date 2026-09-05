@@ -78,7 +78,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [backendOnline, setBackendOnline] = useState(true);
 
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://kharridlo-backend.onrender.com";
 
   useEffect(() => {
     const fetchCatalog = async () => {

@@ -115,7 +115,7 @@ export default function CartPage() {
   const [sessionId, setSessionId] = useState<string>("");
   const [paymentState, setPaymentState] = useState<PaymentState>({ status: "IDLE" });
 
-  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000";
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://kharridlo-backend.onrender.com";
 
   useEffect(() => {
     const sid = getOrCreateSessionId();
