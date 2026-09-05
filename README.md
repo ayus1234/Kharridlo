@@ -6,7 +6,7 @@
 [![Live Web App](https://img.shields.io/badge/Live_App-kharridlo.vercel.app-7C3AED?style=for-the-badge&logo=vercel&logoColor=white)](https://kharridlo.vercel.app)
 [![Backend API](https://img.shields.io/badge/Backend_API-Render-22C55E?style=for-the-badge&logo=fastapi&logoColor=white)](https://kharridlo-backend.onrender.com)
 [![API Docs](https://img.shields.io/badge/Swagger_Docs-API_v1-0284C7?style=for-the-badge&logo=swagger&logoColor=white)](https://kharridlo-backend.onrender.com/docs)
-[![Demo Video](https://img.shields.io/badge/Demo_Video-Watch_Walkthrough-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](#-product-demo--walkthrough-video)
+[![Demo Video](https://img.shields.io/badge/Demo_Video-Watch_Walkthrough-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](https://drive.google.com/file/d/1g-BqKRiX4SizfAkACC-6WHywubffmSGy/view?usp=sharing)
 [![License: MIT](https://img.shields.io/badge/License-MIT-slate.svg?style=for-the-badge)](LICENSE)
 
 ---
