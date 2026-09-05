@@ -19,11 +19,14 @@ def seed_database():
     print("Database schema verified (products and inventory tables ready).")
 
     # Locate synthetic catalog data
-    catalog_path = os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "..", "..", "data", "synthetic_catalog.json")
-    )
-    if not os.path.exists(catalog_path):
-        raise FileNotFoundError(f"Catalog file not found at {catalog_path}")
+    possible_paths = [
+        os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "data", "synthetic_catalog.json")),
+        os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "synthetic_catalog.json")),
+        os.path.abspath(os.path.join(os.getcwd(), "data", "synthetic_catalog.json")),
+    ]
+    catalog_path = next((p for p in possible_paths if os.path.exists(p)), None)
+    if not catalog_path:
+        raise FileNotFoundError(f"Catalog file not found in any of: {possible_paths}")
 
     with open(catalog_path, "r", encoding="utf-8") as f:
         products_data = json.load(f)
