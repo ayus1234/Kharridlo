@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
-import { Laptop, Cpu, Monitor, Headphones, Mouse } from "lucide-react";
+import { Laptop, Cpu, Monitor, Headphones, Mouse, Keyboard, Cable, ShieldCheck } from "lucide-react";
 
 interface ProductImageProps {
   src?: string | null;
@@ -15,160 +15,171 @@ interface ProductImageProps {
   productId?: string;
 }
 
-// 1. Exact hardware model curated photo library
-const PRODUCT_SPECIFIC_MAP: Record<string, string> = {
+// 1. Direct local verified image mapping for all 42 products by ID, SKU and title keyword
+const EXACT_PRODUCT_MAP: Record<string, string> = {
   // Laptops
-  "lenovo ideapad": "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=600&auto=format&fit=crop&q=80",
-  "macbook air m1": "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=600&auto=format&fit=crop&q=80",
-  "macbook air m2": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600&auto=format&fit=crop&q=80",
-  "dell inspiron": "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=600&auto=format&fit=crop&q=80",
-  "hp pavilion": "https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=600&auto=format&fit=crop&q=80",
-  "asus vivobook": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=600&auto=format&fit=crop&q=80",
-  "acer nitro": "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=600&auto=format&fit=crop&q=80",
+  "amz_B0BT9SCV9B": "/images/products/lenovo_ideapad_slim3.jpg",
+  "amz_B08N5XSG8Z": "/images/products/macbook_air_m1.jpg",
+  "amz_B0B3BPH58N": "/images/products/macbook_air_m2.jpg",
+  "amz_B09NL8H8XZ": "/images/products/dell_inspiron_3520.jpg",
+  "amz_B09V18R53H": "/images/products/hp_pavilion_15.jpg",
+  "fk_COMGZFH6ZG8VPHGZ": "/images/products/asus_vivobook_15.jpg",
+  "fk_COMGT6G7YGHZZZZZ": "/images/products/acer_nitro_v_gaming.jpg",
 
-  // Audio & Headphones
-  "sony wh-1000xm5": "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=600&auto=format&fit=crop&q=80",
-  "boat rockerz 450": "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80",
-  "airpods pro": "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=600&auto=format&fit=crop&q=80",
-  "boat airdopes 141": "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600&auto=format&fit=crop&q=80",
-  "airbuds developer": "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600&auto=format&fit=crop&q=80",
-  "bytesound usb": "https://images.unsplash.com/photo-1577174881658-0f30ed549adc?w=600&auto=format&fit=crop&q=80",
+  // Audio & Earbuds
+  "amz_B09XS7JWHH": "/images/products/sony_wh1000xm5.jpg",
+  "amz_B07PR1CL3S": "/images/products/boat_rockerz_450.jpg",
+  "amz_B0CHX1W1XY": "/images/products/airpods_pro_2.jpg",
+  "fk_ACCGZFH6ZG8VPHGZ": "/images/products/boat_airdopes_141.jpg",
+  "prod_hp_05": "/images/products/bytesound_usb.jpg",
+  "DK-HP-05": "/images/products/bytesound_usb.jpg",
+  "prod_hp_02": "/images/products/airbuds_dev.jpg",
+  "DK-HP-02": "/images/products/airbuds_dev.jpg",
 
   // Mice & Pointers
-  "logitech pebble": "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=600&auto=format&fit=crop&q=80",
-  "logitech mx master": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=600&auto=format&fit=crop&q=80",
-  "bytemouse simple": "https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?w=600&auto=format&fit=crop&q=80",
-  "aether pebble": "https://images.unsplash.com/photo-1613141411244-0e4ac259d217?w=600&auto=format&fit=crop&q=80",
-  "precision wireless mouse": "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=600&auto=format&fit=crop&q=80",
-  "titan heavyclick": "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=600&auto=format&fit=crop&q=80",
-  "ergovertical": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=600&auto=format&fit=crop&q=80",
-  "omnipresenter": "https://images.unsplash.com/photo-1550009158-9ebf69173e03?w=600&auto=format&fit=crop&q=80",
+  "amz_B091J3F6HC": "/images/products/logitech_pebble_m350.jpg",
+  "amz_B0B11DMP1L": "/images/products/logitech_mx_master_3s.jpg",
+  "prod_mouse_05": "/images/products/bytemouse_simple.jpg",
+  "DK-MS-05": "/images/products/bytemouse_simple.jpg",
+  "prod_mouse_07": "/images/products/aether_pebble.jpg",
+  "DK-MS-07": "/images/products/aether_pebble.jpg",
+  "prod_mouse_01": "/images/products/precision_mouse.jpg",
+  "DK-MS-01": "/images/products/precision_mouse.jpg",
+  "prod_mouse_09": "/images/products/titan_heavy_mouse.jpg",
+  "DK-MS-09": "/images/products/titan_heavy_mouse.jpg",
+  "prod_mouse_02": "/images/products/ergovertical_mouse.jpg",
+  "DK-MS-02": "/images/products/ergovertical_mouse.jpg",
+  "prod_mouse_10": "/images/products/omni_presenter_mouse.jpg",
+  "DK-MS-10": "/images/products/omni_presenter_mouse.jpg",
 
-  // Keyboards
-  "keychron k2": "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&auto=format&fit=crop&q=80",
-  "hp 150 wireless": "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&auto=format&fit=crop&q=80",
-  "bytekeys essential": "https://images.unsplash.com/photo-1511467687858-23d96c32e4ae?w=600&auto=format&fit=crop&q=80",
-  "omnitype dualos": "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&auto=format&fit=crop&q=80",
-  "slimtype wireless": "https://images.unsplash.com/photo-1595225476474-87563907a212?w=600&auto=format&fit=crop&q=80",
-  "aether foldkey": "https://images.unsplash.com/photo-1563245372-f21724e3856d?w=600&auto=format&fit=crop&q=80",
+  // Keyboards & Combos
+  "amz_B0866BD53R": "/images/products/keychron_k2.jpg",
+  "fk_ACCGGZ7QZTYK86HF": "/images/products/hp_150_keyboard_mouse_combo.jpg",
+  "prod_kb_06": "/images/products/bytekeys_essential.jpg",
+  "DK-KB-06": "/images/products/bytekeys_essential.jpg",
+  "prod_kb_08": "/images/products/omnitype_dual.jpg",
+  "DK-KB-08": "/images/products/omnitype_dual.jpg",
+  "prod_kb_02": "/images/products/slimtype_wireless.jpg",
+  "DK-KB-02": "/images/products/slimtype_wireless.jpg",
+  "prod_kb_07": "/images/products/aether_foldkey.jpg",
+  "DK-KB-07": "/images/products/aether_foldkey.jpg",
 
   // Displays & Monitors
-  "lg 27-inch": "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=600&auto=format&fit=crop&q=80",
-  "samsung 24-inch": "https://images.unsplash.com/photo-1585792180666-f7347c490ee2?w=600&auto=format&fit=crop&q=80",
+  "amz_B07PGL2ZSL": "/images/products/lg_27inch_4k_monitor.jpg",
+  "amz_B08J82K4GX": "/images/products/samsung_24inch_fhd_monitor.jpg",
 
-  // Storage, Hubs, Accessories & Power
-  "sandisk 1tb": "https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=600&auto=format&fit=crop&q=80",
-  "anker 737": "https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=600&auto=format&fit=crop&q=80",
-  "portronics mport": "https://images.unsplash.com/photo-1625842268584-8f3296236761?w=600&auto=format&fit=crop&q=80",
-  "galaxy tab s9": "https://images.unsplash.com/photo-1561154464-82e9adf32764?w=600&auto=format&fit=crop&q=80",
-  "realme 20000": "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=600&auto=format&fit=crop&q=80",
-  "cableorganizer": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80",
-  "cleaning kit": "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600&auto=format&fit=crop&q=80",
-  "braided usb-c": "https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=600&auto=format&fit=crop&q=80",
-  "kriyamat": "https://images.unsplash.com/photo-1616440347437-b1c73416efc2?w=600&auto=format&fit=crop&q=80",
-  "sleeve pro": "https://images.unsplash.com/photo-1544816155-12df9643f363?w=600&auto=format&fit=crop&q=80",
-  "aluminum laptop stand": "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=600&auto=format&fit=crop&q=80",
-  "gan fast charger": "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=600&auto=format&fit=crop&q=80",
-  "10-in-1 usb-c hub": "https://images.unsplash.com/photo-1625842268584-8f3296236761?w=600&auto=format&fit=crop&q=80"
+  // Storage, Power & Accessories
+  "amz_B08GTYFC37": "/images/products/sandisk_1tb_ssd.jpg",
+  "amz_B09VPHVT2Z": "/images/products/anker_737_powerbank.jpg",
+  "amz_B09V7Y16R2": "/images/products/portronics_mport_hub.jpg",
+  "fk_TABGZFH6ZG8VPHGZ": "/images/products/samsung_galaxy_tab_s9.jpg",
+  "fk_PWGZFH6ZG8VPHGZ": "/images/products/realme_20000mah_powerbank.jpg",
+  "prod_acc_09": "/images/products/cable_organizer.jpg",
+  "DK-ACC-09": "/images/products/cable_organizer.jpg",
+  "prod_acc_11": "/images/products/cleaning_kit.jpg",
+  "DK-ACC-11": "/images/products/cleaning_kit.jpg",
+  "prod_acc_06": "/images/products/usbc_cable_2m.jpg",
+  "DK-ACC-06": "/images/products/usbc_cable_2m.jpg",
+  "prod_acc_04": "/images/products/kriyamat_xl.jpg",
+  "DK-ACC-04": "/images/products/kriyamat_xl.jpg",
+  "prod_acc_10": "/images/products/sleeve_pro_15.jpg",
+  "DK-ACC-10": "/images/products/sleeve_pro_15.jpg",
+  "prod_acc_03": "/images/products/laptop_stand_alum.jpg",
+  "DK-ACC-03": "/images/products/laptop_stand_alum.jpg",
+  "prod_acc_02": "/images/products/gan_charger_100w.jpg",
+  "DK-ACC-02": "/images/products/gan_charger_100w.jpg",
+  "prod_acc_01": "/images/products/usbc_hub_10in1.jpg",
+  "DK-ACC-01": "/images/products/usbc_hub_10in1.jpg"
 };
 
-// 2. Multi-image diversified category pools (prevents identical photos across same categories)
-const CATEGORY_POOLS: Record<string, string[]> = {
-  laptop: [
-    "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=600&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=600&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=600&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=600&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=600&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=600&auto=format&fit=crop&q=80"
-  ],
-  keyboard: [
-    "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1511467687858-23d96c32e4ae?w=600&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1595225476474-87563907a212?w=600&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1563245372-f21724e3856d?w=600&auto=format&fit=crop&q=80"
-  ],
-  mouse: [
-    "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=600&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=600&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?w=600&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1613141411244-0e4ac259d217?w=600&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=600&auto=format&fit=crop&q=80"
-  ],
-  audio: [
-    "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=600&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=600&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1577174881658-0f30ed549adc?w=600&auto=format&fit=crop&q=80"
-  ],
-  monitor: [
-    "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=600&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1585792180666-f7347c490ee2?w=600&auto=format&fit=crop&q=80"
-  ],
-  tablet: [
-    "https://images.unsplash.com/photo-1561154464-82e9adf32764?w=600&auto=format&fit=crop&q=80"
-  ],
-  accessory: [
-    "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1541872703-74c5e44368f9?w=600&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1616440347437-b1c73416efc2?w=600&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1544816155-12df9643f363?w=600&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1583863788434-e58a36330cf0?w=600&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1625842268584-8f3296236761?w=600&auto=format&fit=crop&q=80"
-  ]
-};
+// Keyword-based model fallback mapper
+const KEYWORD_MAP: Array<{ keyword: string; path: string }> = [
+  { keyword: "lenovo", path: "/images/products/lenovo_ideapad_slim3.jpg" },
+  { keyword: "macbook air m1", path: "/images/products/macbook_air_m1.jpg" },
+  { keyword: "macbook air m2", path: "/images/products/macbook_air_m2.jpg" },
+  { keyword: "macbook", path: "/images/products/macbook_air_m1.jpg" },
+  { keyword: "dell", path: "/images/products/dell_inspiron_3520.jpg" },
+  { keyword: "hp pavilion", path: "/images/products/hp_pavilion_15.jpg" },
+  { keyword: "vivobook", path: "/images/products/asus_vivobook_15.jpg" },
+  { keyword: "nitro", path: "/images/products/acer_nitro_v_gaming.jpg" },
+  { keyword: "wh-1000xm5", path: "/images/products/sony_wh1000xm5.jpg" },
+  { keyword: "rockerz", path: "/images/products/boat_rockerz_450.jpg" },
+  { keyword: "airpods", path: "/images/products/airpods_pro_2.jpg" },
+  { keyword: "airdopes", path: "/images/products/boat_airdopes_141.jpg" },
+  { keyword: "bytesound", path: "/images/products/bytesound_usb.jpg" },
+  { keyword: "airbuds", path: "/images/products/airbuds_dev.jpg" },
+  { keyword: "pebble", path: "/images/products/logitech_pebble_m350.jpg" },
+  { keyword: "mx master", path: "/images/products/logitech_mx_master_3s.jpg" },
+  { keyword: "bytemouse", path: "/images/products/bytemouse_simple.jpg" },
+  { keyword: "precision mouse", path: "/images/products/precision_mouse.jpg" },
+  { keyword: "heavyclick", path: "/images/products/titan_heavy_mouse.jpg" },
+  { keyword: "ergovertical", path: "/images/products/ergovertical_mouse.jpg" },
+  { keyword: "vertical", path: "/images/products/ergovertical_mouse.jpg" },
+  { keyword: "presenter", path: "/images/products/omni_presenter_mouse.jpg" },
+  { keyword: "keychron", path: "/images/products/keychron_k2.jpg" },
+  { keyword: "hp 150", path: "/images/products/hp_150_keyboard_mouse_combo.jpg" },
+  { keyword: "bytekeys", path: "/images/products/bytekeys_essential.jpg" },
+  { keyword: "omnitype", path: "/images/products/omnitype_dual.jpg" },
+  { keyword: "slimtype", path: "/images/products/slimtype_wireless.jpg" },
+  { keyword: "foldkey", path: "/images/products/aether_foldkey.jpg" },
+  { keyword: "lg 27", path: "/images/products/lg_27inch_4k_monitor.jpg" },
+  { keyword: "samsung 24", path: "/images/products/samsung_24inch_fhd_monitor.jpg" },
+  { keyword: "monitor", path: "/images/products/lg_27inch_4k_monitor.jpg" },
+  { keyword: "sandisk", path: "/images/products/sandisk_1tb_ssd.jpg" },
+  { keyword: "ssd", path: "/images/products/sandisk_1tb_ssd.jpg" },
+  { keyword: "anker 737", path: "/images/products/anker_737_powerbank.jpg" },
+  { keyword: "realme", path: "/images/products/realme_20000mah_powerbank.jpg" },
+  { keyword: "power bank", path: "/images/products/anker_737_powerbank.jpg" },
+  { keyword: "mport", path: "/images/products/portronics_mport_hub.jpg" },
+  { keyword: "10-in-1", path: "/images/products/usbc_hub_10in1.jpg" },
+  { keyword: "galaxy tab", path: "/images/products/samsung_galaxy_tab_s9.jpg" },
+  { keyword: "tablet", path: "/images/products/samsung_galaxy_tab_s9.jpg" },
+  { keyword: "cableorganizer", path: "/images/products/cable_organizer.jpg" },
+  { keyword: "organizer", path: "/images/products/cable_organizer.jpg" },
+  { keyword: "cleaning kit", path: "/images/products/cleaning_kit.jpg" },
+  { keyword: "clean", path: "/images/products/cleaning_kit.jpg" },
+  { keyword: "braided", path: "/images/products/usbc_cable_2m.jpg" },
+  { keyword: "cable", path: "/images/products/usbc_cable_2m.jpg" },
+  { keyword: "deskmat", path: "/images/products/kriyamat_xl.jpg" },
+  { keyword: "kriyamat", path: "/images/products/kriyamat_xl.jpg" },
+  { keyword: "pad", path: "/images/products/kriyamat_xl.jpg" },
+  { keyword: "sleeve", path: "/images/products/sleeve_pro_15.jpg" },
+  { keyword: "stand", path: "/images/products/laptop_stand_alum.jpg" },
+  { keyword: "charger", path: "/images/products/gan_charger_100w.jpg" },
+  { keyword: "gan", path: "/images/products/gan_charger_100w.jpg" }
+];
 
-function hashString(str: string): number {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash << 5) - hash + str.charCodeAt(i);
-    hash |= 0;
+function resolveDirectProductImage(src?: string | null, alt?: string, category?: string, productId?: string): string {
+  // If src is already a valid local product path, use it directly!
+  if (src && src.startsWith("/images/products/")) {
+    return src;
   }
-  return Math.abs(hash);
-}
 
-function getDistinctProductImage(alt: string, category?: string, productId?: string): string {
-  const query = `${productId || ""} ${alt || ""} ${category || ""}`.toLowerCase();
+  // Check ID / SKU match
+  if (productId && EXACT_PRODUCT_MAP[productId]) {
+    return EXACT_PRODUCT_MAP[productId];
+  }
 
-  // Check specific product matches
-  for (const [key, url] of Object.entries(PRODUCT_SPECIFIC_MAP)) {
-    if (query.includes(key)) {
-      return url;
+  const query = `${productId || ""} ${alt || ""} ${category || ""} ${src || ""}`.toLowerCase();
+
+  // Check keyword matches
+  for (const item of KEYWORD_MAP) {
+    if (query.includes(item.keyword)) {
+      return item.path;
     }
   }
 
-  // Fallback to distinct rotated image within category pool
-  const hash = hashString(query);
-  if (query.includes("mouse")) {
-    const pool = CATEGORY_POOLS.mouse;
-    return pool[hash % pool.length];
-  }
-  if (query.includes("keyboard") || query.includes("keychron")) {
-    const pool = CATEGORY_POOLS.keyboard;
-    return pool[hash % pool.length];
-  }
-  if (query.includes("monitor") || query.includes("display") || query.includes("screen")) {
-    const pool = CATEGORY_POOLS.monitor;
-    return pool[hash % pool.length];
-  }
-  if (query.includes("headphone") || query.includes("earphone") || query.includes("airpod") || query.includes("audio") || query.includes("headset")) {
-    const pool = CATEGORY_POOLS.audio;
-    return pool[hash % pool.length];
-  }
-  if (query.includes("tablet") || query.includes("ipad") || query.includes("galaxy tab")) {
-    const pool = CATEGORY_POOLS.tablet;
-    return pool[hash % pool.length];
-  }
+  // Category fallback
+  if (query.includes("mouse")) return "/images/products/precision_mouse.jpg";
+  if (query.includes("keyboard")) return "/images/products/keychron_k2.jpg";
+  if (query.includes("headphone") || query.includes("earphone") || query.includes("audio")) return "/images/products/sony_wh1000xm5.jpg";
+  if (query.includes("monitor") || query.includes("screen")) return "/images/products/lg_27inch_4k_monitor.jpg";
+  if (query.includes("tablet")) return "/images/products/samsung_galaxy_tab_s9.jpg";
   if (query.includes("cable") || query.includes("charger") || query.includes("hub") || query.includes("stand") || query.includes("sleeve") || query.includes("mat") || query.includes("kit")) {
-    const pool = CATEGORY_POOLS.accessory;
-    return pool[hash % pool.length];
+    return "/images/products/cleaning_kit.jpg";
   }
 
-  const pool = CATEGORY_POOLS.laptop;
-  return pool[hash % pool.length];
+  return "/images/products/lenovo_ideapad_slim3.jpg";
 }
 
 export default function ProductImage({
@@ -181,57 +192,31 @@ export default function ProductImage({
   category,
   productId,
 }: ProductImageProps) {
-  const resolvedDistinctUrl = getDistinctProductImage(alt, category, productId);
+  const resolvedPath = resolveDirectProductImage(src, alt, category, productId);
 
-  // If provided src is a valid remote image URL, prefer it, otherwise use resolved distinct product image
-  const primarySrc = (src && src.startsWith("http") && !src.startsWith("/images/products/"))
-    ? src
-    : resolvedDistinctUrl;
-
-  const [currentSrc, setCurrentSrc] = useState<string>(primarySrc);
+  const [currentSrc, setCurrentSrc] = useState<string>(resolvedPath);
   const [hasFailed, setHasFailed] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    setCurrentSrc(primarySrc);
+    setCurrentSrc(resolvedPath);
     setHasFailed(false);
-    setIsLoading(true);
-  }, [primarySrc]);
+  }, [resolvedPath]);
 
   const handleError = useCallback(() => {
-    if (currentSrc !== resolvedDistinctUrl) {
-      // Step 1: Fallback to the dedicated distinct photography for this product
-      setCurrentSrc(resolvedDistinctUrl);
-      setIsLoading(true);
-    } else if (currentSrc !== "/assets/laptop-product.png") {
-      // Step 2: Local fallback
-      setCurrentSrc("/assets/laptop-product.png");
-      setIsLoading(true);
+    if (currentSrc !== resolvedPath) {
+      setCurrentSrc(resolvedPath);
     } else {
-      // Step 3: Friendly branded indicator
       setHasFailed(true);
-      setIsLoading(false);
     }
-  }, [currentSrc, resolvedDistinctUrl]);
-
-  useEffect(() => {
-    if (!isLoading || hasFailed) return;
-    const timeout = window.setTimeout(handleError, 3500);
-    return () => window.clearTimeout(timeout);
-  }, [currentSrc, handleError, hasFailed, isLoading]);
+  }, [currentSrc, resolvedPath]);
 
   return (
     <div className={`relative overflow-hidden bg-slate-50 flex items-center justify-center ${className}`}>
-      {isLoading && !hasFailed && (
-        <div className="absolute inset-0 bg-slate-100 animate-pulse flex items-center justify-center z-10">
-          <div className="w-8 h-8 rounded-full border-2 border-indigo-200 border-t-indigo-600 animate-spin" />
-        </div>
-      )}
-
       {hasFailed ? (
-        <div className="flex flex-col items-center justify-center p-4 text-center text-slate-400">
-          <Cpu className="h-8 w-8 stroke-1 mb-1 text-slate-400" />
-          <span className="text-[11px] font-semibold text-slate-500 line-clamp-1">{alt || "Kharridlo Gear"}</span>
+        <div className="flex flex-col items-center justify-center p-3 text-center text-slate-400">
+          <Cpu className="h-7 w-7 stroke-1 mb-1 text-slate-400" />
+          <span className="text-[10px] font-semibold text-slate-500 line-clamp-1">{alt || "Kharridlo Product"}</span>
         </div>
       ) : (
         <Image
@@ -241,11 +226,8 @@ export default function ProductImage({
           height={height}
           priority={priority}
           unoptimized={true}
-          onLoad={() => setIsLoading(false)}
           onError={handleError}
-          className={`h-full w-full object-contain p-2 transition-transform duration-300 group-hover:scale-105 ${
-            isLoading ? "opacity-0" : "opacity-100"
-          }`}
+          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
       )}
     </div>
