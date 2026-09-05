@@ -162,17 +162,25 @@ Traditional online shopping is plagued by decision paralysis: students and devel
 
 ### Part 1: Autonomous AI Buyer Experience
 
+---
+
 #### 1. AI Intent Landing & Natural Language Discovery
 ![AI Intent Landing & Natural Language Discovery](docs/screenshots/01-landing-intent-engine.png)
 *Natural language intent search bar allowing students and developers to describe technical setups in plain conversational language.*
+
+---
 
 #### 2. Kharridlo Verified Hardware Catalog
 ![Kharridlo Verified Hardware Catalog](docs/screenshots/02-kharridlo-verified-catalog.png)
 *Curated hardware catalog featuring verified student pricing, genuine device photography, and transparent specifications with zero external affiliate redirects.*
 
+---
+
 #### 3. Bounded Gemini 2.0 AI Shopping Assistant
 ![Bounded Gemini 2.0 AI Shopping Assistant](docs/screenshots/03-ai-shopping-assistant.png)
 *Autonomous shopping assistant evaluating technical curriculum requirements, budget constraints, and deterministic policy compliance with live tool calling.*
+
+---
 
 #### 4. Interactive Multi-Product Spec Comparison Matrix
 ![Interactive Multi-Product Spec Comparison Matrix](docs/screenshots/04-product-comparison-matrix.png)
@@ -186,29 +194,43 @@ Traditional online shopping is plagued by decision paralysis: students and devel
 ![Merchant Dashboard & Governance Overview](docs/screenshots/05-merchant-governance-overview.png)
 *Executive merchant dashboard displaying real-time financial telemetry, 39 append-only PostgreSQL audit records, and 100% active zero-AI-payment-authority enforcement.*
 
+---
+
 #### 6. AI Commerce Command Center & Operational Radar
 ![AI Commerce Command Center & Operational Radar](docs/screenshots/06-ai-command-center-radar.png)
 *Mission-control command center tracking live agent reasoning velocity (142 calls/min), 99.98% interception rates, and emergency agent killswitch controls.*
+
+---
 
 #### 7. Real-Time Event Stream & Deterministic Policy Interception
 ![Real-Time Event Stream & Deterministic Policy Interception](docs/screenshots/07-live-event-activity-feed.png)
 *Live event activity feed capturing real-time state transitions, Razorpay order generation, and policy interceptions blocking unauthorized over-limit purchases.*
 
+---
+
 #### 8. Active AI Buyer Sessions Surveillance
 ![Active AI Buyer Sessions Surveillance](docs/screenshots/08-active-buyer-sessions.png)
 *Granular session monitor tracking student purchase intents, tier limits, cart totals, real-time risk scores, and direct audit trace inspection.*
+
+---
 
 #### 9. AI Revenue Advisor & Algorithmic Growth Engine
 ![AI Revenue Advisor & Algorithmic Growth Engine](docs/screenshots/09-ai-revenue-advisor.png)
 *Algorithmic revenue advisor projecting pipeline lift (₹2,96,000) and orchestrating high-confidence automated student accessory bundles.*
 
+---
+
 #### 10. Orders & Append-Only Audit Dual Workbench
 ![Orders & Append-Only Audit Dual Workbench](docs/screenshots/10-orders-and-audit-workbench.png)
 *Dual workbench pairing the authoritative PostgreSQL order ledger with an immutable, append-only audit event stream.*
 
+---
+
 #### 11. AI Inventory Stockout Recovery & Substitution Journal
 ![AI Inventory Stockout Recovery & Substitution Journal](docs/screenshots/11-inventory-stockout-recovery.png)
 *Sub-second (240ms) automated inventory stockout recovery journal preserving ₹1,62,889 in GMV with 94.2% buyer acceptance.*
+
+---
 
 #### 12. Architectural Topology, System Connectivity & Health Map
 ![Architectural Topology, System Connectivity & Health Map](docs/screenshots/12-system-connectivity-topology.png)
