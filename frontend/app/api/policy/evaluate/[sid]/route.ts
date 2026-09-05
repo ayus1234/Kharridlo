@@ -9,6 +9,10 @@ export async function POST(
 ) {
   const sid = params.sid;
   const cookieHeader = request.headers.get("cookie");
-  const result = evaluateSessionPolicy(sid, cookieHeader);
+  let body: any = null;
+  try {
+    body = await request.json();
+  } catch {}
+  const result = evaluateSessionPolicy(sid, cookieHeader, body?.cart_items, body?.tier);
   return NextResponse.json(result);
 }

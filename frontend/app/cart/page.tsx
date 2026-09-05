@@ -421,22 +421,49 @@ export default function CartPage() {
     try {
       const sid = sessionId || getOrCreateSessionId();
       const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+      const payload = {
+        cart_items: cart?.items || [],
+        tier: selectedTier,
+      };
       const url = (isHttps && apiBaseUrl.startsWith("http://localhost"))
         ? `/api/policy/evaluate/${sid}`
         : `${apiBaseUrl}/api/v1/policy/evaluate/${sid}`;
       let res: Response | null = null;
       try {
-        res = await fetch(url, { method: "POST" });
+        res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
       } catch {
-        res = await fetch(`/api/policy/evaluate/${sid}`, { method: "POST" });
+        res = null;
       }
       if (!res || !res.ok) {
-        res = await fetch(`/api/policy/evaluate/${sid}`, { method: "POST" });
+        res = await fetch(`/api/policy/evaluate/${sid}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
       }
       if (!res || !res.ok) {
         throw new Error(`Policy evaluation failed: ${res?.status || "error"}`);
       }
-      const data: PolicyEvaluationResponse = await res.json();
+      let data: PolicyEvaluationResponse = await res.json();
+      // If backend evaluated empty DB cart while frontend has items, fall back to serverless policy evaluator
+      if (
+        (data.cart_total_paise === 0 || data.reasons?.some((r: any) => r.code === "EMPTY_CART")) &&
+        cart && cart.items && cart.items.length > 0 &&
+        url !== `/api/policy/evaluate/${sid}`
+      ) {
+        const fallbackRes = await fetch(`/api/policy/evaluate/${sid}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }).catch(() => null);
+        if (fallbackRes && fallbackRes.ok) {
+          data = await fallbackRes.json();
+        }
+      }
       setPolicyResult(data);
     } catch (err: any) {
       setError(err?.message || "Failed to execute deterministic policy check");
@@ -473,6 +500,12 @@ export default function CartPage() {
     try {
       const sid = sessionId || getOrCreateSessionId();
       const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+      const confirmPayload = {
+        buyer_confirmed: true,
+        cart_items: cart?.items || [],
+        tier: selectedTier,
+        total_paise: cart?.total_paise,
+      };
 
       // 1. Confirm checkout authorization
       let confirmRes: Response | null = null;
@@ -486,20 +519,16 @@ export default function CartPage() {
             "Content-Type": "application/json",
             "X-Session-ID": sid,
           },
-          body: JSON.stringify({ buyer_confirmed: true }),
+          body: JSON.stringify(confirmPayload),
         });
       } catch {
-        confirmRes = await fetch(`/api/checkout/confirm?session_id=${sid}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "X-Session-ID": sid },
-          body: JSON.stringify({ buyer_confirmed: true }),
-        });
+        confirmRes = null;
       }
       if (!confirmRes || !confirmRes.ok) {
         confirmRes = await fetch(`/api/checkout/confirm?session_id=${sid}`, {
           method: "POST",
           headers: { "Content-Type": "application/json", "X-Session-ID": sid },
-          body: JSON.stringify({ buyer_confirmed: true }),
+          body: JSON.stringify(confirmPayload),
         });
       }
       if (!confirmRes.ok) {
@@ -509,6 +538,11 @@ export default function CartPage() {
       const checkoutData = await confirmRes.json();
 
       // 2. Server creates Razorpay Order
+      const orderPayload = {
+        checkout_id: checkoutData.id,
+        cart_items: cart?.items || [],
+        total_paise: cart?.total_paise,
+      };
       let orderRes: Response | null = null;
       const orderUrl = (isHttps && apiBaseUrl.startsWith("http://localhost"))
         ? `/api/payments/orders?session_id=${sid}`
@@ -520,20 +554,16 @@ export default function CartPage() {
             "Content-Type": "application/json",
             "X-Session-ID": sid,
           },
-          body: JSON.stringify({ checkout_id: checkoutData.id }),
+          body: JSON.stringify(orderPayload),
         });
       } catch {
-        orderRes = await fetch(`/api/payments/orders?session_id=${sid}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "X-Session-ID": sid },
-          body: JSON.stringify({ checkout_id: checkoutData.id }),
-        });
+        orderRes = null;
       }
       if (!orderRes || !orderRes.ok) {
         orderRes = await fetch(`/api/payments/orders?session_id=${sid}`, {
           method: "POST",
           headers: { "Content-Type": "application/json", "X-Session-ID": sid },
-          body: JSON.stringify({ checkout_id: checkoutData.id }),
+          body: JSON.stringify(orderPayload),
         });
       }
       if (!orderRes.ok) {

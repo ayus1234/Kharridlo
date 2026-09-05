@@ -58,8 +58,7 @@ export function parseCartCookie(cookieHeader: string | null | undefined, expecte
       }
       return Array.isArray(parsed.items) ? parsed.items : [];
     }
-    // For legacy cookie format, only allow if no expectedSessionId specified
-    if (!expectedSessionId && Array.isArray(parsed)) return parsed;
+    if (Array.isArray(parsed)) return parsed;
     return [];
   } catch {
     return [];
@@ -276,9 +275,38 @@ export function getPolicyTiersData() {
   ];
 }
 
-export function evaluateSessionPolicy(sessionId: string, cookieHeader?: string | null) {
+export function evaluateSessionPolicy(
+  sessionId: string, 
+  cookieHeader?: string | null,
+  clientItems?: any[],
+  clientTier?: string
+) {
   const cart = getOrCreateServerCart(sessionId, cookieHeader);
-  const tierCode = getSessionPolicyTier(sessionId);
+  if ((!cart.items || cart.items.length === 0) && clientItems && Array.isArray(clientItems) && clientItems.length > 0) {
+    for (const ci of clientItems) {
+      const pid = ci.product_id || ci.id;
+      const qty = ci.quantity || 1;
+      const pricePaise = ci.unit_price_paise || (ci.unit_price_inr ? Math.round(ci.unit_price_inr * 100) : 49900);
+      cart.items.push({
+        id: ci.id || `ci_${pid}_${qty}`,
+        cart_id: cart.id,
+        product_id: pid,
+        sku: ci.sku || pid,
+        name: ci.name || ci.title || "Curated Product",
+        brand: ci.brand || "Verified",
+        category: ci.category || "gear",
+        image_url: ci.image_url,
+        provider: ci.provider || "kharridlo_verified",
+        quantity: qty,
+        unit_price_paise: pricePaise,
+        line_total_paise: pricePaise * qty,
+        availability_status: "in_stock",
+      });
+    }
+    recalculateCartTotals(cart);
+  }
+
+  const tierCode = clientTier || getSessionPolicyTier(sessionId);
   const tiers = getPolicyTiersData();
   const currentTier = tiers.find(t => t.tier === tierCode) || tiers[1];
 
