@@ -22,9 +22,9 @@ class Settings(BaseSettings):
     GROQ_API_KEY_2: str = ""
 
     # Razorpay Test Mode API Credentials
-    RAZORPAY_KEY_ID: str = ""
-    RAZORPAY_KEY_SECRET: str = ""
-    RAZORPAY_WEBHOOK_SECRET: str = ""
+    RAZORPAY_KEY_ID: str = "rzp_test_TXcPVEXlFm6k9p"
+    RAZORPAY_KEY_SECRET: str = "BJ7ALOf9DLx8kqgiAO6HnQjI"
+    RAZORPAY_WEBHOOK_SECRET: str = "whsec_14c58fe4615d9e9e7c725403168cf226"
 
     # Marketplace Integration Settings (Milestone 9)
     # Amazon Creators API (OAuth 2.0 Client ID & Secret)

@@ -37,10 +37,48 @@ export async function POST(request: NextRequest) {
     recalculateCartTotals(cart);
   }
 
-  const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_1DP5mmOlF5G5ag";
+  const razorpayKey = process.env.RAZORPAY_KEY_ID || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_TXcPVEXlFm6k9p";
+  const razorpaySecret = process.env.RAZORPAY_KEY_SECRET || "BJ7ALOf9DLx8kqgiAO6HnQjI";
   const internalOrderId = `ord_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-  const razorpayOrderId = `order_${Math.random().toString(36).substring(2, 16)}`;
   const amountPaise = body?.total_paise || cart.total_paise || 49900;
+  const receipt = `rcpt_${Date.now()}`;
+
+  let razorpayOrderId: string | null = null;
+
+  // Real server-side Razorpay Order Creation via official Razorpay API
+  try {
+    if (razorpayKey && razorpaySecret) {
+      const auth = Buffer.from(`${razorpayKey}:${razorpaySecret}`).toString("base64");
+      const rzpRes = await fetch("https://api.razorpay.com/v1/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Basic ${auth}`,
+        },
+        body: JSON.stringify({
+          amount: amountPaise,
+          currency: "INR",
+          receipt: receipt,
+          notes: {
+            session_id: sessionId,
+            internal_order_id: internalOrderId,
+          },
+        }),
+      });
+
+      if (rzpRes.ok) {
+        const rzpData = await rzpRes.json();
+        if (rzpData && rzpData.id) {
+          razorpayOrderId = rzpData.id;
+        }
+      } else {
+        const errorText = await rzpRes.text();
+        console.error("[Razorpay API Error]", rzpRes.status, errorText);
+      }
+    }
+  } catch (err) {
+    console.error("[Razorpay Order Creation Exception]", err);
+  }
 
   return NextResponse.json({
     internal_order_id: internalOrderId,
@@ -48,7 +86,7 @@ export async function POST(request: NextRequest) {
     amount_paise: amountPaise,
     amount_inr: Math.round(amountPaise / 100),
     currency: "INR",
-    receipt: `rcpt_${Date.now()}`,
+    receipt: receipt,
     status: "created",
     key_id: razorpayKey,
   });

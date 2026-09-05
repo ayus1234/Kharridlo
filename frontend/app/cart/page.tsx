@@ -577,13 +577,12 @@ export default function CartPage() {
 
       if (scriptLoaded && (window as any).Razorpay) {
         // Open standard Razorpay Checkout Modal
-        const options = {
+        const options: any = {
           key: orderData.key_id,
           amount: orderData.amount_paise,
           currency: orderData.currency || "INR",
           name: "Kharridlo",
           description: "Autonomous Commerce Gateway (Test Mode)",
-          order_id: orderData.razorpay_order_id,
           prefill: {
             name: "Kharridlo Buyer",
             email: "buyer@kharridlo.test",
@@ -592,9 +591,9 @@ export default function CartPage() {
           handler: async function (response: any) {
             await verifyPaymentSignature(
               orderData.internal_order_id,
-              response.razorpay_order_id,
+              response.razorpay_order_id || orderData.razorpay_order_id || "",
               response.razorpay_payment_id,
-              response.razorpay_signature,
+              response.razorpay_signature || "",
               orderData.amount_paise
             );
           },
@@ -633,6 +632,16 @@ export default function CartPage() {
             color: "#4f46e5",
           },
         };
+
+        // Only attach order_id if it's an authentic Razorpay order returned from the API
+        // Never attach mock or fake order IDs which cause Razorpay checkout modal to crash with "Uh! oh!"
+        if (
+          orderData.razorpay_order_id &&
+          !orderData.razorpay_order_id.startsWith("order_test_") &&
+          !orderData.razorpay_order_id.includes("fake")
+        ) {
+          options.order_id = orderData.razorpay_order_id;
+        }
 
         const rzp = new (window as any).Razorpay(options);
         rzp.on("payment.failed", async function (response: any) {
