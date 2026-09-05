@@ -151,7 +151,6 @@ Traditional online shopping is plagued by decision paralysis: students and devel
 [![Watch the Kharridlo Demo Video](docs/screenshots/01-landing-intent-engine.png)](Kharridlo_Demo_Video.mp4)
 
 ### **[▶️ Click Here to Watch the Full Kharridlo Demo Video](https://drive.google.com/file/d/1g-BqKRiX4SizfAkACC-6WHywubffmSGy/view?usp=sharing)**
-*(Click above to stream [`Kharridlo_Demo_Video.mp4`](https://drive.google.com/file/d/1g-BqKRiX4SizfAkACC-6WHywubffmSGy/view?usp=sharing) directly on GitHub, or replace with your YouTube / Loom link)*
 
 *A comprehensive end-to-end demonstration of Kharridlo: natural language AI intent discovery, multi-product spec comparison, deterministic policy checks, 30-minute inventory locks, and cryptographically verified Razorpay Test Mode escrow settlement.*
 
