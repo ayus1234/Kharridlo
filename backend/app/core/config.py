@@ -27,13 +27,18 @@ class Settings(BaseSettings):
     RAZORPAY_WEBHOOK_SECRET: str = ""
 
     # Marketplace Integration Settings (Milestone 9)
+    # Amazon Creators API (OAuth 2.0 Client ID & Secret)
     AMAZON_CREATORS_API_ENABLED: bool = False
+    AMAZON_CREATORS_CLIENT_ID: str = ""
+    AMAZON_CREATORS_CLIENT_SECRET: str = ""
     AMAZON_PARTNER_TAG: str = ""
+    AMAZON_REGION: str = "eu-west-1"
+    AMAZON_HOST: str = "creatorsapi.amazon"
+    AMAZON_MARKETPLACE: str = "www.amazon.in"
+    AMAZON_TOKEN_ENDPOINT: str = "https://api.amazon.co.uk/auth/o2/token"
+    # Legacy PA-API fallback credentials (if provided)
     AMAZON_ACCESS_KEY: str = ""
     AMAZON_SECRET_KEY: str = ""
-    AMAZON_REGION: str = "eu-west-1"
-    AMAZON_HOST: str = "webservices.amazon.in"
-    AMAZON_MARKETPLACE: str = "www.amazon.in"
 
     FLIPKART_API_ENABLED: bool = False
     FLIPKART_AFFILIATE_ID: str = ""

@@ -23,17 +23,66 @@ class AmazonCreatorsAdapter(BaseMarketplaceAdapter):
     def display_name(self) -> str:
         return "Amazon.in"
 
+    _cached_oauth_token: Optional[str] = None
+    _oauth_token_expiry: float = 0.0
+
     def is_enabled(self) -> bool:
         return bool(settings.AMAZON_CREATORS_API_ENABLED)
 
     def is_live_configured(self) -> bool:
-        return bool(
+        has_creators_oauth = bool(
+            settings.AMAZON_CREATORS_CLIENT_ID
+            and settings.AMAZON_CREATORS_CLIENT_SECRET
+            and settings.AMAZON_PARTNER_TAG
+        )
+        has_legacy_keys = bool(
             settings.AMAZON_PARTNER_TAG
             and settings.AMAZON_ACCESS_KEY
             and settings.AMAZON_SECRET_KEY
         )
+        return has_creators_oauth or has_legacy_keys
+
+    def _get_auth_headers(self, target_operation: str) -> Dict[str, str]:
+        """
+        Builds authenticated headers for Amazon Creators API.
+        Exchanges Client ID & Client Secret for an in-memory OAuth 2.0 Bearer token.
+        Cached at runtime; never written to .env or logs.
+        """
+        import requests
+        headers = {
+            "Content-Type": "application/json; charset=utf-8",
+            "X-Amz-Target": f"com.amazon.paapi5.v1.ProductAdvertisingAPIv1.{target_operation}",
+        }
+
+        # Creators API OAuth 2.0 Client Credentials flow
+        if settings.AMAZON_CREATORS_CLIENT_ID and settings.AMAZON_CREATORS_CLIENT_SECRET:
+            current_time = time.time()
+            if not self._cached_oauth_token or current_time >= self._oauth_token_expiry:
+                token_url = settings.AMAZON_TOKEN_ENDPOINT or "https://api.amazon.co.uk/auth/o2/token"
+                data = {
+                    "grant_type": "client_credentials",
+                    "client_id": settings.AMAZON_CREATORS_CLIENT_ID,
+                    "client_secret": settings.AMAZON_CREATORS_CLIENT_SECRET,
+                }
+                token_resp = requests.post(token_url, data=data, timeout=10)
+                token_resp.raise_for_status()
+                token_data = token_resp.json()
+                self._cached_oauth_token = token_data.get("access_token")
+                expires_in = token_data.get("expires_in", 3600)
+                self._oauth_token_expiry = current_time + max(expires_in - 60, 60)
+
+            if self._cached_oauth_token:
+                headers["Authorization"] = f"Bearer {self._cached_oauth_token}"
+
+        return headers
 
     def health_check(self) -> Dict[str, Any]:
+        auth_mode = "none"
+        if settings.AMAZON_CREATORS_CLIENT_ID and settings.AMAZON_CREATORS_CLIENT_SECRET:
+            auth_mode = "creators_api_oauth2"
+        elif settings.AMAZON_ACCESS_KEY and settings.AMAZON_SECRET_KEY:
+            auth_mode = "legacy_paapi"
+
         return {
             "provider": self.provider_code,
             "display_name": self.display_name,
@@ -42,6 +91,7 @@ class AmazonCreatorsAdapter(BaseMarketplaceAdapter):
             "status": "active" if (self.is_enabled() and self.is_live_configured()) else "unconfigured_fixture_mode",
             "host": settings.AMAZON_HOST,
             "marketplace": settings.AMAZON_MARKETPLACE,
+            "auth_mode": auth_mode,
         }
 
     def search_products(
@@ -137,10 +187,7 @@ class AmazonCreatorsAdapter(BaseMarketplaceAdapter):
         Resources requested: Images, ItemInfo, BrowseNodeInfo, OffersV2
         """
         import requests
-        headers = {
-            "Content-Type": "application/json; charset=utf-8",
-            "X-Amz-Target": "com.amazon.paapi5.v1.ProductAdvertisingAPIv1.SearchItems",
-        }
+        headers = self._get_auth_headers("SearchItems")
         payload = {
             "Keywords": query,
             "PartnerTag": settings.AMAZON_PARTNER_TAG,
@@ -164,19 +211,15 @@ class AmazonCreatorsAdapter(BaseMarketplaceAdapter):
                 "OffersV2.Listings.DealDetails",
             ],
         }
-        # Note: SigV4 request signing would be attached here
-        # When live credentials are provided in production, SigV4 Auth is injected
-        response = requests.post(f"https://{settings.AMAZON_HOST}/paapi5/searchitems", json=payload, headers=headers, timeout=5)
+        host = settings.AMAZON_HOST or "creatorsapi.amazon"
+        response = requests.post(f"https://{host}/paapi5/searchitems", json=payload, headers=headers, timeout=10)
         response.raise_for_status()
         data = response.json()
         return data.get("SearchResult", {}).get("Items", [])
 
     def _execute_live_get_item(self, asin: str) -> Optional[Dict[str, Any]]:
         import requests
-        headers = {
-            "Content-Type": "application/json; charset=utf-8",
-            "X-Amz-Target": "com.amazon.paapi5.v1.ProductAdvertisingAPIv1.GetItems",
-        }
+        headers = self._get_auth_headers("GetItems")
         payload = {
             "ItemIds": [asin],
             "PartnerTag": settings.AMAZON_PARTNER_TAG,
@@ -197,7 +240,8 @@ class AmazonCreatorsAdapter(BaseMarketplaceAdapter):
                 "OffersV2.Listings.DealDetails",
             ],
         }
-        response = requests.post(f"https://{settings.AMAZON_HOST}/paapi5/getitems", json=payload, headers=headers, timeout=5)
+        host = settings.AMAZON_HOST or "creatorsapi.amazon"
+        response = requests.post(f"https://{host}/paapi5/getitems", json=payload, headers=headers, timeout=10)
         response.raise_for_status()
         items = response.json().get("ItemsResult", {}).get("Items", [])
         return items[0] if items else None
