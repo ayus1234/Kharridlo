@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getOrCreateServerCart } from "@/lib/server-cart";
+import { getOrCreateServerCart, recalculateCartTotals } from "@/lib/server-cart";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
         availability_status: "in_stock",
       });
     }
+    recalculateCartTotals(cart);
   }
 
   const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_1DP5mmOlF5G5ag";

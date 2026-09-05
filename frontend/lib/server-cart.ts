@@ -140,7 +140,7 @@ export function getOrCreateServerCart(sessionId: string, cookieHeader?: string |
   return cart;
 }
 
-function recalculateCartTotals(cart: ServerCart): ServerCart {
+export function recalculateCartTotals(cart: ServerCart): ServerCart {
   let subtotal = 0;
   let count = 0;
   for (const item of cart.items) {

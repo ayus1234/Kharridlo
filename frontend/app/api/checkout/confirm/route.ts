@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getOrCreateServerCart, evaluateSessionPolicy } from "@/lib/server-cart";
+import { getOrCreateServerCart, evaluateSessionPolicy, recalculateCartTotals } from "@/lib/server-cart";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
         availability_status: "in_stock",
       });
     }
+    recalculateCartTotals(cart);
   }
 
   if (cart.items.length === 0) {
