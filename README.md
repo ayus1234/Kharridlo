@@ -9,8 +9,6 @@
 [![Demo Video](https://img.shields.io/badge/Demo_Video-Watch_Walkthrough-FF0000?style=for-the-badge&logo=youtube&logoColor=white)](#-product-demo--walkthrough-video)
 [![License: MIT](https://img.shields.io/badge/License-MIT-slate.svg?style=for-the-badge)](LICENSE)
 
-</div>
-
 ---
 
 ## 🏆 Razorpay AI Buildathon Submission
