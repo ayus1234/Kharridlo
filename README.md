@@ -136,12 +136,12 @@ Traditional online shopping is plagued by decision paralysis: students and devel
 
 <div align="center">
 
-<!-- Replace the URL below with your YouTube, Loom, or Google Drive demo video link -->
-[![Kharridlo Demo Video](docs/screenshots/01-landing-intent-engine.png)](YOUR_DEMO_VIDEO_URL_HERE)
+[![Watch the Kharridlo Demo Video](docs/screenshots/01-landing-intent-engine.png)](Kharridlo_Demo_Video.mp4)
 
-### 📺 [Click Here to Watch the Full Kharridlo Demo Video](YOUR_DEMO_VIDEO_URL_HERE)
+### 📺 **[▶️ Click Here to Watch the Full Kharridlo Demo Video](Kharridlo_Demo_Video.mp4)**
+*(Click above to stream [`Kharridlo_Demo_Video.mp4`](Kharridlo_Demo_Video.mp4) directly on GitHub, or replace with your YouTube / Loom link)*
 
-*A 3-minute end-to-end demonstration of Kharridlo in action: from natural language AI discovery and spec comparison to deterministic policy checks, 30-minute inventory locks, and cryptographically verified Razorpay Test Mode escrow settlement.*
+*A comprehensive end-to-end demonstration of Kharridlo: natural language AI intent discovery, multi-product spec comparison, deterministic policy checks, 30-minute inventory locks, and cryptographically verified Razorpay Test Mode escrow settlement.*
 
 </div>
 
