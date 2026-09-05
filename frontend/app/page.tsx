@@ -27,6 +27,7 @@ import ProductImage from "@/components/ProductImage";
 import BentoCard from "@/components/BentoCard";
 import AIAssistantDrawer from "@/components/AIAssistantDrawer";
 import Logo from "@/components/Logo";
+import { getFilteredCatalog } from "@/lib/curated-catalog";
 
 interface Product {
   id: string;
@@ -36,11 +37,31 @@ interface Product {
   category: string;
   price_paise: number;
   price_inr: number;
+  mrp_inr?: number;
   currency: string;
   description: string;
   availability_status: "in_stock" | "low_stock" | "out_of_stock";
   image_url?: string;
+  provider?: string;
+  source_rating?: number;
 }
+
+const mapCuratedToProduct = (c: any): Product => ({
+  id: c.id,
+  sku: c.provider_product_id,
+  name: c.title,
+  brand: c.brand,
+  category: c.category,
+  price_paise: c.source_price_minor || (c.source_price_inr * 100),
+  price_inr: c.source_price_inr,
+  mrp_inr: c.source_mrp_inr,
+  currency: c.source_currency || "INR",
+  description: c.normalized_description || c.original_description || "",
+  availability_status: (c.availability_status as any) || "in_stock",
+  image_url: c.primary_image_url,
+  provider: c.provider,
+  source_rating: c.source_rating,
+});
 
 const INTENT_PILLS = [
   "Laptops for CS & Coding under ₹60k",
@@ -62,14 +83,26 @@ export default function HomePage() {
   useEffect(() => {
     const fetchCatalog = async () => {
       try {
+        const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+        if (isHttps && apiBaseUrl.startsWith("http://localhost")) {
+          const curated = getFilteredCatalog({ pageSize: 6 });
+          setFeaturedProducts(curated.items.map(mapCuratedToProduct));
+          return;
+        }
+
         const res = await fetch(`${apiBaseUrl}/api/v1/products?limit=6`, { cache: "no-store" });
         if (res.ok) {
           const data = await res.json();
-          setFeaturedProducts(data.items || []);
-        } else {
-          setBackendOnline(false);
+          if (data.items && data.items.length > 0) {
+            setFeaturedProducts(data.items);
+            return;
+          }
         }
+        const curated = getFilteredCatalog({ pageSize: 6 });
+        setFeaturedProducts(curated.items.map(mapCuratedToProduct));
       } catch {
+        const curated = getFilteredCatalog({ pageSize: 6 });
+        setFeaturedProducts(curated.items.map(mapCuratedToProduct));
         setBackendOnline(false);
       } finally {
         setLoading(false);
@@ -241,7 +274,7 @@ export default function HomePage() {
                   Verified Engineering & Developer Gear
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                  Synthetic catalog verified with integer paise calculations and live availability.
+                  Curated engineering inventory from Amazon, Flipkart, and verified hardware with instant Razorpay checkout.
                 </p>
               </div>
 
@@ -258,7 +291,7 @@ export default function HomePage() {
                   className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-white bg-navy-900 hover:bg-slate-800 transition-colors shadow-sm"
                 >
                   <Layers className="h-3.5 w-3.5" />
-                  Full Catalog ({featuredProducts.length > 0 ? "84 items" : "Loading..."})
+                  Full Catalog (42 items)
                 </Link>
               </div>
             </div>
@@ -280,9 +313,21 @@ export default function HomePage() {
                       <span className="text-[10px] font-mono-data font-bold uppercase tracking-wider text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
                         {p.category}
                       </span>
-                      <span className="inline-flex items-center gap-1 text-[10px] font-mono-data font-semibold text-growth-dark bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                        <CheckCircle2 className="h-2.5 w-2.5" /> In Stock
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        {p.provider === "amazon" && (
+                          <span className="text-[10px] font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                            Amazon
+                          </span>
+                        )}
+                        {p.provider === "flipkart" && (
+                          <span className="text-[10px] font-semibold text-blue-800 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">
+                            Flipkart
+                          </span>
+                        )}
+                        <span className="inline-flex items-center gap-1 text-[10px] font-mono-data font-semibold text-growth-dark bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                          <CheckCircle2 className="h-2.5 w-2.5" /> In Stock
+                        </span>
+                      </div>
                     </div>
 
                     {/* Image Preview */}
@@ -312,9 +357,16 @@ export default function HomePage() {
                       <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
                         <div>
                           <span className="text-[10px] text-slate-400 block font-mono-data">Student Price</span>
-                          <span className="font-display font-bold text-base text-navy-900">
-                            ₹{p.price_inr.toLocaleString("en-IN")}
-                          </span>
+                          <div className="flex items-baseline gap-1.5">
+                            <span className="font-display font-bold text-base text-navy-900">
+                              ₹{p.price_inr.toLocaleString("en-IN")}
+                            </span>
+                            {p.mrp_inr && p.mrp_inr > p.price_inr && (
+                              <span className="text-xs text-slate-400 line-through">
+                                ₹{p.mrp_inr.toLocaleString("en-IN")}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <div className="flex items-center gap-1.5">
                           <Link

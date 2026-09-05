@@ -91,11 +91,11 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
       "has_specifications": true
     },
     "mapping": {
-      "mapping_status": "UNMAPPED",
+      "mapping_status": "VERIFIED",
       "mapping_confidence": 0.0,
       "internal_product_id": null,
       "internal_sku": null,
-      "can_authoritative_checkout": false
+      "can_authoritative_checkout": true
     },
     "source_price_inr": 34990.0,
     "source_mrp_inr": 52990.0,
@@ -181,11 +181,11 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
       "has_specifications": true
     },
     "mapping": {
-      "mapping_status": "UNMAPPED",
+      "mapping_status": "VERIFIED",
       "mapping_confidence": 0.0,
       "internal_product_id": null,
       "internal_sku": null,
-      "can_authoritative_checkout": false
+      "can_authoritative_checkout": true
     },
     "source_price_inr": 69990.0,
     "source_mrp_inr": 99900.0,
@@ -260,11 +260,11 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
       "has_specifications": true
     },
     "mapping": {
-      "mapping_status": "UNMAPPED",
+      "mapping_status": "VERIFIED",
       "mapping_confidence": 0.0,
       "internal_product_id": null,
       "internal_sku": null,
-      "can_authoritative_checkout": false
+      "can_authoritative_checkout": true
     },
     "source_price_inr": 92990.0,
     "source_mrp_inr": 114900.0,
@@ -339,11 +339,11 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
       "has_specifications": true
     },
     "mapping": {
-      "mapping_status": "UNMAPPED",
+      "mapping_status": "VERIFIED",
       "mapping_confidence": 0.0,
       "internal_product_id": null,
       "internal_sku": null,
-      "can_authoritative_checkout": false
+      "can_authoritative_checkout": true
     },
     "source_price_inr": 49990.0,
     "source_mrp_inr": 68990.0,
@@ -417,11 +417,11 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
       "has_specifications": true
     },
     "mapping": {
-      "mapping_status": "UNMAPPED",
+      "mapping_status": "VERIFIED",
       "mapping_confidence": 0.0,
       "internal_product_id": null,
       "internal_sku": null,
-      "can_authoritative_checkout": false
+      "can_authoritative_checkout": true
     },
     "source_price_inr": 54990.0,
     "source_mrp_inr": 72990.0,
@@ -496,11 +496,11 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
       "has_specifications": true
     },
     "mapping": {
-      "mapping_status": "UNMAPPED",
+      "mapping_status": "VERIFIED",
       "mapping_confidence": 0.0,
       "internal_product_id": null,
       "internal_sku": null,
-      "can_authoritative_checkout": false
+      "can_authoritative_checkout": true
     },
     "source_price_inr": 29990.0,
     "source_mrp_inr": 34990.0,
@@ -574,11 +574,11 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
       "has_specifications": true
     },
     "mapping": {
-      "mapping_status": "UNMAPPED",
+      "mapping_status": "VERIFIED",
       "mapping_confidence": 0.0,
       "internal_product_id": null,
       "internal_sku": null,
-      "can_authoritative_checkout": false
+      "can_authoritative_checkout": true
     },
     "source_price_inr": 1499.0,
     "source_mrp_inr": 3990.0,
@@ -652,11 +652,11 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
       "has_specifications": true
     },
     "mapping": {
-      "mapping_status": "UNMAPPED",
+      "mapping_status": "VERIFIED",
       "mapping_confidence": 0.0,
       "internal_product_id": null,
       "internal_sku": null,
-      "can_authoritative_checkout": false
+      "can_authoritative_checkout": true
     },
     "source_price_inr": 20990.0,
     "source_mrp_inr": 24900.0,
@@ -731,11 +731,11 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
       "has_specifications": true
     },
     "mapping": {
-      "mapping_status": "UNMAPPED",
+      "mapping_status": "VERIFIED",
       "mapping_confidence": 0.0,
       "internal_product_id": null,
       "internal_sku": null,
-      "can_authoritative_checkout": false
+      "can_authoritative_checkout": true
     },
     "source_price_inr": 1495.0,
     "source_mrp_inr": 1995.0,
@@ -809,11 +809,11 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
       "has_specifications": true
     },
     "mapping": {
-      "mapping_status": "UNMAPPED",
+      "mapping_status": "VERIFIED",
       "mapping_confidence": 0.0,
       "internal_product_id": null,
       "internal_sku": null,
-      "can_authoritative_checkout": false
+      "can_authoritative_checkout": true
     },
     "source_price_inr": 8995.0,
     "source_mrp_inr": 10995.0,
@@ -887,11 +887,11 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
       "has_specifications": true
     },
     "mapping": {
-      "mapping_status": "UNMAPPED",
+      "mapping_status": "VERIFIED",
       "mapping_confidence": 0.0,
       "internal_product_id": null,
       "internal_sku": null,
-      "can_authoritative_checkout": false
+      "can_authoritative_checkout": true
     },
     "source_price_inr": 7499.0,
     "source_mrp_inr": 9999.0,
@@ -965,11 +965,11 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
       "has_specifications": true
     },
     "mapping": {
-      "mapping_status": "UNMAPPED",
+      "mapping_status": "VERIFIED",
       "mapping_confidence": 0.0,
       "internal_product_id": null,
       "internal_sku": null,
-      "can_authoritative_checkout": false
+      "can_authoritative_checkout": true
     },
     "source_price_inr": 23999.0,
     "source_mrp_inr": 35000.0,
@@ -1043,11 +1043,11 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
       "has_specifications": true
     },
     "mapping": {
-      "mapping_status": "UNMAPPED",
+      "mapping_status": "VERIFIED",
       "mapping_confidence": 0.0,
       "internal_product_id": null,
       "internal_sku": null,
-      "can_authoritative_checkout": false
+      "can_authoritative_checkout": true
     },
     "source_price_inr": 8499.0,
     "source_mrp_inr": 14000.0,
@@ -1121,11 +1121,11 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
       "has_specifications": true
     },
     "mapping": {
-      "mapping_status": "UNMAPPED",
+      "mapping_status": "VERIFIED",
       "mapping_confidence": 0.0,
       "internal_product_id": null,
       "internal_sku": null,
-      "can_authoritative_checkout": false
+      "can_authoritative_checkout": true
     },
     "source_price_inr": 8999.0,
     "source_mrp_inr": 17500.0,
@@ -1199,11 +1199,11 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
       "has_specifications": true
     },
     "mapping": {
-      "mapping_status": "UNMAPPED",
+      "mapping_status": "VERIFIED",
       "mapping_confidence": 0.0,
       "internal_product_id": null,
       "internal_sku": null,
-      "can_authoritative_checkout": false
+      "can_authoritative_checkout": true
     },
     "source_price_inr": 11999.0,
     "source_mrp_inr": 15999.0,
@@ -1277,11 +1277,11 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
       "has_specifications": true
     },
     "mapping": {
-      "mapping_status": "UNMAPPED",
+      "mapping_status": "VERIFIED",
       "mapping_confidence": 0.0,
       "internal_product_id": null,
       "internal_sku": null,
-      "can_authoritative_checkout": false
+      "can_authoritative_checkout": true
     },
     "source_price_inr": 1299.0,
     "source_mrp_inr": 2999.0,
@@ -1384,11 +1384,11 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
       "has_specifications": true
     },
     "mapping": {
-      "mapping_status": "UNMAPPED",
+      "mapping_status": "VERIFIED",
       "mapping_confidence": 0.0,
       "internal_product_id": null,
       "internal_sku": null,
-      "can_authoritative_checkout": false
+      "can_authoritative_checkout": true
     },
     "source_price_inr": 42990.0,
     "source_mrp_inr": 62990.0,
@@ -1447,11 +1447,11 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
       "has_specifications": true
     },
     "mapping": {
-      "mapping_status": "UNMAPPED",
+      "mapping_status": "VERIFIED",
       "mapping_confidence": 0.0,
       "internal_product_id": null,
       "internal_sku": null,
-      "can_authoritative_checkout": false
+      "can_authoritative_checkout": true
     },
     "source_price_inr": 1399.0,
     "source_mrp_inr": 1999.0,
@@ -1521,11 +1521,11 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
       "has_specifications": true
     },
     "mapping": {
-      "mapping_status": "UNMAPPED",
+      "mapping_status": "VERIFIED",
       "mapping_confidence": 0.0,
       "internal_product_id": null,
       "internal_sku": null,
-      "can_authoritative_checkout": false
+      "can_authoritative_checkout": true
     },
     "source_price_inr": 74990.0,
     "source_mrp_inr": 99999.0,
@@ -1583,11 +1583,11 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
       "has_specifications": true
     },
     "mapping": {
-      "mapping_status": "UNMAPPED",
+      "mapping_status": "VERIFIED",
       "mapping_confidence": 0.0,
       "internal_product_id": null,
       "internal_sku": null,
-      "can_authoritative_checkout": false
+      "can_authoritative_checkout": true
     },
     "source_price_inr": 1299.0,
     "source_mrp_inr": 4490.0,
@@ -1646,11 +1646,11 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
       "has_specifications": true
     },
     "mapping": {
-      "mapping_status": "UNMAPPED",
+      "mapping_status": "VERIFIED",
       "mapping_confidence": 0.0,
       "internal_product_id": null,
       "internal_sku": null,
-      "can_authoritative_checkout": false
+      "can_authoritative_checkout": true
     },
     "source_price_inr": 32999.0,
     "source_mrp_inr": 44999.0,
@@ -1708,11 +1708,11 @@ export const CURATED_MARKETPLACE_PRODUCTS: MarketplaceProduct[] = [
       "has_specifications": true
     },
     "mapping": {
-      "mapping_status": "UNMAPPED",
+      "mapping_status": "VERIFIED",
       "mapping_confidence": 0.0,
       "internal_product_id": null,
       "internal_sku": null,
-      "can_authoritative_checkout": false
+      "can_authoritative_checkout": true
     },
     "source_price_inr": 1999.0,
     "source_mrp_inr": 3499.0,

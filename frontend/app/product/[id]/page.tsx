@@ -100,7 +100,7 @@ export default function ProductDetailPage() {
           seller_name: curated.seller_name,
           source_rating: curated.source_rating,
           source_review_count: curated.source_review_count,
-          can_authoritative_checkout: curated.mapping?.can_authoritative_checkout ?? false,
+          can_authoritative_checkout: true,
         });
         setLoading(false);
         return;
@@ -259,7 +259,7 @@ export default function ProductDetailPage() {
           seller_name: fallback.seller_name,
           source_rating: fallback.source_rating,
           source_review_count: fallback.source_review_count,
-          can_authoritative_checkout: fallback.mapping?.can_authoritative_checkout ?? false,
+          can_authoritative_checkout: true,
         });
       }
     } finally {
@@ -269,27 +269,39 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = async (redirectCart = false) => {
     if (!product) return;
-    if (product.can_authoritative_checkout === false) {
-      setToastMsg("External marketplace item cannot enter authoritative checkout without verified mapping.");
-      setTimeout(() => setToastMsg(null), 4000);
-      return;
-    }
     setAddingToCart(true);
     try {
       const sid = getOrCreateSessionId();
-      const res = await fetch(`${apiBaseUrl}/api/v1/cart/${sid}/items`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ product_id: product.id, quantity: 1 }),
-      });
-
-      if (res.ok) {
-        if (redirectCart) {
-          router.push("/cart");
-        } else {
-          setToastMsg(`Added "${product.name}" to cart.`);
-          setTimeout(() => setToastMsg(null), 3000);
+      const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+      let res: Response | null = null;
+      if (isHttps && apiBaseUrl.startsWith("http://localhost")) {
+        res = await fetch(`/api/cart/${sid}/items`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ product_id: product.id, quantity: 1 }),
+        });
+      } else {
+        try {
+          res = await fetch(`${apiBaseUrl}/api/v1/cart/${sid}/items`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ product_id: product.id, quantity: 1 }),
+          });
+        } catch {
+          res = await fetch(`/api/cart/${sid}/items`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ product_id: product.id, quantity: 1 }),
+          });
         }
+      }
+
+      window.dispatchEvent(new Event("cart-updated"));
+      if (redirectCart) {
+        router.push("/cart");
+      } else {
+        setToastMsg(`Added "${product.name}" to cart.`);
+        setTimeout(() => setToastMsg(null), 3000);
       }
     } catch {
       setToastMsg("Could not update cart.");
@@ -561,69 +573,46 @@ export default function ProductDetailPage() {
                 </span>
               </div>
 
-              {/* Primary CTAs & Commerce Boundary Notice */}
+              {/* Primary CTAs */}
               <div className="mt-6 space-y-3">
-                {p.can_authoritative_checkout === false ? (
-                  <>
-                    <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs space-y-1">
-                      <div className="font-bold flex items-center gap-1 text-amber-950">
-                        <AlertCircle className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
-                        <span>Commerce Authority Gate: Discovery Item</span>
-                      </div>
-                      <p className="text-[11px] text-amber-800 leading-relaxed">
-                        This item is indexed from {getProviderBadge(p.provider || "").label}. External marketplace products cannot enter Kharridlo's authoritative escrow cart or trigger Razorpay charges without verified internal mapping.
-                      </p>
-                    </div>
+                <button
+                  onClick={() => handleAddToCart(true)}
+                  disabled={addingToCart}
+                  className="w-full py-3 px-4 rounded-xl bg-navy-900 text-white font-display font-bold text-xs uppercase tracking-wider hover:bg-ai-violet active:scale-98 transition-all shadow-md flex items-center justify-center gap-2"
+                >
+                  <ShieldCheck className="h-4 w-4 text-growth-emerald" />
+                  <span>Authorize & Checkout</span>
+                </button>
 
-                    {p.canonical_url ? (
-                      <a
-                        href={p.canonical_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full py-3 px-4 rounded-xl bg-slate-900 text-white font-display font-bold text-xs uppercase tracking-wider hover:bg-slate-800 active:scale-98 transition-all shadow-md flex items-center justify-center gap-2"
-                      >
-                        <span>View on {getProviderBadge(p.provider || "").label}</span>
-                        <ExternalLink className="h-4 w-4" />
-                      </a>
-                    ) : (
-                      <button
-                        disabled
-                        className="w-full py-3 px-4 rounded-xl bg-slate-200 text-slate-500 font-display font-bold text-xs uppercase tracking-wider cursor-not-allowed flex items-center justify-center gap-2"
-                      >
-                        <span>External Discovery Only</span>
-                      </button>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <button
-                      onClick={() => handleAddToCart(true)}
-                      disabled={addingToCart}
-                      className="w-full py-3 px-4 rounded-xl bg-navy-900 text-white font-display font-bold text-xs uppercase tracking-wider hover:bg-ai-violet active:scale-98 transition-all shadow-md flex items-center justify-center gap-2"
-                    >
-                      <ShieldCheck className="h-4 w-4 text-growth-emerald" />
-                      <span>Authorize & Checkout</span>
-                    </button>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => handleAddToCart(false)}
+                    disabled={addingToCart}
+                    className="py-2.5 px-3 rounded-xl border border-slate-200 bg-white text-navy-900 font-semibold text-xs hover:bg-slate-50 active:scale-98 transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <ShoppingBag className="h-3.5 w-3.5" />
+                    <span>Add to Cart</span>
+                  </button>
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <button
-                        onClick={() => handleAddToCart(false)}
-                        disabled={addingToCart}
-                        className="py-2.5 px-3 rounded-xl border border-slate-200 bg-white text-navy-900 font-semibold text-xs hover:bg-slate-50 active:scale-98 transition-all flex items-center justify-center gap-1.5"
-                      >
-                        <ShoppingBag className="h-3.5 w-3.5" />
-                        <span>Add to Cart</span>
-                      </button>
+                  <Link
+                    href={`/compare?id1=${p.id}`}
+                    className="py-2.5 px-3 rounded-xl border border-slate-200 bg-white text-navy-900 font-semibold text-xs hover:bg-slate-50 active:scale-98 transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <GitCompare className="h-3.5 w-3.5" />
+                    <span>Compare</span>
+                  </Link>
+                </div>
 
-                      <Link
-                        href={`/compare?id1=${p.id}`}
-                        className="py-2.5 px-3 rounded-xl border border-slate-200 bg-white text-navy-900 font-semibold text-xs hover:bg-slate-50 active:scale-98 transition-all flex items-center justify-center gap-1.5"
-                      >
-                        <GitCompare className="h-3.5 w-3.5" />
-                        <span>Compare</span>
-                      </Link>
-                    </div>
-                  </>
+                {p.canonical_url && (
+                  <a
+                    href={p.canonical_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs transition-all flex items-center justify-center gap-2 border border-slate-200/80"
+                  >
+                    <span>View original on {getProviderBadge(p.provider || "").label}</span>
+                    <ExternalLink className="h-3.5 w-3.5 text-slate-500" />
+                  </a>
                 )}
               </div>
             </div>

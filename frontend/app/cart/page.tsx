@@ -126,8 +126,17 @@ export default function CartPage() {
 
   const fetchPolicyTiers = async () => {
     try {
-      const res = await fetch(`${apiBaseUrl}/api/v1/policy/tiers`, { cache: "no-store" });
-      if (res.ok) {
+      const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+      const url = (isHttps && apiBaseUrl.startsWith("http://localhost"))
+        ? `/api/policy/tiers`
+        : `${apiBaseUrl}/api/v1/policy/tiers`;
+      let res: Response | null = null;
+      try {
+        res = await fetch(url, { cache: "no-store" });
+      } catch {
+        res = await fetch(`/api/policy/tiers`, { cache: "no-store" });
+      }
+      if (res && res.ok) {
         const tiers: PolicyTierSummary[] = await res.json();
         setAvailableTiers(tiers);
       }
@@ -157,9 +166,24 @@ export default function CartPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/api/v1/cart/${sid}`, { cache: "no-store" });
-      if (!res.ok) {
-        throw new Error(`Failed to load cart: ${res.status} ${res.statusText}`);
+      const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+      const url = (isHttps && apiBaseUrl.startsWith("http://localhost"))
+        ? `/api/cart/${sid}`
+        : `${apiBaseUrl}/api/v1/cart/${sid}`;
+      let res: Response | null = null;
+      try {
+        res = await fetch(url, { cache: "no-store" });
+      } catch {
+        res = await fetch(`/api/cart/${sid}`, { cache: "no-store" });
+      }
+      if (!res || !res.ok) {
+        const fallbackRes = await fetch(`/api/cart/${sid}`, { cache: "no-store" });
+        if (fallbackRes.ok) {
+          const data = await fallbackRes.json();
+          setCart(data);
+          return;
+        }
+        throw new Error(`Failed to load cart: ${res?.status || "offline"}`);
       }
       const data: CartResponse = await res.json();
       setCart(data);
@@ -181,24 +205,51 @@ export default function CartPage() {
     setBuyerApproved(false);
     try {
       const sid = sessionId || getOrCreateSessionId();
-      let res = await fetch(`${apiBaseUrl}/api/v1/cart/${sid}/items/${productId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ quantity: newQty }),
-      });
-      if (!res.ok && (res.status === 404 || res.status === 405)) {
-        res = await fetch(`${apiBaseUrl}/api/v1/cart/${sid}/items`, {
-          method: "PUT",
+      const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+      let res: Response | null = null;
+      if (isHttps && apiBaseUrl.startsWith("http://localhost")) {
+        res = await fetch(`/api/cart/${sid}/items/${productId}`, {
+          method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ product_id: productId, quantity: newQty }),
+          body: JSON.stringify({ quantity: newQty }),
+        });
+      } else {
+        try {
+          res = await fetch(`${apiBaseUrl}/api/v1/cart/${sid}/items/${productId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ quantity: newQty }),
+          });
+          if (!res.ok && (res.status === 404 || res.status === 405)) {
+            res = await fetch(`${apiBaseUrl}/api/v1/cart/${sid}/items`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ product_id: productId, quantity: newQty }),
+            });
+          }
+        } catch {
+          res = await fetch(`/api/cart/${sid}/items/${productId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ quantity: newQty }),
+          });
+        }
+      }
+      if (!res || !res.ok) {
+        res = await fetch(`/api/cart/${sid}/items/${productId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ quantity: newQty }),
         });
       }
-      if (!res.ok) {
-        const errData = await res.json().catch(() => null);
+      if (res && res.ok) {
+        const updatedCart: CartResponse = await res.json();
+        setCart(updatedCart);
+        window.dispatchEvent(new Event("cart-updated"));
+      } else {
+        const errData = await res?.json().catch(() => null);
         throw new Error(errData?.detail?.message || "Failed to update quantity");
       }
-      const updatedCart: CartResponse = await res.json();
-      setCart(updatedCart);
     } catch (err: any) {
       setError(err?.message || "Error updating item quantity");
     } finally {
@@ -213,20 +264,35 @@ export default function CartPage() {
     setBuyerApproved(false);
     try {
       const sid = sessionId || getOrCreateSessionId();
-      const res = await fetch(`${apiBaseUrl}/api/v1/cart/${sid}/items/${productId}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) {
-        const errData = await res.json().catch(() => null);
-        // If expired (410) or item not found (404), reload the authoritative cart state
-        if (res.status === 410 || res.status === 404) {
-          await fetchCart(sid);
-          return;
+      const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+      let res: Response | null = null;
+      if (isHttps && apiBaseUrl.startsWith("http://localhost")) {
+        res = await fetch(`/api/cart/${sid}/items/${productId}`, {
+          method: "DELETE",
+        });
+      } else {
+        try {
+          res = await fetch(`${apiBaseUrl}/api/v1/cart/${sid}/items/${productId}`, {
+            method: "DELETE",
+          });
+        } catch {
+          res = await fetch(`/api/cart/${sid}/items/${productId}`, {
+            method: "DELETE",
+          });
         }
-        throw new Error(errData?.detail?.message || "Failed to remove item");
       }
-      const updatedCart: CartResponse = await res.json();
-      setCart(updatedCart);
+      if (!res || !res.ok) {
+        res = await fetch(`/api/cart/${sid}/items/${productId}`, {
+          method: "DELETE",
+        });
+      }
+      if (res && res.ok) {
+        const updatedCart: CartResponse = await res.json();
+        setCart(updatedCart);
+        window.dispatchEvent(new Event("cart-updated"));
+      } else {
+        await fetchCart(sid);
+      }
     } catch (err: any) {
       setError(err?.message || "Error removing item");
     } finally {
@@ -241,24 +307,30 @@ export default function CartPage() {
     setBuyerApproved(false);
     try {
       const sid = sessionId || getOrCreateSessionId();
-      let res = await fetch(`${apiBaseUrl}/api/v1/cart/${sid}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) {
-        res = await fetch(`${apiBaseUrl}/api/v1/cart/${sid}/clear`, {
-          method: "POST",
-        });
-      }
-      if (!res.ok) {
-        const errData = await res.json().catch(() => null);
-        if (res.status === 404 || res.status === 410) {
-          await fetchCart(sid);
-          return;
+      const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+      let res: Response | null = null;
+      if (isHttps && apiBaseUrl.startsWith("http://localhost")) {
+        res = await fetch(`/api/cart/${sid}`, { method: "DELETE" });
+      } else {
+        try {
+          res = await fetch(`${apiBaseUrl}/api/v1/cart/${sid}`, { method: "DELETE" });
+          if (!res.ok) {
+            res = await fetch(`${apiBaseUrl}/api/v1/cart/${sid}/clear`, { method: "POST" });
+          }
+        } catch {
+          res = await fetch(`/api/cart/${sid}`, { method: "DELETE" });
         }
-        throw new Error(errData?.detail?.message || "Failed to clear cart");
       }
-      const updatedCart: CartResponse = await res.json();
-      setCart(updatedCart);
+      if (!res || !res.ok) {
+        res = await fetch(`/api/cart/${sid}`, { method: "DELETE" });
+      }
+      if (res && res.ok) {
+        const updatedCart: CartResponse = await res.json();
+        setCart(updatedCart);
+        window.dispatchEvent(new Event("cart-updated"));
+      } else {
+        await fetchCart(sid);
+      }
     } catch (err: any) {
       setError(err?.message || "Error clearing cart");
     } finally {
@@ -272,11 +344,23 @@ export default function CartPage() {
     setPaymentState({ status: "IDLE" });
     try {
       const sid = sessionId || getOrCreateSessionId();
-      await fetch(`${apiBaseUrl}/api/v1/policy/${sid}/tier`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tier: newTier }),
-      });
+      const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+      const url = (isHttps && apiBaseUrl.startsWith("http://localhost"))
+        ? `/api/policy/${sid}/tier`
+        : `${apiBaseUrl}/api/v1/policy/${sid}/tier`;
+      try {
+        await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tier: newTier }),
+        });
+      } catch {
+        await fetch(`/api/policy/${sid}/tier`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tier: newTier }),
+        });
+      }
       if (cart && cart.items.length > 0) {
         evaluateCommercePolicy();
       }
@@ -292,11 +376,21 @@ export default function CartPage() {
     setPaymentState({ status: "IDLE" });
     try {
       const sid = sessionId || getOrCreateSessionId();
-      const res = await fetch(`${apiBaseUrl}/api/v1/policy/evaluate/${sid}`, {
-        method: "POST",
-      });
-      if (!res.ok) {
-        throw new Error(`Policy evaluation failed: ${res.status}`);
+      const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+      const url = (isHttps && apiBaseUrl.startsWith("http://localhost"))
+        ? `/api/policy/evaluate/${sid}`
+        : `${apiBaseUrl}/api/v1/policy/evaluate/${sid}`;
+      let res: Response | null = null;
+      try {
+        res = await fetch(url, { method: "POST" });
+      } catch {
+        res = await fetch(`/api/policy/evaluate/${sid}`, { method: "POST" });
+      }
+      if (!res || !res.ok) {
+        res = await fetch(`/api/policy/evaluate/${sid}`, { method: "POST" });
+      }
+      if (!res || !res.ok) {
+        throw new Error(`Policy evaluation failed: ${res?.status || "error"}`);
       }
       const data: PolicyEvaluationResponse = await res.json();
       setPolicyResult(data);
@@ -334,34 +428,72 @@ export default function CartPage() {
 
     try {
       const sid = sessionId || getOrCreateSessionId();
-      // 1. Confirm checkout authorization on server
-      const confirmRes = await fetch(`${apiBaseUrl}/api/v1/checkout/confirm?session_id=${sid}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Session-ID": sid,
-        },
-        body: JSON.stringify({ buyer_confirmed: true }),
-      });
+      const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
 
+      // 1. Confirm checkout authorization
+      let confirmRes: Response | null = null;
+      const confirmUrl = (isHttps && apiBaseUrl.startsWith("http://localhost"))
+        ? `/api/checkout/confirm?session_id=${sid}`
+        : `${apiBaseUrl}/api/v1/checkout/confirm?session_id=${sid}`;
+      try {
+        confirmRes = await fetch(confirmUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Session-ID": sid,
+          },
+          body: JSON.stringify({ buyer_confirmed: true }),
+        });
+      } catch {
+        confirmRes = await fetch(`/api/checkout/confirm?session_id=${sid}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Session-ID": sid },
+          body: JSON.stringify({ buyer_confirmed: true }),
+        });
+      }
+      if (!confirmRes || !confirmRes.ok) {
+        confirmRes = await fetch(`/api/checkout/confirm?session_id=${sid}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Session-ID": sid },
+          body: JSON.stringify({ buyer_confirmed: true }),
+        });
+      }
       if (!confirmRes.ok) {
-        const err = await confirmRes.json();
+        const err = await confirmRes.json().catch(() => ({}));
         throw new Error(err.detail?.message || "Checkout confirmation failed");
       }
       const checkoutData = await confirmRes.json();
 
       // 2. Server creates Razorpay Order
-      const orderRes = await fetch(`${apiBaseUrl}/api/v1/payments/orders?session_id=${sid}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Session-ID": sid,
-        },
-        body: JSON.stringify({ checkout_id: checkoutData.id }),
-      });
-
+      let orderRes: Response | null = null;
+      const orderUrl = (isHttps && apiBaseUrl.startsWith("http://localhost"))
+        ? `/api/payments/orders?session_id=${sid}`
+        : `${apiBaseUrl}/api/v1/payments/orders?session_id=${sid}`;
+      try {
+        orderRes = await fetch(orderUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Session-ID": sid,
+          },
+          body: JSON.stringify({ checkout_id: checkoutData.id }),
+        });
+      } catch {
+        orderRes = await fetch(`/api/payments/orders?session_id=${sid}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Session-ID": sid },
+          body: JSON.stringify({ checkout_id: checkoutData.id }),
+        });
+      }
+      if (!orderRes || !orderRes.ok) {
+        orderRes = await fetch(`/api/payments/orders?session_id=${sid}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Session-ID": sid },
+          body: JSON.stringify({ checkout_id: checkoutData.id }),
+        });
+      }
       if (!orderRes.ok) {
-        const err = await orderRes.json();
+        const err = await orderRes.json().catch(() => ({}));
         throw new Error(err.detail?.message || "Order creation failed");
       }
       const orderData = await orderRes.json();
@@ -384,7 +516,6 @@ export default function CartPage() {
             contact: "9876543210",
           },
           handler: async function (response: any) {
-            // Cryptographic signature returned by Razorpay
             await verifyPaymentSignature(
               orderData.internal_order_id,
               response.razorpay_order_id,
@@ -395,18 +526,28 @@ export default function CartPage() {
           },
           modal: {
             ondismiss: async function () {
-              // Buyer closed modal
-              await fetch(`${apiBaseUrl}/api/v1/payments/cancel?session_id=${sessionId}`, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  "X-Session-ID": sessionId,
-                },
-                body: JSON.stringify({
-                  internal_order_id: orderData.internal_order_id,
-                  reason: "buyer_dismissed_checkout",
-                }),
-              });
+              const cancelUrl = (isHttps && apiBaseUrl.startsWith("http://localhost"))
+                ? `/api/payments/cancel?session_id=${sid}`
+                : `${apiBaseUrl}/api/v1/payments/cancel?session_id=${sid}`;
+              try {
+                await fetch(cancelUrl, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json", "X-Session-ID": sid },
+                  body: JSON.stringify({
+                    internal_order_id: orderData.internal_order_id,
+                    reason: "buyer_dismissed_checkout",
+                  }),
+                });
+              } catch {
+                await fetch(`/api/payments/cancel?session_id=${sid}`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json", "X-Session-ID": sid },
+                  body: JSON.stringify({
+                    internal_order_id: orderData.internal_order_id,
+                    reason: "buyer_dismissed_checkout",
+                  }),
+                });
+              }
               setPaymentState({
                 status: "CANCELLED",
                 internalOrderId: orderData.internal_order_id,
@@ -421,20 +562,34 @@ export default function CartPage() {
 
         const rzp = new (window as any).Razorpay(options);
         rzp.on("payment.failed", async function (response: any) {
-          await fetch(`${apiBaseUrl}/api/v1/payments/cancel?session_id=${sessionId}`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-Session-ID": sessionId,
-            },
-            body: JSON.stringify({
-              internal_order_id: orderData.internal_order_id,
-              reason: "payment_failed_at_gateway",
-              razorpay_payment_id: response.error?.metadata?.payment_id,
-              failure_code: response.error?.code,
-              failure_description: response.error?.description,
-            }),
-          });
+          const cancelUrl = (isHttps && apiBaseUrl.startsWith("http://localhost"))
+            ? `/api/payments/cancel?session_id=${sid}`
+            : `${apiBaseUrl}/api/v1/payments/cancel?session_id=${sid}`;
+          try {
+            await fetch(cancelUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "X-Session-ID": sid },
+              body: JSON.stringify({
+                internal_order_id: orderData.internal_order_id,
+                reason: "payment_failed_at_gateway",
+                razorpay_payment_id: response.error?.metadata?.payment_id,
+                failure_code: response.error?.code,
+                failure_description: response.error?.description,
+              }),
+            });
+          } catch {
+            await fetch(`/api/payments/cancel?session_id=${sid}`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "X-Session-ID": sid },
+              body: JSON.stringify({
+                internal_order_id: orderData.internal_order_id,
+                reason: "payment_failed_at_gateway",
+                razorpay_payment_id: response.error?.metadata?.payment_id,
+                failure_code: response.error?.code,
+                failure_description: response.error?.description,
+              }),
+            });
+          }
           setPaymentState({
             status: "FAILED",
             internalOrderId: orderData.internal_order_id,
@@ -444,8 +599,7 @@ export default function CartPage() {
 
         rzp.open();
       } else {
-        // Fallback for environments without internet / script blockers
-        // Provide seamless direct verification in test mode
+        // Fallback simulated capture for headless environments
         setPaymentState({
           status: "PROCESSING",
           internalOrderId: orderData.internal_order_id,
@@ -453,7 +607,6 @@ export default function CartPage() {
           amountPaise: orderData.amount_paise,
         });
 
-        // Simulate successful test capture directly against backend
         const testPaymentId = `pay_test_${Math.random().toString(36).substring(2, 10)}`;
         const testSig = `test_sig_${Math.random().toString(36).substring(2, 12)}`;
         
@@ -481,23 +634,53 @@ export default function CartPage() {
     amountPaise: number
   ) => {
     try {
-      const verifyRes = await fetch(`${apiBaseUrl}/api/v1/payments/verify`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          internal_order_id: internalOrderId,
-          razorpay_order_id: razorpayOrderId,
-          razorpay_payment_id: razorpayPaymentId,
-          razorpay_signature: razorpaySignature,
-        }),
-      });
+      const sid = sessionId || getOrCreateSessionId();
+      const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+      const url = (isHttps && apiBaseUrl.startsWith("http://localhost"))
+        ? `/api/payments/verify`
+        : `${apiBaseUrl}/api/v1/payments/verify`;
+      let verifyRes: Response | null = null;
+      try {
+        verifyRes = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            internal_order_id: internalOrderId,
+            razorpay_order_id: razorpayOrderId,
+            razorpay_payment_id: razorpayPaymentId,
+            razorpay_signature: razorpaySignature,
+          }),
+        });
+      } catch {
+        verifyRes = await fetch(`/api/payments/verify`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            internal_order_id: internalOrderId,
+            razorpay_order_id: razorpayOrderId,
+            razorpay_payment_id: razorpayPaymentId,
+            razorpay_signature: razorpaySignature,
+          }),
+        });
+      }
+      if (!verifyRes || !verifyRes.ok) {
+        verifyRes = await fetch(`/api/payments/verify`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            internal_order_id: internalOrderId,
+            razorpay_order_id: razorpayOrderId,
+            razorpay_payment_id: razorpayPaymentId,
+            razorpay_signature: razorpaySignature,
+          }),
+        });
+      }
 
       if (!verifyRes.ok) {
-        const err = await verifyRes.json();
+        const err = await verifyRes.json().catch(() => ({}));
         throw new Error(err.detail?.message || "Signature verification rejected by server");
       }
 
-      const verifyData = await verifyRes.json();
       setPaymentState({
         status: "SUCCESS",
         internalOrderId,
@@ -506,8 +689,9 @@ export default function CartPage() {
         amountPaise,
       });
 
+      window.dispatchEvent(new Event("cart-updated"));
       // Refresh cart to reflect conversion
-      fetchCart(sessionId);
+      fetchCart(sid);
     } catch (err: any) {
       setPaymentState({
         status: "FAILED",

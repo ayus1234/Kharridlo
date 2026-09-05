@@ -145,7 +145,6 @@ class CartService:
         if cart.status == "expired" or cart.is_expired:
             raise CartExpiredException("Cart session has expired. Please refresh your session.", code="CART_EXPIRED")
 
-        # Resolve Product (lookup by internal ID first, then fallback to SKU)
         product = (
             db.query(Product)
             .filter((Product.id == product_id) | (Product.sku == product_id))

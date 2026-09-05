@@ -33,8 +33,20 @@ export default function BuyerNavbar() {
     const fetchCount = async () => {
       try {
         const sid = getOrCreateSessionId();
-        const res = await fetch(`${apiBaseUrl}/api/v1/cart/${sid}`, { cache: "no-store" });
-        if (res.ok) {
+        const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+        const url = (isHttps && apiBaseUrl.startsWith("http://localhost"))
+          ? `/api/cart/${sid}`
+          : `${apiBaseUrl}/api/v1/cart/${sid}`;
+        let res: Response | null = null;
+        try {
+          res = await fetch(url, { cache: "no-store" });
+        } catch {
+          res = await fetch(`/api/cart/${sid}`, { cache: "no-store" });
+        }
+        if (!res || !res.ok) {
+          res = await fetch(`/api/cart/${sid}`, { cache: "no-store" });
+        }
+        if (res && res.ok) {
           const data = await res.json();
           setCartCount(data.total_items_count || 0);
         }
@@ -43,6 +55,9 @@ export default function BuyerNavbar() {
       }
     };
     fetchCount();
+    const handleCartUpdate = () => fetchCount();
+    window.addEventListener("cart-updated", handleCartUpdate);
+    return () => window.removeEventListener("cart-updated", handleCartUpdate);
   }, [pathname, apiBaseUrl]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
