@@ -197,6 +197,15 @@ export default function CartPage() {
         }
       }
       let data: CartResponse = await res.json();
+      if ((!data.items || data.items.length === 0) && url !== `/api/cart/${sid}`) {
+        const serverlessRes = await fetch(`/api/cart/${sid}`, { cache: "no-store" }).catch(() => null);
+        if (serverlessRes && serverlessRes.ok) {
+          const serverlessData = await serverlessRes.json();
+          if (serverlessData.items && serverlessData.items.length > 0) {
+            data = serverlessData;
+          }
+        }
+      }
       setCart(data);
       if (typeof window !== "undefined") {
         try {

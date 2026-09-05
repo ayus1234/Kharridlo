@@ -159,10 +159,21 @@ export default function RecommendationsPage() {
             body: JSON.stringify({ product_id: product.id, quantity: 1 }),
           });
         } catch {
+          res = null;
+        }
+        if (!res || !res.ok) {
           res = await fetch(`/api/cart/${sid}/items`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ product_id: product.id, quantity: 1 }),
+            body: JSON.stringify({
+              product_id: product.id,
+              quantity: 1,
+              title: product.name,
+              price_paise: product.price_paise,
+              brand: product.brand,
+              category: product.category,
+              image_url: product.image_url,
+            }),
           });
         }
       }

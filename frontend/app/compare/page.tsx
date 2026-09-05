@@ -121,14 +121,35 @@ function CompareContent() {
     }
     try {
       const sid = getOrCreateSessionId();
-      const res = await fetch(`${apiBaseUrl}/api/v1/cart/${sid}/items`, {
+      let res = await fetch(`${apiBaseUrl}/api/v1/cart/${sid}/items`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ product_id: product.id, quantity: 1 }),
-      });
-      if (res.ok) {
+      }).catch(() => null);
+
+      if (!res || !res.ok) {
+        res = await fetch(`/api/cart/${sid}/items`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            product_id: product.id,
+            quantity: 1,
+            title: product.name,
+            price_paise: product.price_paise,
+            brand: product.brand,
+            category: product.category,
+            image_url: product.image_url,
+          }),
+        });
+      }
+
+      if (res && res.ok) {
+        window.dispatchEvent(new Event("cart-updated"));
         setToastMsg(`Added "${product.name}" to cart.`);
         setTimeout(() => setToastMsg(null), 3000);
+      } else {
+        setToastMsg("Failed to add to cart.");
+        setTimeout(() => setToastMsg(null), 2500);
       }
     } catch {
       setToastMsg("Could not add to cart.");

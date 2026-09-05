@@ -18,7 +18,13 @@ export async function POST(
     }
 
     const cookieHeader = request.headers.get("cookie");
-    const updatedCart = addItemToServerCart(sid, productId, quantity, cookieHeader);
+    const updatedCart = addItemToServerCart(sid, productId, quantity, cookieHeader, {
+      title: body.title || body.name,
+      price_paise: body.price_paise || (body.unit_price_inr ? Math.round(body.unit_price_inr * 100) : undefined),
+      brand: body.brand,
+      category: body.category,
+      image_url: body.image_url,
+    });
     const response = NextResponse.json(updatedCart);
     response.cookies.set("kharridlo_cart", serializeCartCookie(updatedCart.items, sid), { path: "/", maxAge: 86400 });
     return response;

@@ -155,14 +155,29 @@ function recalculateCartTotals(cart: ServerCart): ServerCart {
   return cart;
 }
 
-export function addItemToServerCart(sessionId: string, productId: string, quantity: number = 1, cookieHeader?: string | null): ServerCart {
+export interface AddItemOptions {
+  title?: string;
+  name?: string;
+  brand?: string;
+  category?: string;
+  image_url?: string;
+  price_paise?: number;
+}
+
+export function addItemToServerCart(
+  sessionId: string, 
+  productId: string, 
+  quantity: number = 1, 
+  cookieHeader?: string | null,
+  options?: AddItemOptions
+): ServerCart {
   const cart = getOrCreateServerCart(sessionId, cookieHeader);
 
   // Resolve product
   const product = getCuratedProductById(productId) ||
     CURATED_MARKETPLACE_PRODUCTS.find(p => p.id === productId || p.provider_product_id === productId);
 
-  const unitPricePaise = product?.source_price_minor || 
+  const unitPricePaise = options?.price_paise || product?.source_price_minor || 
     (product?.source_price_inr ? Math.round(product.source_price_inr * 100) : 49900);
 
   const existingItem = cart.items.find(i => i.product_id === productId || (product && i.product_id === product.id));
@@ -176,10 +191,10 @@ export function addItemToServerCart(sessionId: string, productId: string, quanti
       cart_id: cart.id,
       product_id: product?.id || productId,
       sku: product?.provider_product_id || productId,
-      name: product?.title || "Curated Developer Hardware",
-      brand: product?.brand || "Verified",
-      category: product?.category || "gear",
-      image_url: product?.primary_image_url || product?.images?.[0]?.source_url || "/assets/laptop-product.png",
+      name: options?.title || options?.name || product?.title || "Curated Developer Hardware",
+      brand: options?.brand || product?.brand || "Verified",
+      category: options?.category || product?.category || "gear",
+      image_url: options?.image_url || product?.primary_image_url || product?.images?.[0]?.source_url || "/assets/laptop-product.png",
       provider: product?.provider || "kharridlo_verified",
       quantity,
       unit_price_paise: unitPricePaise,

@@ -48,7 +48,17 @@ export default function BuyerNavbar() {
         }
         if (res && res.ok) {
           const data = await res.json();
-          setCartCount(data.total_items_count || 0);
+          let count = data.total_items_count || 0;
+          if (count === 0 && url !== `/api/cart/${sid}`) {
+            const fallbackRes = await fetch(`/api/cart/${sid}`, { cache: "no-store" }).catch(() => null);
+            if (fallbackRes && fallbackRes.ok) {
+              const fbData = await fallbackRes.json();
+              if (fbData.total_items_count) {
+                count = fbData.total_items_count;
+              }
+            }
+          }
+          setCartCount(count);
         }
       } catch {
         // Fallback

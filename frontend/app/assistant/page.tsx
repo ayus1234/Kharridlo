@@ -167,17 +167,34 @@ function AssistantContent() {
   const handleAddToCart = async (product: Product) => {
     try {
       const sid = sessionId || getOrCreateSessionId();
-      const res = await fetch(`${apiBaseUrl}/api/v1/cart/${sid}/items`, {
+      let res = await fetch(`${apiBaseUrl}/api/v1/cart/${sid}/items`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           product_id: product.id,
           quantity: 1,
         }),
-      });
+      }).catch(() => null);
 
-      if (res.ok) {
-        setToastMsg(`Added "${product.name}" to cart.`);
+      if (!res || !res.ok) {
+        res = await fetch(`/api/cart/${sid}/items`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            product_id: product.id,
+            quantity: 1,
+            title: product.name || (product as any).title,
+            price_paise: (product as any).price_paise || (product.price_inr ? Math.round(product.price_inr * 100) : undefined),
+            brand: product.brand,
+            category: product.category,
+            image_url: product.image_url,
+          }),
+        });
+      }
+
+      if (res && res.ok) {
+        window.dispatchEvent(new Event("cart-updated"));
+        setToastMsg(`Added "${product.name || (product as any).title}" to cart.`);
         setTimeout(() => setToastMsg(null), 3500);
       } else {
         setToastMsg("Failed to add to cart.");
