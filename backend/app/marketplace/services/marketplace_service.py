@@ -130,6 +130,10 @@ class MarketplaceService:
 
             offset = (page - 1) * page_size
 
+            internal_items: List[Dict[str, Any]] = []
+            amz_items: List[Dict[str, Any]] = []
+            fk_items: List[Dict[str, Any]] = []
+
             # 1. Internal Kharridlo Verified products
             if "kharridlo_verified" in target_providers:
                 queried_providers.append("kharridlo_verified")
@@ -150,7 +154,7 @@ class MarketplaceService:
                     ]
 
                 for p in internal_prods:
-                    items.append(cls._convert_internal_product(p))
+                    internal_items.append(cls._convert_internal_product(p))
 
             # 2. Amazon Creators API
             if "amazon" in target_providers:
@@ -169,7 +173,7 @@ class MarketplaceService:
                 warnings.extend(amz_res.get("warnings", []))
                 for item in amz_res.get("products", []):
                     cls._attach_mapping_status(db, item)
-                    items.append(item)
+                    amz_items.append(item)
 
                 # Log fetch audit trail
                 cls._log_fetch(
@@ -200,7 +204,7 @@ class MarketplaceService:
                 warnings.extend(fk_res.get("warnings", []))
                 for item in fk_res.get("products", []):
                     cls._attach_mapping_status(db, item)
-                    items.append(item)
+                    fk_items.append(item)
 
                 cls._log_fetch(
                     db=db,
@@ -212,6 +216,16 @@ class MarketplaceService:
                     duration_ms=duration_fk,
                     correlation_id=correlation_id,
                 )
+
+            if provider == "all":
+                # Prominently feature authentic external marketplace items alongside internal inventory
+                items = amz_items + fk_items + internal_items
+            elif provider == "amazon":
+                items = amz_items
+            elif provider == "flipkart":
+                items = fk_items
+            else:
+                items = internal_items
 
             total = len(items)
             result = {

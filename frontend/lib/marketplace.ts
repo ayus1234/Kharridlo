@@ -1,28 +1,28 @@
 export interface MarketplaceProductImage {
-  id?: string;
+  id?: string | null;
   source_url: string;
   image_type: string;
-  width?: number;
-  height?: number;
-  alt_text?: string;
+  width?: number | null;
+  height?: number | null;
+  alt_text?: string | null;
   sort_order: number;
   is_primary: boolean;
 }
 
 export interface MarketplaceOffer {
-  id?: string;
-  provider_offer_id?: string;
-  seller_name?: string;
+  id?: string | null;
+  provider_offer_id?: string | null;
+  seller_name?: string | null;
   offer_title: string;
-  offer_description?: string;
-  price_minor?: number;
-  price_inr?: number;
+  offer_description?: string | null;
+  price_minor?: number | null;
+  price_inr?: number | null;
   currency: string;
-  discount_minor?: number;
-  discount_inr?: number;
-  discount_percentage?: number;
-  availability?: string;
-  source_url?: string;
+  discount_minor?: number | null;
+  discount_inr?: number | null;
+  discount_percentage?: number | null;
+  availability?: string | null;
+  source_url?: string | null;
 }
 
 export interface MarketplaceFieldAvailability {
@@ -39,8 +39,8 @@ export interface MarketplaceFieldAvailability {
 export interface MarketplaceInternalMapping {
   mapping_status: "UNMAPPED" | "CANDIDATE" | "VERIFIED" | "DISABLED" | "PRICE_MISMATCH" | "UNAVAILABLE";
   mapping_confidence: number;
-  internal_product_id?: string;
-  internal_sku?: string;
+  internal_product_id?: string | null;
+  internal_sku?: string | null;
   can_authoritative_checkout: boolean;
 }
 
@@ -52,26 +52,28 @@ export interface MarketplaceProduct {
   title: string;
   brand: string;
   category: string;
-  subcategory?: string;
-  original_description?: string;
-  normalized_description?: string;
-  ai_summary?: string;
+  subcategory?: string | null;
+  original_description?: string | null;
+  normalized_description?: string | null;
+  ai_summary?: string | null;
   specifications: Record<string, any>;
   source_currency: string;
-  source_price_minor?: number;
-  source_price_inr?: number;
-  source_mrp_minor?: number;
-  source_mrp_inr?: number;
-  savings_inr?: number;
+  source_price_minor?: number | null;
+  source_price_inr?: number | null;
+  source_mrp_minor?: number | null;
+  source_mrp_inr?: number | null;
+  savings_inr?: number | null;
   availability_status: string;
-  source_rating?: number;
-  source_review_count?: number;
-  seller_name?: string;
+  source_rating?: number | null;
+  source_review_count?: number | null;
+  seller_name?: string | null;
   images: MarketplaceProductImage[];
-  primary_image_url?: string;
+  primary_image_url?: string | null;
   offers: MarketplaceOffer[];
+  review_summary?: any | null;
+  finance_info?: any | null;
   field_availability: MarketplaceFieldAvailability;
-  mapping?: MarketplaceInternalMapping;
+  mapping?: MarketplaceInternalMapping | null;
   fetched_at: string;
 }
 

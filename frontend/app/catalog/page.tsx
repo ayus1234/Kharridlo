@@ -27,6 +27,7 @@ import {
   MarketplaceSearchResponse, 
   getProviderBadge 
 } from "@/lib/marketplace";
+import { getFilteredCatalog } from "@/lib/curated-catalog";
 
 const CATEGORIES = [
   { id: "all", label: "All Items" },
@@ -80,6 +81,9 @@ export default function CatalogPage() {
 
   const fetchCartCount = async (sid: string) => {
     try {
+      if (typeof window !== "undefined" && window.location.protocol === "https:" && apiBaseUrl.startsWith("http://localhost")) {
+        return; // Avoid mixed-content warning when running on Vercel without a public backend
+      }
       const res = await fetch(`${apiBaseUrl}/api/v1/cart/${sid}`, { cache: "no-store" });
       if (res.ok) {
         const cartData = await res.json();
@@ -94,7 +98,14 @@ export default function CatalogPage() {
     setLoading(true);
     setError(null);
     try {
-      let url = `${apiBaseUrl}/api/v1/marketplace/search?page_size=50`;
+      const isHttpsLocalhost = typeof window !== "undefined" &&
+        window.location.protocol === "https:" &&
+        apiBaseUrl.startsWith("http://localhost");
+
+      // Use internal Next.js API route when on HTTPS with default localhost, or external backend URL
+      let url = isHttpsLocalhost
+        ? `/api/marketplace/search?page_size=50`
+        : `${apiBaseUrl}/api/v1/marketplace/search?page_size=50`;
 
       if (selectedProvider !== "all") {
         url += `&provider=${encodeURIComponent(selectedProvider)}`;
@@ -114,8 +125,16 @@ export default function CatalogPage() {
       setProducts(data.items);
       setTotal(data.total);
     } catch (err: any) {
-      setError(err?.message || "Failed to connect to marketplace service");
-      setProducts([]);
+      // Graceful high-availability fallback: load curated catalog
+      const fallback = getFilteredCatalog({
+        category: selectedCategory,
+        provider: selectedProvider,
+        query: debouncedSearch,
+        pageSize: 50,
+      });
+      setProducts(fallback.items);
+      setTotal(fallback.total);
+      setError(null);
     } finally {
       setLoading(false);
     }
@@ -159,7 +178,7 @@ export default function CatalogPage() {
     }
   };
 
-  const formatPrice = (inr?: number) => {
+  const formatPrice = (inr?: number | null) => {
     if (inr === undefined || inr === null) return "Price not provided";
     return new Intl.NumberFormat("en-IN", {
       style: "currency",

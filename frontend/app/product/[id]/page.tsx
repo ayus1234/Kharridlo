@@ -27,6 +27,7 @@ import ProductImage from "@/components/ProductImage";
 import BentoCard from "@/components/BentoCard";
 import { getOrCreateSessionId } from "@/lib/session";
 import { getProviderBadge } from "@/lib/marketplace";
+import { getCuratedProductById } from "@/lib/curated-catalog";
 
 interface ProductDetail {
   id: string;
@@ -36,19 +37,19 @@ interface ProductDetail {
   category: string;
   price_paise: number;
   price_inr: number;
-  mrp_inr?: number;
+  mrp_inr?: number | null;
   currency: string;
   description: string;
-  original_description?: string;
-  ai_summary?: string;
+  original_description?: string | null;
+  ai_summary?: string | null;
   specs: Record<string, any>;
-  image_url?: string;
+  image_url?: string | null;
   availability_status: "in_stock" | "low_stock" | "out_of_stock" | string;
-  provider?: string;
-  canonical_url?: string;
-  seller_name?: string;
-  source_rating?: number;
-  source_review_count?: number;
+  provider?: string | null;
+  canonical_url?: string | null;
+  seller_name?: string | null;
+  source_rating?: number | null;
+  source_review_count?: number | null;
   can_authoritative_checkout?: boolean;
 }
 
@@ -72,6 +73,39 @@ export default function ProductDetailPage() {
   const fetchProduct = async () => {
     setLoading(true);
     try {
+      const isHttpsLocalhost = typeof window !== "undefined" &&
+        window.location.protocol === "https:" &&
+        apiBaseUrl.startsWith("http://localhost");
+
+      const curated = getCuratedProductById(productId);
+      if (isHttpsLocalhost && curated) {
+        setProduct({
+          id: curated.id,
+          sku: curated.provider_product_id,
+          name: curated.title,
+          brand: curated.brand,
+          category: curated.category,
+          price_paise: curated.source_price_minor || 0,
+          price_inr: curated.source_price_inr || 0,
+          mrp_inr: curated.source_mrp_inr,
+          currency: curated.source_currency || "INR",
+          description: curated.normalized_description || curated.original_description || "",
+          original_description: curated.original_description,
+          ai_summary: curated.ai_summary,
+          specs: curated.specifications || {},
+          image_url: curated.primary_image_url || curated.images?.[0]?.source_url,
+          availability_status: curated.availability_status,
+          provider: curated.provider,
+          canonical_url: curated.canonical_url,
+          seller_name: curated.seller_name,
+          source_rating: curated.source_rating,
+          source_review_count: curated.source_review_count,
+          can_authoritative_checkout: curated.mapping?.can_authoritative_checkout ?? false,
+        });
+        setLoading(false);
+        return;
+      }
+
       // 1. Check if ID indicates an external marketplace provider
       if (productId.startsWith("amz_") || productId.startsWith("B0")) {
         const cleanId = productId.replace("amz_", "");
@@ -202,7 +236,32 @@ export default function ProductDetailPage() {
         }
       }
     } catch {
-      // Fallback placeholder
+      const fallback = getCuratedProductById(productId);
+      if (fallback) {
+        setProduct({
+          id: fallback.id,
+          sku: fallback.provider_product_id,
+          name: fallback.title,
+          brand: fallback.brand,
+          category: fallback.category,
+          price_paise: fallback.source_price_minor || 0,
+          price_inr: fallback.source_price_inr || 0,
+          mrp_inr: fallback.source_mrp_inr,
+          currency: fallback.source_currency || "INR",
+          description: fallback.normalized_description || fallback.original_description || "",
+          original_description: fallback.original_description,
+          ai_summary: fallback.ai_summary,
+          specs: fallback.specifications || {},
+          image_url: fallback.primary_image_url || fallback.images?.[0]?.source_url,
+          availability_status: fallback.availability_status,
+          provider: fallback.provider,
+          canonical_url: fallback.canonical_url,
+          seller_name: fallback.seller_name,
+          source_rating: fallback.source_rating,
+          source_review_count: fallback.source_review_count,
+          can_authoritative_checkout: fallback.mapping?.can_authoritative_checkout ?? false,
+        });
+      }
     } finally {
       setLoading(false);
     }

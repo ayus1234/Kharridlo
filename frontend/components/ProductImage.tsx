@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Laptop, ShoppingBag } from "lucide-react";
 
 interface ProductImageProps {
-  src?: string;
+  src?: string | null;
   alt: string;
   className?: string;
   width?: number;
