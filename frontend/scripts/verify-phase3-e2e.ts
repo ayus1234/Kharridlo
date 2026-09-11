@@ -59,7 +59,7 @@ async function verifyAllJourneys() {
   assert(
     j1Reqs?.category === "laptop" &&
       j1Reqs?.budgetInr === 80000 &&
-      j1Reqs?.useCases.includes("Coding & Programming"),
+      Boolean(j1Reqs?.useCases?.includes("Coding & Programming")),
     "Journey 1 - Natural Language Requirement Extraction",
     j1Reqs
   );
@@ -115,7 +115,7 @@ async function verifyAllJourneys() {
   assert(
     (j3Discovery.requirements.category === "phone" || j3Discovery.requirements.category === "smartphone") &&
       j3Discovery.requirements.budgetInr === 40000 &&
-      j3Discovery.requirements.preferredSpecs.some((s) => s.toLowerCase().includes("camera")),
+      Boolean(j3Discovery.requirements.preferredSpecs?.some((s) => s.toLowerCase().includes("camera"))),
     "Journey 3 - Phone + Camera requirement extraction",
     j3Discovery.requirements
   );
@@ -156,7 +156,7 @@ async function verifyAllJourneys() {
   const j5Query = "Don't show me Apple.";
   const j5Discovery = runProductDiscovery(j5Query, j1Discovery.requirements);
   assert(
-    j5Discovery.requirements.exclusions.includes("Apple"),
+    Boolean(j5Discovery.requirements.exclusions?.includes("Apple")),
     "Journey 5 - Negative exclusion extracted ('Apple')",
     j5Discovery.requirements.exclusions
   );
@@ -192,8 +192,7 @@ async function verifyAllJourneys() {
   const j7Query = "Laptop under ₹30,000 for coding.";
   const j7Discovery = runProductDiscovery(j7Query, null);
   assert(
-    j7Discovery.budgetGapNotice !== null &&
-      j7Discovery.budgetGapNotice.includes("30,000"),
+    Boolean(j7Discovery.budgetGapNotice?.includes("30,000")),
     "Journey 7 - Factual Budget Gap Notice generated (no silent budget overruns)",
     j7Discovery.budgetGapNotice
   );
