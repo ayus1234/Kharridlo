@@ -26,6 +26,8 @@ import ProductImage from "@/components/ProductImage";
 import StatusPip from "@/components/StatusPip";
 import { getOrCreateSessionId } from "@/lib/session";
 
+import { getFilteredCatalog } from "@/lib/curated-catalog";
+
 interface ChatMessage {
   id: string;
   role: "user" | "model";
@@ -122,7 +124,17 @@ function AssistantContent() {
   ]);
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [activeContextProducts, setActiveContextProducts] = useState<Product[]>([]);
+  const [activeContextProducts, setActiveContextProducts] = useState<Product[]>(() => {
+    const curated = getFilteredCatalog({ pageSize: 4 });
+    return (curated.items || [])
+      .map((product: any, index: number) => normalizeProduct(product, index))
+      .filter((product: Product | null): product is Product => Boolean(product))
+      .map((product: Product, index: number) => ({
+        ...product,
+        matchScore: 98 - index * 4,
+        matchReason: index === 0 ? "Best Match for CS & Engineering" : "High Value Student Spec",
+      }));
+  });
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -145,7 +157,10 @@ function AssistantContent() {
 
   const loadRecommendedProducts = async () => {
     try {
-      const res = await fetch("/api/marketplace/search?page_size=4", { cache: "no-store" });
+      const res = await fetch("/api/marketplace/search?page_size=4", {
+        cache: "no-store",
+        signal: AbortSignal.timeout(2000),
+      });
       if (res.ok) {
         const data = await res.json();
         const enriched = (data.items || [])
@@ -159,7 +174,7 @@ function AssistantContent() {
         setActiveContextProducts(enriched);
       }
     } catch {
-      // Fallback
+      // Fallback already rendered synchronously
     }
   };
 

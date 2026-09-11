@@ -13,6 +13,7 @@ interface ProductImageProps {
   priority?: boolean;
   category?: string;
   productId?: string;
+  sizes?: string;
 }
 
 // 1. Direct local verified image mapping for all 42 products by ID, SKU and title keyword
@@ -191,16 +192,18 @@ export default function ProductImage({
   priority = false,
   category,
   productId,
+  sizes,
 }: ProductImageProps) {
   const resolvedPath = resolveDirectProductImage(src, alt, category, productId);
 
   const [currentSrc, setCurrentSrc] = useState<string>(resolvedPath);
   const [hasFailed, setHasFailed] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     setCurrentSrc(resolvedPath);
     setHasFailed(false);
+    setIsLoaded(false);
   }, [resolvedPath]);
 
   const handleError = useCallback(() => {
@@ -213,6 +216,9 @@ export default function ProductImage({
 
   return (
     <div className={`relative overflow-hidden bg-slate-50 flex items-center justify-center ${className}`}>
+      {!isLoaded && !hasFailed && (
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-100 via-slate-200/50 to-slate-100 animate-pulse" />
+      )}
       {hasFailed ? (
         <div className="flex flex-col items-center justify-center p-3 text-center text-slate-400">
           <Cpu className="h-7 w-7 stroke-1 mb-1 text-slate-400" />
@@ -225,9 +231,15 @@ export default function ProductImage({
           width={width}
           height={height}
           priority={priority}
+          loading={priority ? "eager" : "lazy"}
+          decoding="async"
+          sizes={sizes || "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"}
           unoptimized={true}
+          onLoad={() => setIsLoaded(true)}
           onError={handleError}
-          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          className={`h-full w-full object-cover transition-all duration-300 group-hover:scale-105 ${
+            isLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
+          }`}
         />
       )}
     </div>

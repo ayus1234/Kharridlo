@@ -21,13 +21,18 @@ import {
   TrendingUp,
   Server
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import BuyerNavbar from "@/components/BuyerNavbar";
 import BuyerFooter from "@/components/BuyerFooter";
 import ProductImage from "@/components/ProductImage";
 import BentoCard from "@/components/BentoCard";
-import AIAssistantDrawer from "@/components/AIAssistantDrawer";
 import Logo from "@/components/Logo";
 import { getFilteredCatalog } from "@/lib/curated-catalog";
+
+const AIAssistantDrawer = dynamic(() => import("@/components/AIAssistantDrawer"), { 
+  ssr: false,
+  loading: () => null 
+});
 
 interface Product {
   id: string;
@@ -74,41 +79,51 @@ const INTENT_PILLS = [
 export default function HomePage() {
   const router = useRouter();
   const [prompt, setPrompt] = useState("");
-  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Instant Initial Paint: Initialize with curated products in 0ms
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>(() => {
+    const curated = getFilteredCatalog({ pageSize: 6 });
+    return curated.items.map(mapCuratedToProduct);
+  });
+  const [loading, setLoading] = useState(false);
   const [backendOnline, setBackendOnline] = useState(true);
 
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://kharridlo-backend.onrender.com";
 
   useEffect(() => {
-    const fetchCatalog = async () => {
+    let isMounted = true;
+
+    // Non-blocking background revalidation with fast timeout
+    const revalidateCatalog = async () => {
       try {
-        const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
-        if (isHttps && apiBaseUrl.startsWith("http://localhost")) {
+        const isHttpsLocalhost = typeof window !== "undefined" &&
+          window.location.protocol === "https:" &&
+          apiBaseUrl.startsWith("http://localhost");
+
+        if (isHttpsLocalhost) {
           const curated = getFilteredCatalog({ pageSize: 6 });
-          setFeaturedProducts(curated.items.map(mapCuratedToProduct));
+          if (isMounted) setFeaturedProducts(curated.items.map(mapCuratedToProduct));
           return;
         }
 
-        const res = await fetch(`${apiBaseUrl}/api/v1/products?limit=6`, { cache: "no-store" });
-        if (res.ok) {
+        const res = await fetch(`${apiBaseUrl}/api/v1/products?limit=6`, {
+          cache: "no-store",
+          signal: AbortSignal.timeout(2000),
+        }).catch(() => null);
+
+        if (res && res.ok && isMounted) {
           const data = await res.json();
           if (data.items && data.items.length > 0) {
             setFeaturedProducts(data.items);
             return;
           }
         }
-        const curated = getFilteredCatalog({ pageSize: 6 });
-        setFeaturedProducts(curated.items.map(mapCuratedToProduct));
       } catch {
-        const curated = getFilteredCatalog({ pageSize: 6 });
-        setFeaturedProducts(curated.items.map(mapCuratedToProduct));
-        setBackendOnline(false);
-      } finally {
-        setLoading(false);
+        if (isMounted) setBackendOnline(false);
       }
     };
-    fetchCatalog();
+
+    revalidateCatalog();
+    return () => { isMounted = false; };
   }, [apiBaseUrl]);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -303,7 +318,7 @@ export default function HomePage() {
                   <div key={i} className="h-80 rounded-2xl bg-slate-100 animate-pulse border border-slate-200" />
                 ))
               ) : featuredProducts.length > 0 ? (
-                featuredProducts.map((p) => (
+                featuredProducts.map((p, idx) => (
                   <div
                     key={p.id}
                     className="group relative flex flex-col rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm hover:shadow-2xl hover:shadow-indigo-500/15 hover:border-indigo-300 hover:-translate-y-1.5 transition-all duration-300 ease-out"
@@ -324,13 +339,15 @@ export default function HomePage() {
                       </div>
                     </div>
 
-                    {/* Image Preview */}
+                    {/* Image Preview with Lazy Loading */}
                     <Link href={`/product/${p.id}`} className="block overflow-hidden rounded-xl bg-slate-50 mb-4 aspect-video">
                       <ProductImage
                         src={p.image_url}
                         alt={p.name}
                         category={p.category}
                         productId={p.id}
+                        priority={idx < 2}
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                         className="h-full w-full object-cover"
                       />
                     </Link>

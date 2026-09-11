@@ -62,9 +62,37 @@ export default function ProductDetailPage() {
   const router = useRouter();
   const productId = params?.id as string;
 
-  const [product, setProduct] = useState<ProductDetail | null>(null);
+  const [product, setProduct] = useState<ProductDetail | null>(() => {
+    if (!productId) return null;
+    const curated = getCuratedProductById(productId);
+    if (!curated) return null;
+    return {
+      id: curated.id,
+      sku: curated.provider_product_id,
+      name: curated.title,
+      brand: curated.brand,
+      category: curated.category,
+      price_paise: curated.source_price_minor || 0,
+      price_inr: curated.source_price_inr || 0,
+      mrp_inr: curated.source_mrp_inr,
+      currency: curated.source_currency || "INR",
+      description: curated.normalized_description || curated.original_description || "",
+      original_description: curated.original_description,
+      ai_summary: curated.ai_summary,
+      specs: curated.specifications || {},
+      image_url: curated.primary_image_url || curated.images?.[0]?.source_url,
+      images: curated.images || [],
+      availability_status: curated.availability_status,
+      provider: curated.provider,
+      canonical_url: curated.canonical_url,
+      seller_name: curated.seller_name,
+      source_rating: curated.source_rating,
+      source_review_count: curated.source_review_count,
+      can_authoritative_checkout: true,
+    };
+  });
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !getCuratedProductById(productId));
   const [addingToCart, setAddingToCart] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"specs" | "original" | "ai">("specs");
@@ -76,14 +104,16 @@ export default function ProductDetailPage() {
   }, [productId]);
 
   const fetchProduct = async () => {
-    setLoading(true);
+    const curated = getCuratedProductById(productId);
+    if (!curated) {
+      setLoading(true);
+    }
     setSelectedImageIndex(0);
     try {
       const isHttpsLocalhost = typeof window !== "undefined" &&
         window.location.protocol === "https:" &&
         apiBaseUrl.startsWith("http://localhost");
 
-      const curated = getCuratedProductById(productId);
       if (isHttpsLocalhost && curated) {
         setProduct({
           id: curated.id,
@@ -116,7 +146,10 @@ export default function ProductDetailPage() {
       // 1. Check if ID indicates an external marketplace provider
       if (productId.startsWith("amz_") || productId.startsWith("B0")) {
         const cleanId = productId.replace("amz_", "");
-        const mRes = await fetch(`${apiBaseUrl}/api/v1/marketplace/products/amazon/${cleanId}`, { cache: "no-store" });
+        const mRes = await fetch(`${apiBaseUrl}/api/v1/marketplace/products/amazon/${cleanId}`, {
+          cache: "no-store",
+          signal: AbortSignal.timeout(1500),
+        });
         if (mRes.ok) {
           const mData = await mRes.json();
           setProduct({
@@ -148,7 +181,10 @@ export default function ProductDetailPage() {
         }
       } else if (productId.startsWith("fk_")) {
         const cleanId = productId.replace("fk_", "");
-        const mRes = await fetch(`${apiBaseUrl}/api/v1/marketplace/products/flipkart/${cleanId}`, { cache: "no-store" });
+        const mRes = await fetch(`${apiBaseUrl}/api/v1/marketplace/products/flipkart/${cleanId}`, {
+          cache: "no-store",
+          signal: AbortSignal.timeout(1500),
+        });
         if (mRes.ok) {
           const mData = await mRes.json();
           setProduct({
@@ -181,7 +217,10 @@ export default function ProductDetailPage() {
       }
 
       // 2. Try direct Kharridlo product endpoint
-      const res = await fetch(`${apiBaseUrl}/api/v1/products/${productId}`, { cache: "no-store" });
+      const res = await fetch(`${apiBaseUrl}/api/v1/products/${productId}`, {
+        cache: "no-store",
+        signal: AbortSignal.timeout(1500),
+      });
       if (res.ok) {
         const data = await res.json();
         setProduct({
@@ -191,7 +230,11 @@ export default function ProductDetailPage() {
         });
       } else {
         // 3. Fallback: search marketplace unified endpoint
-        const mSearchRes = await fetch(`${apiBaseUrl}/api/v1/marketplace/search?q=${encodeURIComponent(productId)}&limit=10`, { cache: "no-store" });
+        const mSearchRes = await fetch(`${apiBaseUrl}/api/v1/marketplace/search?q=${encodeURIComponent(productId)}&limit=10`, {
+          cache: "no-store",
+          signal: AbortSignal.timeout(1500),
+        });
+
         if (mSearchRes.ok) {
           const sData = await mSearchRes.json();
           const match = (sData.items || []).find((p: any) => p.id === productId || p.provider_product_id === productId);

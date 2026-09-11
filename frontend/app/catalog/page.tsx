@@ -16,13 +16,18 @@ import {
   Tag,
   Store,
   Layers,
-  GitCompare
+  GitCompare,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import { getOrCreateSessionId } from "@/lib/session";
-import AIAssistantDrawer from "@/components/AIAssistantDrawer";
 import BuyerNavbar from "@/components/BuyerNavbar";
 import BuyerFooter from "@/components/BuyerFooter";
 import ProductImage from "@/components/ProductImage";
+
+const AIAssistantDrawer = dynamic(() => import("@/components/AIAssistantDrawer"), {
+  ssr: false,
+  loading: () => null,
+});
 import { 
   MarketplaceProduct, 
   MarketplaceSearchResponse, 
@@ -47,10 +52,21 @@ const PROVIDERS = [
   { id: "kharridlo_verified", label: "Kharridlo Verified" }
 ];
 
+// In-memory client-side cache for instant filter switches
+const catalogCache = new Map<string, { items: MarketplaceProduct[]; total: number; timestamp: number }>();
+const CACHE_TTL_MS = 5 * 60 * 1000;
+
 export default function CatalogPage() {
-  const [products, setProducts] = useState<MarketplaceProduct[]>([]);
-  const [total, setTotal] = useState<number>(0);
-  const [loading, setLoading] = useState<boolean>(true);
+  // Instant Initial Paint: Initialize catalog state immediately (0ms)
+  const [products, setProducts] = useState<MarketplaceProduct[]>(() => {
+    const initial = getFilteredCatalog({ pageSize: 50 });
+    return initial.items;
+  });
+  const [total, setTotal] = useState<number>(() => {
+    const initial = getFilteredCatalog({ pageSize: 50 });
+    return initial.total;
+  });
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedProvider, setSelectedProvider] = useState<string>("all");
@@ -58,7 +74,13 @@ export default function CatalogPage() {
   const [debouncedSearch, setDebouncedSearch] = useState<string>("");
   const [selectedProduct, setSelectedProduct] = useState<MarketplaceProduct | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState<number>(0);
-  const [cartCount, setCartCount] = useState<number>(0);
+  const [cartCount, setCartCount] = useState<number>(() => {
+    if (typeof window !== "undefined") {
+      const cached = sessionStorage.getItem("kharridlo_cart_count");
+      return cached ? parseInt(cached, 10) || 0 : 0;
+    }
+    return 0;
+  });
   const [addingId, setAddingId] = useState<string | null>(null);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState<string>("");
@@ -69,7 +91,7 @@ export default function CatalogPage() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery.trim());
-    }, 300);
+    }, 250);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
@@ -85,10 +107,15 @@ export default function CatalogPage() {
         window.location.protocol === "https:" &&
         apiBaseUrl.startsWith("http://localhost");
       const url = isHttpsLocalhost ? `/api/cart/${sid}` : `${apiBaseUrl}/api/v1/cart/${sid}`;
-      const res = await fetch(url, { cache: "no-store" });
-      if (res.ok) {
+      const res = await fetch(url, {
+        cache: "no-store",
+        signal: AbortSignal.timeout(1500),
+      }).catch(() => null);
+      if (res && res.ok) {
         const cartData = await res.json();
-        setCartCount(cartData.total_items_count || 0);
+        const count = Number(cartData.total_items_count) || 0;
+        setCartCount(count);
+        sessionStorage.setItem("kharridlo_cart_count", String(count));
       }
     } catch {
       // Ignore cart count fetch failure
@@ -96,14 +123,32 @@ export default function CatalogPage() {
   };
 
   const fetchProducts = async () => {
-    setLoading(true);
-    setError(null);
+    const cacheKey = `${selectedCategory}:${selectedProvider}:${debouncedSearch}`;
+    const cached = catalogCache.get(cacheKey);
+
+    // Instant cache hit
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+      setProducts(cached.items);
+      setTotal(cached.total);
+      setLoading(false);
+      return;
+    }
+
+    // Immediately show filtered local data to prevent any blank state
+    const localFiltered = getFilteredCatalog({
+      category: selectedCategory,
+      provider: selectedProvider,
+      query: debouncedSearch,
+      pageSize: 50,
+    });
+    setProducts(localFiltered.items);
+    setTotal(localFiltered.total);
+
     try {
       const isHttpsLocalhost = typeof window !== "undefined" &&
         window.location.protocol === "https:" &&
         apiBaseUrl.startsWith("http://localhost");
 
-      // Use internal Next.js API route when on HTTPS with default localhost, or external backend URL
       let url = isHttpsLocalhost
         ? `/api/marketplace/search?page_size=50`
         : `${apiBaseUrl}/api/v1/marketplace/search?page_size=50`;
@@ -118,24 +163,25 @@ export default function CatalogPage() {
         url += `&category=${encodeURIComponent(selectedCategory)}`;
       }
 
-      const res = await fetch(url, { cache: "no-store" });
-      if (!res.ok) {
-        throw new Error(`Failed to load marketplace catalog: ${res.status} ${res.statusText}`);
+      const res = await fetch(url, {
+        cache: "no-store",
+        signal: AbortSignal.timeout(2000),
+      }).catch(() => null);
+
+      if (res && res.ok) {
+        const data: MarketplaceSearchResponse = await res.json();
+        if (data.items && data.items.length > 0) {
+          setProducts(data.items);
+          setTotal(data.total);
+          catalogCache.set(cacheKey, { items: data.items, total: data.total, timestamp: Date.now() });
+          return;
+        }
       }
-      const data: MarketplaceSearchResponse = await res.json();
-      setProducts(data.items);
-      setTotal(data.total);
-    } catch (err: any) {
-      // Graceful high-availability fallback: load curated catalog
-      const fallback = getFilteredCatalog({
-        category: selectedCategory,
-        provider: selectedProvider,
-        query: debouncedSearch,
-        pageSize: 50,
-      });
-      setProducts(fallback.items);
-      setTotal(fallback.total);
-      setError(null);
+
+      // Cache the local filtered items
+      catalogCache.set(cacheKey, { items: localFiltered.items, total: localFiltered.total, timestamp: Date.now() });
+    } catch {
+      // Retain local filtered products
     } finally {
       setLoading(false);
     }
@@ -360,7 +406,7 @@ export default function CatalogPage() {
         {/* Product Grid */}
         {!loading && products.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {products.map((product) => {
+            {products.map((product, idx) => {
               const isOOS = product.availability_status === "out_of_stock";
               const isAdding = addingId === product.id;
               const badge = getProviderBadge(product.provider);
@@ -394,7 +440,7 @@ export default function CatalogPage() {
                       )}
                     </div>
 
-                    {/* Image Thumbnail */}
+                    {/* Image Thumbnail with Lazy Loading */}
                     <div className="h-44 w-full mb-3 rounded-xl overflow-hidden bg-slate-50 border border-slate-100 flex items-center justify-center relative">
                       <ProductImage
                         src={product.primary_image_url}
@@ -403,6 +449,8 @@ export default function CatalogPage() {
                         productId={product.id || product.provider_product_id}
                         width={280}
                         height={200}
+                        priority={idx < 4}
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                         className="h-full w-full object-contain p-2"
                       />
                       {product.offers && product.offers.length > 0 && product.offers[0].discount_percentage && (

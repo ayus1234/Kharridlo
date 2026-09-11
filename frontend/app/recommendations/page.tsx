@@ -83,10 +83,18 @@ const enrichCurated = (items: any[]): Product[] => {
   });
 };
 
+// In-memory client cache for recommendations by category
+const recommendationsCache = new Map<string, { items: Product[]; timestamp: number }>();
+const CACHE_TTL_MS = 5 * 60 * 1000;
+
 export default function RecommendationsPage() {
-  const [products, setProducts] = useState<Product[]>([]);
+  // Synchronous 0ms initial render from curated catalog
+  const [products, setProducts] = useState<Product[]>(() => {
+    const initialCurated = getFilteredCatalog({ pageSize: 12 });
+    return enrichCurated(initialCurated.items);
+  });
   const [activeCategory, setActiveCategory] = useState("all");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://kharridlo-backend.onrender.com";
@@ -96,21 +104,32 @@ export default function RecommendationsPage() {
   }, [activeCategory]);
 
   const fetchRecommendations = async () => {
-    setLoading(true);
-    try {
-      const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
-      if (isHttps && apiBaseUrl.startsWith("http://localhost")) {
-        const catFilter = activeCategory === "all" ? undefined : activeCategory;
-        const curated = getFilteredCatalog({ category: catFilter, pageSize: 12 });
-        setProducts(enrichCurated(curated.items));
-        return;
-      }
+    const catFilter = activeCategory === "all" ? undefined : activeCategory;
+    const cacheKey = `rec_${activeCategory}`;
+    const cached = recommendationsCache.get(cacheKey);
 
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+      setProducts(cached.items);
+      return;
+    }
+
+    // Immediately show curated fallback so UI never waits
+    const localCurated = getFilteredCatalog({ category: catFilter, pageSize: 12 });
+    const localEnriched = enrichCurated(localCurated.items);
+    setProducts(localEnriched);
+
+    // Revalidate against backend in background with 2s strict timeout
+    try {
       let url = `${apiBaseUrl}/api/v1/products?limit=12`;
       if (activeCategory !== "all") {
         url += `&category=${activeCategory}`;
       }
-      const res = await fetch(url, { cache: "no-store" });
+      const res = await fetch(url, {
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        signal: AbortSignal.timeout(2000),
+      });
+
       if (res.ok) {
         const data = await res.json();
         if (data.items && data.items.length > 0) {
@@ -124,19 +143,13 @@ export default function RecommendationsPage() {
               "Student tier discount eligible",
             ],
           }));
+          recommendationsCache.set(cacheKey, { items: enriched, timestamp: Date.now() });
           setProducts(enriched);
-          return;
         }
       }
-      const catFilter = activeCategory === "all" ? undefined : activeCategory;
-      const curated = getFilteredCatalog({ category: catFilter, pageSize: 12 });
-      setProducts(enrichCurated(curated.items));
     } catch {
-      const catFilter = activeCategory === "all" ? undefined : activeCategory;
-      const curated = getFilteredCatalog({ category: catFilter, pageSize: 12 });
-      setProducts(enrichCurated(curated.items));
-    } finally {
-      setLoading(false);
+      // Backend asleep or offline: local curated already rendered instantly
+      recommendationsCache.set(cacheKey, { items: localEnriched, timestamp: Date.now() });
     }
   };
 
@@ -266,7 +279,7 @@ export default function RecommendationsPage() {
               <div key={i} className="h-96 rounded-2xl bg-slate-100 animate-pulse border border-slate-200" />
             ))
           ) : products.length > 0 ? (
-            products.map((p) => (
+            products.map((p, idx) => (
               <div
                 key={p.id}
                 className="group relative flex flex-col rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm hover:shadow-2xl hover:shadow-indigo-500/15 hover:border-purple-300 hover:-translate-y-1.5 transition-all duration-300 ease-out"
@@ -295,6 +308,7 @@ export default function RecommendationsPage() {
                     alt={p.name}
                     category={p.category}
                     productId={p.id}
+                    priority={idx < 3}
                     className="h-full w-full object-cover"
                   />
                 </Link>

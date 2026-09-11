@@ -132,9 +132,9 @@ export default function CartPage() {
         : `${apiBaseUrl}/api/v1/policy/tiers`;
       let res: Response | null = null;
       try {
-        res = await fetch(url, { cache: "no-store" });
+        res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(1500) });
       } catch {
-        res = await fetch(`/api/policy/tiers`, { cache: "no-store" });
+        res = await fetch(`/api/policy/tiers`, { cache: "no-store", signal: AbortSignal.timeout(1500) });
       }
       if (res && res.ok) {
         const tiers: PolicyTierSummary[] = await res.json();
@@ -175,12 +175,12 @@ export default function CartPage() {
         : `${apiBaseUrl}/api/v1/cart/${sid}`;
       let res: Response | null = null;
       try {
-        res = await fetch(url, { cache: "no-store" });
+        res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(1500) });
       } catch {
-        res = await fetch(`/api/cart/${sid}`, { cache: "no-store" });
+        res = await fetch(`/api/cart/${sid}`, { cache: "no-store", signal: AbortSignal.timeout(1500) });
       }
       if (!res || !res.ok) {
-        const fallbackRes = await fetch(`/api/cart/${sid}`, { cache: "no-store" });
+        const fallbackRes = await fetch(`/api/cart/${sid}`, { cache: "no-store", signal: AbortSignal.timeout(1500) });
         if (fallbackRes.ok) {
           const data = await fallbackRes.json();
           setCart(data);

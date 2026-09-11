@@ -23,51 +23,70 @@ import Logo from "@/components/Logo";
 export default function BuyerNavbar() {
   const pathname = usePathname();
   const router = useRouter();
-  const [cartCount, setCartCount] = useState<number>(0);
+  const [cartCount, setCartCount] = useState<number>(() => {
+    if (typeof window !== "undefined") {
+      const cached = sessionStorage.getItem("kharridlo_cart_count");
+      return cached ? parseInt(cached, 10) || 0 : 0;
+    }
+    return 0;
+  });
   const [searchIntent, setSearchIntent] = useState<string>("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
 
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://kharridlo-backend.onrender.com";
 
   useEffect(() => {
+    let isMounted = true;
+
     const fetchCount = async () => {
       try {
         const sid = getOrCreateSessionId();
-        const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
-        const url = (isHttps && apiBaseUrl.startsWith("http://localhost"))
-          ? `/api/cart/${sid}`
-          : `${apiBaseUrl}/api/v1/cart/${sid}`;
-        let res: Response | null = null;
-        try {
-          res = await fetch(url, { cache: "no-store" });
-        } catch {
-          res = await fetch(`/api/cart/${sid}`, { cache: "no-store" });
-        }
-        if (!res || !res.ok) {
-          res = await fetch(`/api/cart/${sid}`, { cache: "no-store" });
-        }
-        if (res && res.ok) {
+        const isHttpsLocalhost = typeof window !== "undefined" &&
+          window.location.protocol === "https:" &&
+          apiBaseUrl.startsWith("http://localhost");
+
+        const targetUrl = isHttpsLocalhost ? `/api/cart/${sid}` : `${apiBaseUrl}/api/v1/cart/${sid}`;
+
+        // Single background fetch with fast 1500ms timeout
+        const res = await fetch(targetUrl, {
+          cache: "no-store",
+          signal: AbortSignal.timeout(1500),
+        }).catch(() => null);
+
+        if (res && res.ok && isMounted) {
           const data = await res.json();
-          let count = data.total_items_count || 0;
-          if (count === 0 && url !== `/api/cart/${sid}`) {
-            const fallbackRes = await fetch(`/api/cart/${sid}`, { cache: "no-store" }).catch(() => null);
-            if (fallbackRes && fallbackRes.ok) {
-              const fbData = await fallbackRes.json();
-              if (fbData.total_items_count) {
-                count = fbData.total_items_count;
-              }
-            }
-          }
+          const count = Number(data.total_items_count) || 0;
           setCartCount(count);
+          sessionStorage.setItem("kharridlo_cart_count", String(count));
+          return;
+        }
+
+        // If external failed or timeout, check internal session cart once
+        if (!isHttpsLocalhost && isMounted) {
+          const localRes = await fetch(`/api/cart/${sid}`, {
+            cache: "no-store",
+            signal: AbortSignal.timeout(1200),
+          }).catch(() => null);
+
+          if (localRes && localRes.ok && isMounted) {
+            const fbData = await localRes.json();
+            const count = Number(fbData.total_items_count) || 0;
+            setCartCount(count);
+            sessionStorage.setItem("kharridlo_cart_count", String(count));
+          }
         }
       } catch {
-        // Fallback
+        // Retain current cached count smoothly
       }
     };
+
     fetchCount();
     const handleCartUpdate = () => fetchCount();
     window.addEventListener("cart-updated", handleCartUpdate);
-    return () => window.removeEventListener("cart-updated", handleCartUpdate);
+    return () => {
+      isMounted = false;
+      window.removeEventListener("cart-updated", handleCartUpdate);
+    };
   }, [pathname, apiBaseUrl]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {

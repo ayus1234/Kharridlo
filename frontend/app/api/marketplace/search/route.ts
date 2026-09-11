@@ -22,15 +22,19 @@ export async function GET(request: NextRequest) {
       const res = await fetch(targetUrl.toString(), {
         headers: { "Content-Type": "application/json" },
         cache: "no-store",
-        signal: AbortSignal.timeout(3500),
+        signal: AbortSignal.timeout(1500),
       });
 
       if (res.ok) {
         const data = await res.json();
-        return NextResponse.json(data);
+        return NextResponse.json(data, {
+          headers: {
+            "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+          },
+        });
       }
     } catch {
-      // Backend request failed, fall through to resilient curated catalog
+      // Backend request failed or timed out, fall through to resilient curated catalog
     }
   }
 
@@ -43,5 +47,10 @@ export async function GET(request: NextRequest) {
     pageSize,
   });
 
-  return NextResponse.json(catalog);
+  return NextResponse.json(catalog, {
+    headers: {
+      "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+    },
+  });
 }
+
