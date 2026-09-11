@@ -57,6 +57,7 @@ export default function CatalogPage() {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [debouncedSearch, setDebouncedSearch] = useState<string>("");
   const [selectedProduct, setSelectedProduct] = useState<MarketplaceProduct | null>(null);
+  const [activeImageIndex, setActiveImageIndex] = useState<number>(0);
   const [cartCount, setCartCount] = useState<number>(0);
   const [addingId, setAddingId] = useState<string | null>(null);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
@@ -368,7 +369,10 @@ export default function CatalogPage() {
               return (
                 <div
                   key={product.id}
-                  onClick={() => setSelectedProduct(product)}
+                  onClick={() => {
+                    setActiveImageIndex(0);
+                    setSelectedProduct(product);
+                  }}
                   className="group bg-white rounded-2xl border border-slate-200/90 p-4 flex flex-col justify-between shadow-sm hover:shadow-2xl hover:shadow-indigo-500/15 hover:border-indigo-300 hover:-translate-y-1.5 transition-all duration-300 ease-out cursor-pointer relative"
                 >
                   {/* Card Header: Provider Badge & Availability */}
@@ -547,26 +551,100 @@ export default function CatalogPage() {
               </div>
             </div>
 
-            {/* Images Gallery */}
+            {/* Amazon & Flipkart Style Multi-Angle Interactive Gallery */}
             {selectedProduct.images && selectedProduct.images.length > 0 && (
               <div className="mt-4">
-                <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                  Marketplace Product Images ({selectedProduct.images.length})
-                </h3>
-                <div className="flex gap-2 overflow-x-auto pb-2">
-                    {selectedProduct.images.map((img, idx) => (
-                      <div key={idx} className="w-20 h-20 flex-shrink-0 rounded-lg border border-slate-200 p-1 bg-white">
-                        <ProductImage
-                          src={img.source_url}
-                          alt={img.alt_text || selectedProduct.title}
-                          category={selectedProduct.category}
-                          productId={selectedProduct.id || selectedProduct.provider_product_id}
-                          width={80}
-                          height={80}
-                          className="w-full h-full object-contain"
-                        />
-                      </div>
-                    ))}
+                {/* Active Main Angle Preview */}
+                <div className="relative w-full h-64 sm:h-72 rounded-xl overflow-hidden bg-slate-50 border border-slate-200 flex items-center justify-center p-3 group">
+                  <ProductImage
+                    src={selectedProduct.images[activeImageIndex]?.source_url || selectedProduct.primary_image_url}
+                    alt={selectedProduct.images[activeImageIndex]?.alt_text || selectedProduct.title}
+                    category={selectedProduct.category}
+                    productId={selectedProduct.id || selectedProduct.provider_product_id}
+                    width={500}
+                    height={360}
+                    priority={true}
+                    className="w-full h-full object-contain transition-all duration-300 group-hover:scale-105"
+                  />
+
+                  {/* Dynamic Angle Badge */}
+                  <div className="absolute top-3 left-3 flex items-center gap-1.5 bg-slate-900/85 backdrop-blur-md text-white text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-slate-700/60 shadow-md">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>
+                      Angle {activeImageIndex + 1} of {selectedProduct.images.length}:{" "}
+                      {selectedProduct.images[activeImageIndex]?.image_type === "FRONT_VIEW"
+                        ? "Front / Hero View"
+                        : selectedProduct.images[activeImageIndex]?.image_type === "ANGLED_VIEW"
+                        ? "45° Perspective View"
+                        : selectedProduct.images[activeImageIndex]?.image_type === "DETAIL_VIEW"
+                        ? "Component / Detail View"
+                        : selectedProduct.images[activeImageIndex]?.image_type === "PROFILE_VIEW"
+                        ? "Side Profile / Alt View"
+                        : `Angle ${activeImageIndex + 1}`}
+                    </span>
+                  </div>
+
+                  <div className="absolute bottom-3 right-3 text-[10px] text-slate-500 bg-white/90 backdrop-blur px-2 py-0.5 rounded-md border border-slate-200 shadow-2xs">
+                    Hover or click angles to switch
+                  </div>
+                </div>
+
+                {/* Thumbnails Row */}
+                <div className="mt-2.5">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                      <Layers className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>Marketplace Product Images ({selectedProduct.images.length} Angles)</span>
+                    </h3>
+                    <span className="text-[10px] text-slate-400 font-medium">Amazon & Flipkart Multi-Angle View</span>
+                  </div>
+
+                  <div className="grid grid-cols-4 gap-2">
+                    {selectedProduct.images.map((img, idx) => {
+                      const isActive = activeImageIndex === idx;
+                      const label =
+                        img.image_type === "FRONT_VIEW"
+                          ? "Front"
+                          : img.image_type === "ANGLED_VIEW"
+                          ? "45° Angle"
+                          : img.image_type === "DETAIL_VIEW"
+                          ? "Detail"
+                          : img.image_type === "PROFILE_VIEW"
+                          ? "Profile"
+                          : `Angle ${idx + 1}`;
+
+                      return (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setActiveImageIndex(idx)}
+                          onMouseEnter={() => setActiveImageIndex(idx)}
+                          className={`flex flex-col items-center text-left rounded-xl p-1.5 transition-all duration-200 cursor-pointer ${
+                            isActive
+                              ? "border-2 border-emerald-500 bg-emerald-50/40 ring-2 ring-emerald-400/30 shadow-sm"
+                              : "border border-slate-200 bg-white hover:border-slate-400 hover:bg-slate-50/60"
+                          }`}
+                        >
+                          <div className="w-full h-16 rounded-lg overflow-hidden bg-slate-50 flex items-center justify-center p-1">
+                            <ProductImage
+                              src={img.source_url}
+                              alt={img.alt_text || `${selectedProduct.title} - ${label}`}
+                              category={selectedProduct.category}
+                              productId={selectedProduct.id || selectedProduct.provider_product_id}
+                              width={80}
+                              height={80}
+                              className="w-full h-full object-contain"
+                            />
+                          </div>
+                          <span className={`text-[10px] font-semibold mt-1 truncate w-full text-center ${
+                            isActive ? "text-emerald-700 font-bold" : "text-slate-600"
+                          }`}>
+                            {label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             )}

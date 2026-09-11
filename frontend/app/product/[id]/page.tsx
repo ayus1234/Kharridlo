@@ -43,6 +43,11 @@ interface ProductDetail {
   ai_summary?: string | null;
   specs: Record<string, any>;
   image_url?: string | null;
+  images?: Array<{
+    source_url: string;
+    image_type?: string;
+    alt_text?: string | null;
+  }>;
   availability_status: "in_stock" | "low_stock" | "out_of_stock" | string;
   provider?: string | null;
   canonical_url?: string | null;
@@ -58,6 +63,7 @@ export default function ProductDetailPage() {
   const productId = params?.id as string;
 
   const [product, setProduct] = useState<ProductDetail | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [addingToCart, setAddingToCart] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
@@ -71,6 +77,7 @@ export default function ProductDetailPage() {
 
   const fetchProduct = async () => {
     setLoading(true);
+    setSelectedImageIndex(0);
     try {
       const isHttpsLocalhost = typeof window !== "undefined" &&
         window.location.protocol === "https:" &&
@@ -93,6 +100,7 @@ export default function ProductDetailPage() {
           ai_summary: curated.ai_summary,
           specs: curated.specifications || {},
           image_url: curated.primary_image_url || curated.images?.[0]?.source_url,
+          images: curated.images || [],
           availability_status: curated.availability_status,
           provider: curated.provider,
           canonical_url: curated.canonical_url,
@@ -126,6 +134,7 @@ export default function ProductDetailPage() {
             ai_summary: mData.ai_summary,
             specs: mData.specifications || {},
             image_url: mData.primary_image_url || mData.images?.[0]?.source_url,
+            images: (mData.images && mData.images.length > 0) ? mData.images : (curated?.images || []),
             availability_status: mData.availability_status,
             provider: "amazon",
             canonical_url: mData.canonical_url,
@@ -157,6 +166,7 @@ export default function ProductDetailPage() {
             ai_summary: mData.ai_summary,
             specs: mData.specifications || {},
             image_url: mData.primary_image_url || mData.images?.[0]?.source_url,
+            images: (mData.images && mData.images.length > 0) ? mData.images : (curated?.images || []),
             availability_status: mData.availability_status,
             provider: "flipkart",
             canonical_url: mData.canonical_url,
@@ -201,6 +211,7 @@ export default function ProductDetailPage() {
               ai_summary: match.ai_summary,
               specs: match.specifications || {},
               image_url: match.primary_image_url || match.images?.[0]?.source_url,
+              images: (match.images && match.images.length > 0) ? match.images : (curated?.images || []),
               availability_status: match.availability_status,
               provider: match.provider,
               canonical_url: match.canonical_url,
@@ -252,6 +263,7 @@ export default function ProductDetailPage() {
           ai_summary: fallback.ai_summary,
           specs: fallback.specifications || {},
           image_url: fallback.primary_image_url || fallback.images?.[0]?.source_url,
+          images: fallback.images || [],
           availability_status: fallback.availability_status,
           provider: fallback.provider,
           canonical_url: fallback.canonical_url,
@@ -375,6 +387,13 @@ export default function ProductDetailPage() {
       ports: "Thunderbolt 4, USB-C 3.2, HDMI 2.1, RJ-45 Gigabit",
     },
     availability_status: "in_stock" as const,
+    image_url: "/images/products/technova_studio_16_angle1.jpg",
+    images: [
+      { source_url: "/images/products/technova_studio_16_angle1.jpg", image_type: "FRONT_VIEW", alt_text: "Front / Main View" },
+      { source_url: "/images/products/technova_studio_16_angle2.jpg", image_type: "ANGLED_VIEW", alt_text: "45° Perspective View" },
+      { source_url: "/images/products/technova_studio_16_angle3.jpg", image_type: "DETAIL_VIEW", alt_text: "Component / Detail View" },
+      { source_url: "/images/products/technova_studio_16_angle4.jpg", image_type: "PROFILE_VIEW", alt_text: "Side Profile View" },
+    ],
   };
 
   return (
@@ -404,23 +423,109 @@ export default function ProductDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Left Column: Gallery & Bento Specs (7 cols) */}
           <div className="lg:col-span-7 space-y-6">
-            {/* Main Product Hero Image */}
+            {/* Amazon & Flipkart Style Multi-Angle Gallery */}
             <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm overflow-hidden">
-              <div className="relative aspect-video rounded-xl overflow-hidden bg-slate-50 border border-slate-100 flex items-center justify-center">
+              {/* Main Featured Angle View */}
+              <div className="relative aspect-video rounded-xl overflow-hidden bg-slate-50 border border-slate-100 flex items-center justify-center group">
                 <ProductImage
-                  src={p.image_url}
-                  alt={p.name}
+                  src={p.images && p.images.length > 0 ? p.images[selectedImageIndex]?.source_url : p.image_url}
+                  alt={p.images && p.images.length > 0 ? p.images[selectedImageIndex]?.alt_text || p.name : p.name}
                   category={p.category}
                   productId={p.id}
-                  width={600}
-                  height={400}
+                  width={650}
+                  height={420}
                   priority={true}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
                 />
-                <span className="absolute top-3 left-3 text-[10px] font-mono-data font-bold uppercase tracking-wider text-growth-dark bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 shadow-2xs">
-                  Kharridlo Verified
+
+                {/* Badge top-left: Kharridlo Verified + Angle Number */}
+                <div className="absolute top-3 left-3 flex items-center gap-2">
+                  <span className="text-[10px] font-mono-data font-bold uppercase tracking-wider text-growth-dark bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 shadow-2xs">
+                    Kharridlo Verified
+                  </span>
+                  {p.images && p.images.length > 0 && (
+                    <span className="text-[10px] font-semibold text-slate-700 bg-white/90 backdrop-blur px-2.5 py-1 rounded-full border border-slate-200 shadow-2xs">
+                      Angle {selectedImageIndex + 1} of {p.images.length}:{" "}
+                      {p.images[selectedImageIndex]?.image_type === "FRONT_VIEW"
+                        ? "Front / Hero View"
+                        : p.images[selectedImageIndex]?.image_type === "ANGLED_VIEW"
+                        ? "45° Perspective View"
+                        : p.images[selectedImageIndex]?.image_type === "DETAIL_VIEW"
+                        ? "Component / Detail View"
+                        : p.images[selectedImageIndex]?.image_type === "PROFILE_VIEW"
+                        ? "Side Profile View"
+                        : `Angle ${selectedImageIndex + 1}`}
+                    </span>
+                  )}
+                </div>
+
+                <span className="absolute bottom-3 right-3 text-[10px] text-slate-400 bg-white/80 backdrop-blur px-2 py-0.5 rounded border border-slate-200">
+                  Hover or click angles
                 </span>
               </div>
+
+              {/* Multi-Angle Thumbnails Bar (Amazon & Flipkart Style) */}
+              {p.images && p.images.length > 1 && (
+                <div className="mt-4 pt-3 border-t border-slate-100">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                      <Layers className="w-3.5 h-3.5 text-emerald-600" />
+                      Marketplace Angle Views ({p.images.length})
+                    </span>
+                    <span className="text-[11px] text-slate-400">
+                      Click thumbnails to inspect angles
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-2.5">
+                    {p.images.map((img, idx) => {
+                      const isSelected = selectedImageIndex === idx;
+                      const label =
+                        img.image_type === "FRONT_VIEW"
+                          ? "Front View"
+                          : img.image_type === "ANGLED_VIEW"
+                          ? "45° Angle"
+                          : img.image_type === "DETAIL_VIEW"
+                          ? "Detail View"
+                          : img.image_type === "PROFILE_VIEW"
+                          ? "Side Profile"
+                          : `Angle ${idx + 1}`;
+
+                      return (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => setSelectedImageIndex(idx)}
+                          onMouseEnter={() => setSelectedImageIndex(idx)}
+                          className={`flex flex-col items-center p-1.5 rounded-xl border transition-all cursor-pointer ${
+                            isSelected
+                              ? "border-2 border-emerald-500 bg-emerald-50/50 ring-2 ring-emerald-400/30 shadow-sm"
+                              : "border-slate-200 bg-slate-50/50 hover:bg-white hover:border-slate-400"
+                          }`}
+                        >
+                          <div className="w-full h-16 rounded-lg overflow-hidden bg-white flex items-center justify-center p-1">
+                            <ProductImage
+                              src={img.source_url}
+                              alt={img.alt_text || `${p.name} - ${label}`}
+                              category={p.category}
+                              productId={p.id}
+                              width={80}
+                              height={80}
+                              className="w-full h-full object-contain"
+                            />
+                          </div>
+                          <span
+                            className={`text-[10px] font-semibold mt-1 truncate w-full text-center ${
+                              isSelected ? "text-emerald-700 font-bold" : "text-slate-600"
+                            }`}
+                          >
+                            {label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Provenance & Description Tabs */}
