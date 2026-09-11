@@ -11,6 +11,7 @@ export interface FeaturedProduct {
   description: string;
   availability_status: "in_stock" | "low_stock" | "out_of_stock";
   image_url: string;
+  specs?: Record<string, any>;
   provider?: string;
   source_rating?: number;
 }

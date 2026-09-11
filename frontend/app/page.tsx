@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { 
@@ -13,21 +13,23 @@ import {
   ShieldCheck, 
   CheckCircle2, 
   Layers, 
-  Star, 
+  Sliders,
   Flame, 
   GitCompare, 
   Bot,
   Zap,
-  TrendingUp,
-  Server
+  Lock,
+  CreditCard,
+  Check
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import BuyerNavbar from "@/components/BuyerNavbar";
 import BuyerFooter from "@/components/BuyerFooter";
-import ProductImage from "@/components/ProductImage";
 import BentoCard from "@/components/BentoCard";
 import Logo from "@/components/Logo";
 import { FEATURED_PREVIEW_PRODUCTS, FeaturedProduct } from "@/lib/featured-preview";
+import DynamicProductCard, { DynamicProduct } from "@/components/dynamic/DynamicProductCard";
+import RequirementSummaryCard, { parseRequirementsFromPrompt } from "@/components/dynamic/RequirementSummaryCard";
 
 const AIAssistantDrawer = dynamic(() => import("@/components/AIAssistantDrawer"), { 
   ssr: false,
@@ -48,9 +50,14 @@ export default function HomePage() {
   // Instant Initial Paint: Initialize with lightweight 2KB preview products (0ms, zero-delay)
   const [featuredProducts, setFeaturedProducts] = useState<FeaturedProduct[]>(FEATURED_PREVIEW_PRODUCTS);
   const [loading, setLoading] = useState(false);
-  const [backendOnline, setBackendOnline] = useState(true);
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
 
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://kharridlo-backend.onrender.com";
+
+  // Parse live requirement preview if user types a query
+  const liveRequirements = useMemo(() => {
+    return parseRequirementsFromPrompt(prompt);
+  }, [prompt]);
 
   useEffect(() => {
     let isMounted = true;
@@ -78,7 +85,7 @@ export default function HomePage() {
             }
           }
         } catch {
-          if (isMounted) setBackendOnline(false);
+          // Graceful fallback
         }
       }, 3000);
     };
@@ -107,20 +114,41 @@ export default function HomePage() {
     router.push(`/assistant?prompt=${encodeURIComponent(query)}`);
   };
 
+  const handleProductAdded = (product: DynamicProduct) => {
+    setToastMsg(`Added "${product.name}" to cart.`);
+    setTimeout(() => setToastMsg(null), 3000);
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC] overflow-x-hidden">
       <BuyerNavbar />
+
+      {/* Toast Notification */}
+      {toastMsg && (
+        <div className="fixed top-20 right-6 z-50 rounded-xl bg-navy-900 text-white px-4 py-2.5 text-xs font-semibold shadow-xl flex items-center gap-2 border border-slate-700 animate-in fade-in slide-in-from-top-2">
+          <CheckCircle2 className="h-4 w-4 text-growth-emerald" />
+          <span>{toastMsg}</span>
+        </div>
+      )}
 
       <main className="flex-1">
         {/* Hero Section: Intent Engine */}
         <section className="relative overflow-hidden pt-12 pb-16 lg:pt-20 lg:pb-24 bg-gradient-to-b from-white via-purple-50/20 to-[#F8FAFC] border-b border-slate-200/60">
           {/* Subtle Ambient Background Gradients */}
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-gradient-to-tr from-purple-200/40 via-emerald-100/30 to-transparent blur-3xl -z-10 pointer-events-none rounded-full" />
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[750px] h-[360px] bg-gradient-to-tr from-purple-200/40 via-emerald-100/30 to-transparent blur-3xl -z-10 pointer-events-none rounded-full" />
 
           <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 text-center">
-            {/* Kharridlo Brand Logo (Tagline hidden) */}
+            {/* Kharridlo Brand Logo */}
             <div className="flex justify-center mb-6">
               <Logo variant="compact" size="xl" asLink={false} priority />
+            </div>
+
+            {/* Dynamic AI Commerce Status Badge */}
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-indigo-200 shadow-2xs mb-4">
+              <span className="h-2 w-2 rounded-full bg-growth-emerald animate-pulse" />
+              <span className="text-[11px] font-mono-data font-semibold text-navy-900">
+                Agentic Commerce • Bounded AI & Razorpay Verified
+              </span>
             </div>
 
             {/* Main Headline */}
@@ -146,7 +174,7 @@ export default function HomePage() {
                     type="text"
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
-                    placeholder="Describe your student setup (e.g. 'Laptop for AI/ML coursework under ₹70k')..."
+                    placeholder="Describe what you need (e.g. 'Laptop for coding under ₹70k')..."
                     className="w-full bg-transparent px-3 py-2 text-sm text-navy-900 placeholder:text-slate-400 focus:outline-none font-sans"
                   />
                   <button
@@ -158,6 +186,17 @@ export default function HomePage() {
                   </button>
                 </div>
               </form>
+
+              {/* Dynamic Live Requirement Extraction Preview */}
+              {liveRequirements && (
+                <div className="mt-4 text-left animate-in fade-in slide-in-from-top-2">
+                  <RequirementSummaryCard
+                    requirements={liveRequirements}
+                    onEdit={() => router.push(`/assistant?prompt=${encodeURIComponent(prompt.trim())}`)}
+                    compact
+                  />
+                </div>
+              )}
 
               {/* Intent Suggestion Chips */}
               <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
@@ -173,6 +212,72 @@ export default function HomePage() {
                     <span>{pill}</span>
                   </button>
                 ))}
+              </div>
+
+              {/* Dual Action CTAs */}
+              <div className="mt-6 flex items-center justify-center gap-3">
+                <Link
+                  href="/assistant"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-navy-900 text-white text-xs font-bold font-display hover:bg-ai-violet transition-all shadow-sm active:scale-95"
+                >
+                  <Bot className="w-4 h-4 text-emerald-300" />
+                  <span>Start AI Shopping</span>
+                </Link>
+                <Link
+                  href="/catalog"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-bold font-display hover:border-slate-300 hover:bg-slate-50 transition-all shadow-2xs"
+                >
+                  <Layers className="w-4 h-4 text-slate-500" />
+                  <span>Explore Hardware Catalog (42 Items)</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* Dynamic AI Commerce Journey Stepper */}
+            <div className="mt-12 pt-8 border-t border-slate-200/70 max-w-4xl mx-auto">
+              <div className="text-[10px] font-mono-data uppercase tracking-wider text-slate-400 font-semibold mb-3">
+                The Kharridlo Commerce Architecture
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-left">
+                <div className="p-2.5 rounded-xl bg-white border border-slate-200/70 shadow-2xs">
+                  <div className="flex items-center gap-1 text-ai-violet text-[10px] font-bold uppercase font-mono-data">
+                    <Sparkles className="w-3 h-3" /> Step 1
+                  </div>
+                  <h4 className="font-display font-bold text-xs text-navy-900 mt-1">Discover</h4>
+                  <p className="text-[10px] text-slate-500 mt-0.5">Natural language intent</p>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-white border border-slate-200/70 shadow-2xs">
+                  <div className="flex items-center gap-1 text-indigo-600 text-[10px] font-bold uppercase font-mono-data">
+                    <Sliders className="w-3 h-3" /> Step 2
+                  </div>
+                  <h4 className="font-display font-bold text-xs text-navy-900 mt-1">Understand</h4>
+                  <p className="text-[10px] text-slate-500 mt-0.5">Budget & spec parsing</p>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-white border border-slate-200/70 shadow-2xs">
+                  <div className="flex items-center gap-1 text-growth-dark text-[10px] font-bold uppercase font-mono-data">
+                    <ShieldCheck className="w-3 h-3" /> Step 3
+                  </div>
+                  <h4 className="font-display font-bold text-xs text-navy-900 mt-1">Verify Policy</h4>
+                  <p className="text-[10px] text-slate-500 mt-0.5">Deterministic checks</p>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-white border border-slate-200/70 shadow-2xs">
+                  <div className="flex items-center gap-1 text-slate-700 text-[10px] font-bold uppercase font-mono-data">
+                    <Lock className="w-3 h-3" /> Step 4
+                  </div>
+                  <h4 className="font-display font-bold text-xs text-navy-900 mt-1">Authorize</h4>
+                  <p className="text-[10px] text-slate-500 mt-0.5">Explicit buyer consent</p>
+                </div>
+
+                <div className="col-span-2 sm:col-span-1 p-2.5 rounded-xl bg-navy-900 text-white shadow-xs">
+                  <div className="flex items-center gap-1 text-emerald-400 text-[10px] font-bold uppercase font-mono-data">
+                    <CreditCard className="w-3 h-3" /> Step 5
+                  </div>
+                  <h4 className="font-display font-bold text-xs text-white mt-1">Pay & Settle</h4>
+                  <p className="text-[10px] text-slate-400 mt-0.5">Razorpay HMAC verify</p>
+                </div>
               </div>
             </div>
           </div>
@@ -191,7 +296,7 @@ export default function HomePage() {
                 badgeType="ai"
               >
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Contextual recommendations tailored to engineering, design, and computer science degrees. The agent reasons within strict parameter bounds.
+                  Contextual recommendations tailored to engineering, design, and computer science degrees. The agent reasons strictly within defined parameter bounds.
                 </p>
                 <div className="mt-4 flex items-center gap-2">
                   <Link
@@ -246,7 +351,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Curated Hardware Catalog Section */}
+        {/* Curated Hardware Catalog Section with Dynamic Product Cards */}
         <section className="py-12 lg:py-16">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
@@ -258,7 +363,7 @@ export default function HomePage() {
                   Verified Engineering & Developer Gear
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                  Curated engineering inventory and verified hardware with instant Razorpay checkout.
+                  Curated engineering inventory and verified hardware with qualitative match analysis and Razorpay checkout.
                 </p>
               </div>
 
@@ -280,102 +385,27 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Product Cards Grid */}
+            {/* Dynamic Product Cards Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {loading ? (
-                Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="h-80 rounded-2xl bg-slate-100 animate-pulse border border-slate-200" />
-                ))
-              ) : featuredProducts.length > 0 ? (
-                featuredProducts.map((p, idx) => (
-                  <div
-                    key={p.id}
-                    className="group relative flex flex-col rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm hover:shadow-2xl hover:shadow-indigo-500/15 hover:border-indigo-300 hover:-translate-y-1.5 transition-all duration-300 ease-out"
-                  >
-                    {/* Top Badges */}
-                    <div className="flex items-center justify-between gap-2 mb-3">
-                      <span className="text-[10px] font-mono-data font-bold uppercase tracking-wider text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
-                        {p.category}
-                      </span>
-                      <div className="flex items-center gap-1.5">
-                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                          Kharridlo Verified
-                        </span>
-                        <span className="inline-flex items-center gap-1 text-[10px] font-mono-data font-semibold text-growth-dark bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                          <CheckCircle2 className="h-2.5 w-2.5" /> In Stock
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Image Preview with Lazy Loading */}
-                    <Link href={`/product/${p.id}`} className="block overflow-hidden rounded-xl bg-slate-50 mb-4 aspect-video">
-                      <ProductImage
-                        src={p.image_url}
-                        alt={p.name}
-                        category={p.category}
-                        productId={p.id}
-                        priority={idx < 2}
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        className="h-full w-full object-cover"
-                      />
-                    </Link>
-
-                    {/* Product Metadata */}
-                    <div className="flex-1 flex flex-col justify-between">
-                      <div>
-                        <span className="text-[11px] font-semibold text-slate-400 font-mono-data">
-                          {p.brand}
-                        </span>
-                        <h3 className="font-display font-bold text-sm text-navy-900 line-clamp-1 group-hover:text-ai-violet transition-colors">
-                          <Link href={`/product/${p.id}`}>{p.name}</Link>
-                        </h3>
-                        <p className="text-xs text-slate-500 line-clamp-2 mt-1">
-                          {p.description}
-                        </p>
-                      </div>
-
-                      {/* Price & Action */}
-                      <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
-                        <div>
-                          <span className="text-[10px] text-slate-400 block font-mono-data">Student Price</span>
-                          <div className="flex items-baseline gap-1.5">
-                            <span className="font-display font-bold text-base text-navy-900">
-                              ₹{p.price_inr.toLocaleString("en-IN")}
-                            </span>
-                            {p.mrp_inr && p.mrp_inr > p.price_inr && (
-                              <span className="text-xs text-slate-400 line-through">
-                                ₹{p.mrp_inr.toLocaleString("en-IN")}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <Link
-                            href={`/compare?id1=${p.id}`}
-                            className="p-2 rounded-lg text-slate-400 hover:text-navy-900 hover:bg-slate-100 transition-colors"
-                            title="Compare specs"
-                          >
-                            <GitCompare className="h-4 w-4" />
-                          </Link>
-                          <Link
-                            href={`/product/${p.id}`}
-                            className="px-3 py-1.5 rounded-lg bg-navy-900 text-white text-xs font-semibold hover:bg-ai-violet transition-colors"
-                          >
-                            View Specs
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="col-span-3 text-center py-12 bg-white rounded-2xl border border-slate-200 p-8">
-                  <Laptop className="h-10 w-10 text-slate-300 mx-auto mb-2" />
-                  <p className="text-sm font-semibold text-slate-700">Catalog Initializing</p>
-                  <p className="text-xs text-slate-500 mt-1">Loading synthetic hardware inventory...</p>
-                </div>
-              )}
+              {featuredProducts.map((p, idx) => (
+                <DynamicProductCard
+                  key={p.id}
+                  product={{
+                    id: p.id,
+                    name: p.name,
+                    brand: p.brand,
+                    category: p.category,
+                    price_inr: p.price_inr,
+                    mrp_inr: p.mrp_inr,
+                    description: p.description,
+                    image_url: p.image_url,
+                    specs: p.specs,
+                    matchBadge: idx === 0 ? "Strong Match" : idx < 3 ? "Good Match" : "Alternative",
+                  }}
+                  priorityImage={idx < 2}
+                  onAddToCart={handleProductAdded}
+                />
+              ))}
             </div>
           </div>
         </section>

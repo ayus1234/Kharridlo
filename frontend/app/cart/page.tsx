@@ -32,6 +32,7 @@ import {
 import { getOrCreateSessionId } from "@/lib/session";
 import AIAssistantDrawer from "@/components/AIAssistantDrawer";
 import Logo from "@/components/Logo";
+import PolicyStatusCard from "@/components/dynamic/PolicyStatusCard";
 import {
   DeliveryAddress,
   getDefaultDeliveryAddress,
@@ -1344,67 +1345,52 @@ export default function CartPage() {
                   </button>
                 </div>
 
-                {/* Policy Result Card */}
+                {/* Upgraded Policy Result & Authorization Gate */}
                 {policyResult && (
                   <div className="pt-4 border-t border-slate-100 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                        Policy Gate Status
-                      </span>
-                      {policyResult.decision === "AUTHORIZATION_REQUIRED" ? (
-                        <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1">
-                          <Lock className="w-3 h-3" /> Auth Required
-                        </span>
-                      ) : policyResult.decision === "ALLOW" ? (
-                        <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3" /> Allowed
-                        </span>
-                      ) : (
-                        <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200 flex items-center gap-1">
-                          <XCircle className="w-3 h-3" /> Blocked
-                        </span>
-                      )}
-                    </div>
+                    <PolicyStatusCard
+                      decision={policyResult.decision}
+                      policyTier={policyResult.policy_tier || selectedTier}
+                      cartTotalInr={cart.total_inr || cart.total_paise / 100}
+                      remainingBufferInr={policyResult.remaining_buffer_inr ?? (policyResult.remaining_buffer_paise ? policyResult.remaining_buffer_paise / 100 : undefined)}
+                      maxCartTotalInr={policyResult.max_cart_total_inr ?? (policyResult.max_cart_total_paise ? policyResult.max_cart_total_paise / 100 : 40000)}
+                      reasons={policyResult.reasons}
+                    />
 
-                    {/* BLOCKED STATE */}
-                    {policyResult.decision === "BLOCK" && (
-                      <div className="p-3.5 bg-rose-50 rounded-xl border border-rose-200 space-y-2">
-                        <div className="flex items-start gap-2">
-                          <ShieldAlert className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
-                          <p className="text-xs text-rose-800 leading-snug">
-                            {policyResult.reasons[0]?.message}
-                          </p>
-                        </div>
-                        <div className="p-2 bg-white rounded text-[11px] font-mono text-rose-900 border border-rose-100">
-                          Limit: {formatPrice(policyResult.max_single_transaction_paise)} | Cart: {formatPrice(policyResult.cart_total_paise)}
-                        </div>
+                    {/* Budget Continuity Verification Indicator */}
+                    {policyResult.decision !== "BLOCK" && (
+                      <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200/80 flex items-center gap-2 text-xs text-growth-dark font-medium">
+                        <CheckCircle2 className="w-4 h-4 text-growth-emerald flex-shrink-0" />
+                        <span>Your cart remains verified within your student spending tier.</span>
                       </div>
                     )}
 
-                    {/* AUTHORIZATION REQUIRED / ALLOWED STATE */}
+                    {/* Explicit Buyer Authorization Checkpoint */}
                     {(policyResult.decision === "AUTHORIZATION_REQUIRED" || policyResult.decision === "ALLOW") && (
-                      <div className="p-4 bg-emerald-50/70 rounded-xl border border-emerald-200 space-y-3">
-                        <div className="flex items-start gap-2">
-                          <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-                          <p className="text-xs text-emerald-900 font-medium">
-                            Commerce policy bounds satisfied. Remaining buffer: {formatPrice(policyResult.remaining_buffer_paise)}.
-                          </p>
-                        </div>
-
-                        {/* Explicit Buyer Authorization Gate */}
+                      <div className="space-y-3 pt-2">
                         {!buyerApproved ? (
-                          <button
-                            onClick={() => setBuyerApproved(true)}
-                            className="w-full py-2.5 rounded-xl text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors flex items-center justify-center gap-1.5 shadow-sm"
-                          >
-                            <UserCheck className="w-4 h-4" />
-                            Grant Explicit Buyer Authorization
-                          </button>
+                          <div className="space-y-2">
+                            <button
+                              onClick={() => setBuyerApproved(true)}
+                              className="w-full py-3 rounded-xl text-xs font-bold font-display text-white bg-navy-900 hover:bg-ai-violet transition-all flex items-center justify-center gap-2 shadow-sm active:scale-95"
+                            >
+                              <UserCheck className="w-4 h-4 text-emerald-300" />
+                              <span>Grant Explicit Buyer Authorization</span>
+                            </button>
+                            <p className="text-[10px] text-slate-500 text-center">
+                              AI has zero financial authority. Explicit sign-off required.
+                            </p>
+                          </div>
                         ) : (
-                          <div className="space-y-3 pt-2 border-t border-emerald-200">
-                            <div className="p-2.5 bg-white rounded-lg border border-emerald-300 text-xs text-emerald-900 flex items-center gap-2">
-                              <UserCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                              <span className="font-bold">Buyer Authorization Granted</span>
+                          <div className="space-y-3 pt-1">
+                            <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-300 text-xs text-emerald-950 flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                                <span className="font-bold">Buyer Authorization Granted</span>
+                              </div>
+                              <span className="text-[10px] font-mono-data font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">
+                                Ready for Gateway
+                              </span>
                             </div>
 
                             {/* RAZORPAY TEST MODE CHECKOUT BUTTON */}
@@ -1412,7 +1398,7 @@ export default function CartPage() {
                               <button
                                 onClick={initiatePaymentFlow}
                                 disabled={paymentState.status === "PROCESSING"}
-                                className="w-full py-3 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg disabled:opacity-60"
+                                className="w-full py-3.5 rounded-xl text-xs font-bold font-display text-white bg-indigo-600 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 shadow-md hover:shadow-lg disabled:opacity-60 active:scale-95"
                               >
                                 {paymentState.status === "PROCESSING" ? (
                                   <>
@@ -1421,8 +1407,8 @@ export default function CartPage() {
                                   </>
                                 ) : (
                                   <>
-                                    <CreditCard className="w-4 h-4" />
-                                    <span>Pay {formatPrice(cart.total_paise)} via Razorpay (Test Mode)</span>
+                                    <CreditCard className="w-4 h-4 text-indigo-200" />
+                                    <span>Review & Pay {formatPrice(cart.total_paise)} (Razorpay Test Mode)</span>
                                   </>
                                 )}
                               </button>

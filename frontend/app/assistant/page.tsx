@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -18,15 +18,19 @@ import {
   Sliders,
   ChevronRight,
   Clock,
-  Layers
+  Layers,
+  Check
 } from "lucide-react";
 import BuyerNavbar from "@/components/BuyerNavbar";
 import BuyerFooter from "@/components/BuyerFooter";
 import ProductImage from "@/components/ProductImage";
 import StatusPip from "@/components/StatusPip";
 import { getOrCreateSessionId } from "@/lib/session";
-
 import { getFilteredCatalog } from "@/lib/curated-catalog";
+import RequirementSummaryCard, { parseRequirementsFromPrompt, ShoppingRequirements } from "@/components/dynamic/RequirementSummaryCard";
+import WhyRecommended from "@/components/dynamic/WhyRecommended";
+import AIActionBar from "@/components/dynamic/AIActionBar";
+import { DynamicProduct, MatchTier, getQualitativeMatchTier } from "@/components/dynamic/DynamicProductCard";
 
 interface ChatMessage {
   id: string;
@@ -36,6 +40,7 @@ interface ChatMessage {
   toolCalls?: { name: string; args: any }[];
   recommendedProductIds?: string[];
   recommendedProducts?: Product[];
+  requirements?: ShoppingRequirements | null;
 }
 
 interface Product {
@@ -53,8 +58,10 @@ interface Product {
   provider_product_id?: string;
   canonical_url?: string;
   can_authoritative_checkout?: boolean;
+  matchTier?: MatchTier;
   matchScore?: number;
   matchReason?: string;
+  whyRecommended?: string[];
 }
 
 const STARTER_PROMPTS = [
@@ -69,6 +76,9 @@ function normalizeProduct(raw: any, index = 0): Product | null {
   const name = raw?.name ?? raw?.title;
   if (!id || !name) return null;
   const priceInr = Number(raw.price_inr ?? raw.source_price_inr ?? (raw.price_paise ?? raw.source_price_minor ?? 0) / 100);
+  
+  const matchTier: MatchTier = index === 0 ? "Strong Match" : index < 3 ? "Good Match" : "Alternative";
+
   return {
     id: String(id),
     sku: String(raw.sku ?? raw.provider_product_id ?? id),
@@ -84,6 +94,7 @@ function normalizeProduct(raw: any, index = 0): Product | null {
     provider_product_id: raw.provider_product_id,
     canonical_url: raw.canonical_url,
     can_authoritative_checkout: raw.can_authoritative_checkout ?? raw.mapping?.can_authoritative_checkout,
+    matchTier,
     matchScore: Number(raw.matchScore ?? raw.match_score ?? Math.max(72, 98 - index * 6)),
     matchReason: raw.matchReason ?? raw.match_reason,
   };
@@ -114,11 +125,15 @@ function AssistantContent() {
   const searchParams = useSearchParams();
   const initialPrompt = searchParams.get("prompt") || "";
 
+  const [activeRequirements, setActiveRequirements] = useState<ShoppingRequirements | null>(() => {
+    return initialPrompt ? parseRequirementsFromPrompt(initialPrompt) : null;
+  });
+
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "msg_welcome",
       role: "model",
-      content: "Hello! I am the Kharridlo Student Shopping Assistant, powered by Gemini with 7 bounded tools. Tell me what course you're taking, your budget, or specific hardware specs you need, and I'll find the best match for you.",
+      content: "Hello! I am the Kharridlo Student Shopping Assistant, powered by Gemini 2.0 with 7 bounded tools. Tell me what course you're taking, your target budget, or specific hardware specs you need, and I'll find the best match for you.",
       timestamp: "Just now",
     },
   ]);
@@ -131,12 +146,13 @@ function AssistantContent() {
       .filter((product: Product | null): product is Product => Boolean(product))
       .map((product: Product, index: number) => ({
         ...product,
-        matchScore: 98 - index * 4,
+        matchTier: index === 0 ? "Strong Match" : "Good Match",
         matchReason: index === 0 ? "Best Match for CS & Engineering" : "High Value Student Spec",
       }));
   });
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [sessionId, setSessionId] = useState("");
+  const [addedItemIds, setAddedItemIds] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "https://kharridlo-backend.onrender.com";
@@ -168,7 +184,7 @@ function AssistantContent() {
           .filter((product: Product | null): product is Product => Boolean(product))
           .map((product: Product, index: number) => ({
             ...product,
-            matchScore: 98 - index * 4,
+            matchTier: index === 0 ? "Strong Match" : "Good Match",
             matchReason: index === 0 ? "Best Match for CS & Engineering" : "High Value Student Spec",
           }));
         setActiveContextProducts(enriched);
@@ -181,11 +197,18 @@ function AssistantContent() {
   const sendMessage = async (promptToSend: string, currentSid: string) => {
     if (!promptToSend.trim() || isLoading) return;
 
+    // Extract structured requirements
+    const parsedReqs = parseRequirementsFromPrompt(promptToSend.trim());
+    if (parsedReqs) {
+      setActiveRequirements(parsedReqs);
+    }
+
     const userMsg: ChatMessage = {
       id: `msg_user_${Date.now()}`,
       role: "user",
       content: promptToSend.trim(),
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      requirements: parsedReqs,
     };
 
     setMessages((prev) => [...prev, userMsg]);
@@ -234,7 +257,7 @@ function AssistantContent() {
       const errorMsg: ChatMessage = {
         id: `msg_err_${Date.now()}`,
         role: "model",
-        content: "I ran into a connection issue while contacting the Gemini bounded agent. Showing curated recommendations below.",
+        content: "I ran into a connection issue while contacting the Gemini bounded agent. Showing verified recommendations below.",
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       };
       setMessages((prev) => [...prev, errorMsg]);
@@ -273,6 +296,7 @@ function AssistantContent() {
 
       if (res && res.ok) {
         window.dispatchEvent(new Event("cart-updated"));
+        setAddedItemIds((prev) => new Set(prev).add(product.id));
         setToastMsg(`Added "${product.name || (product as any).title}" to cart.`);
         setTimeout(() => setToastMsg(null), 3500);
       } else {
@@ -298,7 +322,7 @@ function AssistantContent() {
       )}
 
       <main className="flex-1 flex flex-col lg:flex-row max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 gap-6">
-        {/* Left/Center Pane: Conversational Thread (ai_shopping_assistant_1) */}
+        {/* Left/Center Pane: Conversational Thread */}
         <div className="flex-1 flex flex-col bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden min-h-[680px]">
           {/* Assistant Header */}
           <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
@@ -309,23 +333,33 @@ function AssistantContent() {
               <div>
                 <div className="flex items-center gap-2">
                   <h1 className="font-display font-bold text-base text-navy-900">
-                    Kharridlo AI Shopping Assistant
+                    Kharridlo AI Shopping Companion
                   </h1>
                   <span className="text-[10px] font-mono-data font-semibold bg-purple-50 text-ai-violet px-2 py-0.5 rounded-full border border-purple-200">
                     Gemini 2.0 Bounded
                   </span>
                 </div>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Natural language discovery with zero payment authority.
+                  Natural language discovery with zero payment authority. You authorize every rupee.
                 </p>
               </div>
             </div>
 
             <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono-data font-medium bg-emerald-50 text-growth-dark border border-emerald-200">
               <span className="h-2 w-2 rounded-full bg-growth-emerald animate-pulse" />
-              Online
+              Policy Gate Active
             </span>
           </div>
+
+          {/* Active Requirements Summary Card */}
+          {activeRequirements && (
+            <div className="p-4 bg-gradient-to-r from-purple-50/40 via-indigo-50/30 to-white border-b border-indigo-100">
+              <RequirementSummaryCard
+                requirements={activeRequirements}
+                onUpdateRequirement={(updated) => setActiveRequirements(updated)}
+              />
+            </div>
+          )}
 
           {/* Messages Feed */}
           <div className="flex-1 p-4 sm:p-6 overflow-y-auto space-y-4">
@@ -346,7 +380,7 @@ function AssistantContent() {
                     {isUser ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
                   </div>
 
-                  <div className={`space-y-1 ${isUser ? "text-right" : ""}`}>
+                  <div className={`space-y-1.5 ${isUser ? "text-right" : ""}`}>
                     <div
                       className={`inline-block rounded-2xl px-4 py-3 text-xs leading-relaxed text-left ${
                         isUser
@@ -354,6 +388,17 @@ function AssistantContent() {
                           : "bg-slate-100/90 text-navy-900 border border-slate-200/80"
                       }`}
                     >
+                      {/* User message requirement snapshot */}
+                      {m.requirements && (
+                        <div className="mb-2">
+                          <RequirementSummaryCard
+                            requirements={m.requirements}
+                            compact
+                            className="bg-white text-navy-900"
+                          />
+                        </div>
+                      )}
+
                       <p className="whitespace-pre-wrap">{m.content}</p>
 
                       {/* Tool Call Chips */}
@@ -371,38 +416,91 @@ function AssistantContent() {
                         </div>
                       )}
 
+                      {/* Dynamic Recommended Products */}
                       {m.recommendedProducts && m.recommendedProducts.length > 0 && (
-                        <div className="mt-3 grid gap-2 border-t border-slate-200/70 pt-3 sm:grid-cols-2">
-                          {m.recommendedProducts.map((product) => (
-                            <div key={product.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white p-2.5 shadow-sm">
-                              <div className="flex gap-2.5">
-                                <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg border border-slate-100 bg-slate-50">
-                                  <ProductImage
-                                    src={product.image_url}
-                                    alt={product.name}
+                        <div className="mt-3 grid gap-2.5 border-t border-slate-200/70 pt-3 sm:grid-cols-2">
+                          {m.recommendedProducts.map((product) => {
+                            const isAdded = addedItemIds.has(product.id);
+                            return (
+                              <div key={product.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white p-3 shadow-sm flex flex-col justify-between">
+                                <div>
+                                  <div className="flex items-center justify-between gap-1 mb-1.5">
+                                    <span className="text-[9px] font-mono-data uppercase font-bold text-slate-400">
+                                      {product.category}
+                                    </span>
+                                    <span className="inline-flex items-center gap-0.5 text-[9px] font-mono-data font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-growth-dark border border-emerald-200">
+                                      <Sparkles className="w-2 h-2 text-ai-violet" />
+                                      {product.matchTier || "Strong Match"}
+                                    </span>
+                                  </div>
+
+                                  <div className="flex gap-2.5 mb-2">
+                                    <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-slate-100 bg-slate-50">
+                                      <ProductImage
+                                        src={product.image_url}
+                                        alt={product.name}
+                                        category={product.category}
+                                        productId={product.id}
+                                        width={56}
+                                        height={56}
+                                        className="h-full w-full object-cover"
+                                      />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <p className="line-clamp-1 text-xs font-bold leading-snug text-navy-900">{product.name}</p>
+                                      <span className="text-[10px] font-mono-data text-slate-400 block">{product.brand}</span>
+                                      <p className="mt-0.5 text-xs font-display font-bold text-navy-900">₹{product.price_inr.toLocaleString("en-IN")}</p>
+                                    </div>
+                                  </div>
+
+                                  {/* Why Recommended snippet */}
+                                  <WhyRecommended
+                                    priceInr={product.price_inr}
+                                    budgetInr={activeRequirements?.budgetInr}
                                     category={product.category}
-                                    productId={product.id}
-                                    width={48}
-                                    height={48}
-                                    className="h-full w-full"
+                                    specs={product.specs}
+                                    compact
+                                    className="mb-2.5"
                                   />
                                 </div>
-                                <div className="min-w-0 flex-1">
-                                  <p className="line-clamp-2 text-[11px] font-bold leading-snug text-navy-900">{product.name}</p>
-                                  <p className="mt-1 text-[11px] font-bold text-ai-violet">₹{product.price_inr.toLocaleString("en-IN")}</p>
+
+                                <div className="flex items-center gap-1.5 pt-2 border-t border-slate-100">
+                                  <Link 
+                                    href={`/compare?ids=${encodeURIComponent(product.id)}`} 
+                                    className="inline-flex flex-1 items-center justify-center gap-1 rounded-lg border border-slate-200 px-2 py-1.5 text-[10px] font-semibold text-slate-700 hover:border-purple-200 hover:text-ai-violet transition-colors"
+                                  >
+                                    <GitCompare className="h-3 w-3" /> Compare
+                                  </Link>
+                                  <button 
+                                    onClick={() => handleAddToCart(product)} 
+                                    className={`inline-flex flex-1 items-center justify-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-semibold text-white transition-all ${
+                                      isAdded ? "bg-growth-emerald" : "bg-navy-900 hover:bg-ai-violet"
+                                    }`}
+                                  >
+                                    {isAdded ? (
+                                      <>
+                                        <Check className="h-3 w-3" /> Added
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Plus className="h-3 w-3" /> Add
+                                      </>
+                                    )}
+                                  </button>
                                 </div>
                               </div>
-                              <div className="mt-2 flex items-center gap-1.5">
-                                <Link href={`/compare?ids=${encodeURIComponent(product.id)}`} className="inline-flex flex-1 items-center justify-center gap-1 rounded-md border border-slate-200 px-2 py-1.5 text-[10px] font-semibold text-slate-700 hover:border-purple-200 hover:text-ai-violet">
-                                  <GitCompare className="h-3 w-3" /> Compare
-                                </Link>
-                                <button onClick={() => handleAddToCart(product)} className="inline-flex flex-1 items-center justify-center gap-1 rounded-md bg-navy-900 px-2 py-1.5 text-[10px] font-semibold text-white hover:bg-ai-violet">
-                                  <Plus className="h-3 w-3" /> Add
-                                </button>
-                              </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
+                      )}
+
+                      {/* Contextual Action Bar */}
+                      {!isUser && (
+                        <AIActionBar
+                          context={m.recommendedProducts && m.recommendedProducts.length > 0 ? "recommendation" : undefined}
+                          productId={m.recommendedProducts?.[0]?.id}
+                          className="mt-2"
+                        />
                       )}
                     </div>
 
@@ -421,7 +519,7 @@ function AssistantContent() {
                 </div>
                 <div className="rounded-2xl bg-slate-100 px-4 py-3 text-xs text-slate-500 border border-slate-200 flex items-center gap-2">
                   <Sparkles className="h-3.5 w-3.5 text-ai-violet animate-pulse" />
-                  <span>Evaluating student criteria against catalog...</span>
+                  <span>Evaluating student criteria against verified catalog...</span>
                 </div>
               </div>
             )}
@@ -457,7 +555,7 @@ function AssistantContent() {
                 type="text"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
-                placeholder="Ask about specs, compatibility, student discounts..."
+                placeholder="Ask about specs, coding laptops, budget limits, or course gear..."
                 className="flex-1 min-h-[44px] rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs text-navy-900 placeholder:text-slate-400 focus:border-ai-violet focus:bg-white focus:outline-none focus:ring-2 focus:ring-purple-100"
               />
               <button
@@ -472,18 +570,18 @@ function AssistantContent() {
           </div>
         </div>
 
-        {/* Right Pane: Live Shopping Context & Product Cards (ai_shopping_assistant_1) */}
+        {/* Right Pane: Live Shopping Context & Product Cards */}
         <aside className="w-full lg:w-96 flex-shrink-0 flex flex-col gap-4">
           <div className="rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm flex-1">
             <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-ai-violet" />
                 <h2 className="font-display font-bold text-sm text-navy-900">
-                  AI Context Matches
+                  Curated Catalog Context
                 </h2>
               </div>
               <span className="text-[10px] font-mono-data font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
-                {activeContextProducts.length} items
+                {activeContextProducts.length} verified
               </span>
             </div>
 
@@ -510,11 +608,9 @@ function AssistantContent() {
                         <span className="text-[9px] font-mono-data font-bold uppercase tracking-wider text-slate-500">
                           {p.category}
                         </span>
-                        {p.matchScore && (
-                          <span className="text-[10px] font-mono-data font-bold text-growth-dark bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
-                            {p.matchScore}% Match
-                          </span>
-                        )}
+                        <span className="text-[10px] font-mono-data font-bold text-growth-dark bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                          {p.matchTier || "Strong Match"}
+                        </span>
                       </div>
                       <h3 className="font-display font-bold text-xs text-navy-900 line-clamp-1 group-hover:text-ai-violet transition-colors">
                         <Link href={`/product/${p.id}`}>{p.name}</Link>
@@ -525,11 +621,15 @@ function AssistantContent() {
                     </div>
                   </div>
 
-                  {p.matchReason && (
-                    <div className="mt-2 text-[10px] text-ai-violet bg-purple-50/80 px-2 py-1 rounded border border-purple-100 font-medium">
-                      💡 {p.matchReason}
-                    </div>
-                  )}
+                  {/* Why Recommended bullet */}
+                  <WhyRecommended
+                    priceInr={p.price_inr}
+                    budgetInr={activeRequirements?.budgetInr}
+                    category={p.category}
+                    specs={p.specs}
+                    compact
+                    className="mt-2"
+                  />
 
                   <div className="mt-3 pt-2 border-t border-slate-200/60 flex items-center justify-between gap-2">
                     <Link
@@ -547,9 +647,19 @@ function AssistantContent() {
                       </Link>
                       <button
                         onClick={() => handleAddToCart(p)}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-navy-900 text-white text-[10px] font-semibold hover:bg-ai-violet transition-colors shadow-2xs"
+                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded text-white text-[10px] font-semibold transition-colors shadow-2xs ${
+                          addedItemIds.has(p.id) ? "bg-growth-emerald" : "bg-navy-900 hover:bg-ai-violet"
+                        }`}
                       >
-                        <Plus className="h-2.5 w-2.5" /> Add
+                        {addedItemIds.has(p.id) ? (
+                          <>
+                            <Check className="h-2.5 w-2.5" /> Added
+                          </>
+                        ) : (
+                          <>
+                            <Plus className="h-2.5 w-2.5" /> Add
+                          </>
+                        )}
                       </button>
                     </div>
                   </div>

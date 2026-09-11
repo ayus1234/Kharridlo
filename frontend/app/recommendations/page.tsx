@@ -19,6 +19,7 @@ import BuyerFooter from "@/components/BuyerFooter";
 import ProductImage from "@/components/ProductImage";
 import { getOrCreateSessionId } from "@/lib/session";
 import { getFilteredCatalog } from "@/lib/curated-catalog";
+import DynamicProductCard from "@/components/dynamic/DynamicProductCard";
 
 interface Product {
   id: string;
@@ -280,99 +281,24 @@ export default function RecommendationsPage() {
             ))
           ) : products.length > 0 ? (
             products.map((p, idx) => (
-              <div
+              <DynamicProductCard
                 key={p.id}
-                className="group relative flex flex-col rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm hover:shadow-2xl hover:shadow-indigo-500/15 hover:border-purple-300 hover:-translate-y-1.5 transition-all duration-300 ease-out"
-              >
-                {/* Top Badge & Match Score */}
-                <div className="flex items-center justify-between gap-2 mb-3">
-                  <span className="text-[10px] font-mono-data font-bold uppercase tracking-wider text-ai-violet bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
-                    {p.badge}
-                  </span>
-                  <div className="flex items-center gap-1.5">
-                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                      Kharridlo Verified
-                    </span>
-                    <span className="inline-flex items-center gap-1 text-[11px] font-mono-data font-bold text-growth-dark bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                      <Star className="h-3 w-3 fill-growth-emerald text-growth-emerald" />
-                      {p.matchScore}% Match
-                    </span>
-                  </div>
-                </div>
-
-                {/* Image */}
-                <Link href={`/product/${p.id}`} className="block overflow-hidden rounded-xl bg-slate-50 mb-4 aspect-video">
-                  <ProductImage
-                    src={p.image_url}
-                    alt={p.name}
-                    category={p.category}
-                    productId={p.id}
-                    priority={idx < 3}
-                    className="h-full w-full object-cover"
-                  />
-                </Link>
-
-                {/* Metadata */}
-                <div className="flex-1 flex flex-col justify-between">
-                  <div>
-                    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider font-mono-data">
-                      {p.brand} • {p.category}
-                    </span>
-                    <h3 className="font-display font-bold text-sm text-navy-900 line-clamp-1 group-hover:text-ai-violet transition-colors mt-0.5">
-                      <Link href={`/product/${p.id}`}>{p.name}</Link>
-                    </h3>
-                    <p className="text-xs text-slate-500 line-clamp-2 mt-1">
-                      {p.description}
-                    </p>
-
-                    {/* AI Fit Highlights */}
-                    {p.reasons && (
-                      <div className="mt-3 space-y-1">
-                        {p.reasons.slice(0, 2).map((r, ri) => (
-                          <div key={ri} className="flex items-center gap-1.5 text-[10px] text-slate-600">
-                            <Check className="h-3 w-3 text-growth-emerald flex-shrink-0" />
-                            <span className="line-clamp-1">{r}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Price & Actions */}
-                  <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between">
-                    <div>
-                      <span className="text-[10px] text-slate-400 font-mono-data block">Verified Student Price</span>
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="font-display font-bold text-base text-navy-900">
-                          ₹{p.price_inr.toLocaleString("en-IN")}
-                        </span>
-                        {p.mrp_inr && p.mrp_inr > p.price_inr && (
-                          <span className="text-xs text-slate-400 line-through">
-                            ₹{p.mrp_inr.toLocaleString("en-IN")}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <Link
-                        href={`/compare?id1=${p.id}`}
-                        className="p-2 rounded-lg text-slate-400 hover:text-navy-900 hover:bg-slate-100 transition-colors"
-                        title="Compare specs"
-                      >
-                        <GitCompare className="h-4 w-4" />
-                      </Link>
-                      <button
-                        onClick={() => handleAddToCart(p)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-navy-900 text-white text-xs font-semibold hover:bg-ai-violet active:scale-95 transition-all shadow-sm"
-                      >
-                        <Plus className="h-3.5 w-3.5" /> Add to Cart
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+                product={{
+                  id: p.id,
+                  name: p.name,
+                  brand: p.brand,
+                  category: p.category,
+                  price_inr: p.price_inr,
+                  mrp_inr: p.mrp_inr,
+                  description: p.description,
+                  image_url: p.image_url,
+                  specs: (p as any).specs,
+                  matchBadge: idx === 0 ? "Strong Match" : idx < 4 ? "Good Match" : "Alternative",
+                  whyRecommended: p.reasons,
+                }}
+                priorityImage={idx < 3}
+                onAddToCart={() => handleAddToCart(p)}
+              />
             ))
           ) : (
             <div className="col-span-3 text-center py-12 bg-white rounded-2xl border border-slate-200 p-8">

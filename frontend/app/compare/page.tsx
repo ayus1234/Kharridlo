@@ -12,12 +12,17 @@ import {
   ShieldCheck,
   Sparkles,
   X,
+  Check,
+  AlertCircle,
+  ThumbsUp,
+  Award
 } from "lucide-react";
 import BuyerNavbar from "@/components/BuyerNavbar";
 import BuyerFooter from "@/components/BuyerFooter";
 import ProductImage from "@/components/ProductImage";
 import { getProviderBadge } from "@/lib/marketplace";
 import { getOrCreateSessionId } from "@/lib/session";
+import WhyRecommended from "@/components/dynamic/WhyRecommended";
 
 interface Product {
   id: string;
@@ -91,6 +96,45 @@ function rankForStudentFit(product: Product) {
   return memory * 0.8 + storageScore + priceScore + computeScore;
 }
 
+function getProductAdvantages(product: Product): string {
+  const hardware = Object.values(product.specs || {}).join(" ").toLowerCase();
+  const advantages: string[] = [];
+  if (hardware.includes("16gb") || hardware.includes("32gb")) advantages.push("Higher memory headroom for multitasking");
+  if (hardware.includes("ssd") || hardware.includes("nvme")) advantages.push("High-speed NVMe flash storage");
+  if (hardware.includes("battery") || hardware.includes("18-hr")) advantages.push("Long academic battery endurance");
+  if (product.price_inr < 50000) advantages.push("Budget-friendly for student finances");
+  return advantages.length > 0 ? advantages.join("; ") : "Balanced everyday student specifications";
+}
+
+function getProductLimitations(product: Product): string {
+  const hardware = Object.values(product.specs || {}).join(" ").toLowerCase();
+  if (hardware.includes("8gb")) return "8GB RAM may limit heavy Docker / VM virtualization";
+  if (hardware.includes("256gb")) return "256GB storage requires external drive for large datasets";
+  if (product.price_inr > 80000) return "Higher tier investment requiring student budget authorization";
+  return "Standard academic configuration without dedicated GPU";
+}
+
+function getProductValueVerdict(product: Product): string {
+  if (product.price_inr <= 45000) return "Exceptional Value • Tier 1 Friendly";
+  if (product.price_inr <= 75000) return "High Value • Recommended for CS & Engineering";
+  return "Premium Investment • Pro Creator & Research Spec";
+}
+
+function getProductUseCase(product: Product): string {
+  const cat = product.category.toLowerCase();
+  const name = product.name.toLowerCase();
+  if (cat.includes("laptop") || name.includes("laptop") || name.includes("macbook")) {
+    return "Software Development, Web Dev & Engineering Labs";
+  }
+  if (cat.includes("audio") || name.includes("headphone")) {
+    return "Distraction-free Focus, Remote Classes & Dorm Study";
+  }
+  if (cat.includes("monitor") || name.includes("monitor")) {
+    return "Dual-screen Coding & Multi-window Debugging";
+  }
+  return "Everyday Productivity & Academic Coursework";
+}
+
 function CompareContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -101,6 +145,7 @@ function CompareContent() {
   const [pickerQuery, setPickerQuery] = useState("");
   const [highlightDifferences, setHighlightDifferences] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [addedItemIds, setAddedItemIds] = useState<Set<string>>(new Set());
 
   const updateComparison = useCallback(
     (products: Product[]) => {
@@ -147,7 +192,7 @@ function CompareContent() {
     loadProducts();
   }, [searchParams]);
 
-  const recommendation = useMemo(() => {
+  const topPick = useMemo(() => {
     if (!comparedProducts.length) return null;
     return [...comparedProducts].sort((a, b) => rankForStudentFit(b) - rankForStudentFit(a))[0];
   }, [comparedProducts]);
@@ -156,11 +201,15 @@ function CompareContent() {
     const coreRows: ComparisonRow[] = [
       { label: "Category", value: (product) => product.category },
       { label: "Brand", value: (product) => product.brand },
+      { label: "Target Use Case", value: (product) => getProductUseCase(product) },
       { label: "Processor / SoC", value: (product) => readSpec(product, ["processor", "cpu", "chip", "soc"]) },
-      { label: "Memory", value: (product) => readSpec(product, ["memory", "ram", "unified memory"]) },
+      { label: "Memory / RAM", value: (product) => readSpec(product, ["memory", "ram", "unified memory"]) },
       { label: "Storage", value: (product) => readSpec(product, ["storage", "ssd", "nvme"]) },
       { label: "Display", value: (product) => readSpec(product, ["display", "screen", "resolution"]) },
-      { label: "Battery", value: (product) => readSpec(product, ["battery", "battery life", "endurance"]) },
+      { label: "Battery Life", value: (product) => readSpec(product, ["battery", "battery life", "endurance"]) },
+      { label: "Key Advantages", value: (product) => getProductAdvantages(product) },
+      { label: "Known Limitations", value: (product) => getProductLimitations(product) },
+      { label: "Student Value Verdict", value: (product) => getProductValueVerdict(product) },
     ];
     const covered = ["processor", "cpu", "chip", "soc", "memory", "ram", "storage", "ssd", "nvme", "display", "screen", "resolution", "battery"];
     const extraKeys = Array.from(
@@ -221,6 +270,7 @@ function CompareContent() {
       });
       if (!response.ok) throw new Error("Cart request failed");
       window.dispatchEvent(new Event("cart-updated"));
+      setAddedItemIds((prev) => new Set(prev).add(product.id));
       setToastMsg(`Added “${product.name}” to cart.`);
     } catch {
       setToastMsg("Could not add this product to the cart.");
@@ -238,85 +288,316 @@ function CompareContent() {
       <BuyerNavbar />
 
       {toastMsg && (
-        <div className="fixed top-20 right-6 z-50 rounded-xl border border-slate-700 bg-navy-900 px-4 py-2.5 text-xs font-semibold text-white shadow-xl">
-          <span className="inline-flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-growth-emerald" />{toastMsg}</span>
+        <div className="fixed top-20 right-6 z-50 rounded-xl border border-slate-700 bg-navy-900 px-4 py-2.5 text-xs font-semibold text-white shadow-xl animate-in fade-in slide-in-from-top-2">
+          <span className="inline-flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4 text-growth-emerald" />
+            {toastMsg}
+          </span>
         </div>
       )}
 
-      <main className="flex-1 mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <main className="flex-1 mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        {/* Navigation Breadcrumb */}
         <div className="mb-6">
           <Link href="/catalog" className="mb-2 flex items-center gap-1 text-xs text-slate-500 hover:text-navy-900">
             <ArrowLeft className="h-3.5 w-3.5" /> Back to catalog
           </Link>
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div>
-              <h1 className="font-display text-2xl font-extrabold tracking-tight text-navy-900 sm:text-3xl">Product Comparison Matrix</h1>
-              <p className="mt-1 text-xs text-slate-500 sm:text-sm">Choose up to four products and compare the specifications that matter.</p>
+              <h1 className="font-display text-2xl font-extrabold tracking-tight text-navy-900 sm:text-3xl">
+                Intelligent Product Comparison
+              </h1>
+              <p className="mt-1 text-xs text-slate-500 sm:text-sm">
+                Spec-by-spec trade-off analysis with student use case evaluation.
+              </p>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-mono-data text-slate-400">Comparing {comparedProducts.length} devices</span>
-              <button onClick={() => setIsPickerOpen(true)} className="inline-flex items-center gap-1.5 rounded-xl bg-navy-900 px-3 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-ai-violet">
+              <span className="text-xs font-mono-data text-slate-400">
+                Comparing {comparedProducts.length} devices
+              </span>
+              <button
+                onClick={() => setIsPickerOpen(true)}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-navy-900 px-3.5 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-ai-violet active:scale-95"
+              >
                 <Plus className="h-3.5 w-3.5" /> Add product
               </button>
             </div>
           </div>
         </div>
 
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-purple-200 bg-gradient-to-r from-purple-50 via-indigo-50/40 to-white p-5 shadow-sm">
-          <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-ai-violet to-indigo-600 text-white shadow-sm"><Sparkles className="h-5 w-5" /></div>
-            <div>
-              <span className="block text-[10px] font-mono-data font-bold uppercase tracking-wider text-ai-violet">Kharridlo AI recommendation</span>
-              <p className="mt-0.5 text-sm font-semibold text-navy-900">
-                {recommendation ? `${recommendation.name} is the strongest student-value pick in this comparison.` : "Add products to receive a tailored comparison summary."}
-              </p>
-              {recommendation && <p className="mt-1 text-xs text-slate-600">It combines the selected configuration with a ₹{recommendation.price_inr.toLocaleString("en-IN")} price point. Use the highlighted rows to weigh the trade-offs.</p>}
+        {/* Kharridlo's Recommendation Callout */}
+        {topPick && (
+          <div className="mb-6 rounded-2xl border-2 border-indigo-200 bg-gradient-to-br from-white via-purple-50/40 to-indigo-50/50 p-6 shadow-sm">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div className="flex items-start gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-ai-violet to-indigo-600 text-white shadow-md">
+                  <Award className="h-6 w-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono-data font-bold uppercase tracking-wider text-ai-violet bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+                      Kharridlo's Recommendation
+                    </span>
+                    <span className="text-[10px] font-mono-data font-semibold text-growth-dark bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                      Top Student Fit
+                    </span>
+                  </div>
+                  <h3 className="font-display font-bold text-base sm:text-lg text-navy-900 mt-1">
+                    {topPick.name}
+                  </h3>
+                  <p className="mt-1 text-xs sm:text-sm text-slate-600 max-w-3xl leading-relaxed">
+                    Based on student coursework and compilation demands, <strong>{topPick.name}</strong> is the superior choice. It offers optimal hardware allocation at <strong>₹{topPick.price_inr.toLocaleString("en-IN")}</strong> with verifiable memory and fast SSD storage.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 self-start lg:self-center flex-shrink-0">
+                <button
+                  onClick={() => handleAddToCart(topPick)}
+                  className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold font-display shadow-sm transition-all active:scale-95 ${
+                    addedItemIds.has(topPick.id)
+                      ? "bg-growth-emerald text-white"
+                      : "bg-navy-900 text-white hover:bg-ai-violet"
+                  }`}
+                >
+                  {addedItemIds.has(topPick.id) ? (
+                    <>
+                      <Check className="h-4 w-4" /> Added to Cart
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="h-4 w-4" /> Add Recommended to Cart
+                    </>
+                  )}
+                </button>
+
+                <button
+                  onClick={() => setHighlightDifferences((c) => !c)}
+                  className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-semibold transition-colors ${
+                    highlightDifferences
+                      ? "border-ai-violet bg-purple-100 text-ai-violet"
+                      : "border-slate-200 bg-white text-slate-700 hover:border-purple-200"
+                  }`}
+                >
+                  <GitCompare className="h-3.5 w-3.5" />
+                  <span>{highlightDifferences ? "Differences On" : "Highlight Differences"}</span>
+                </button>
+              </div>
             </div>
           </div>
-          <button onClick={() => setHighlightDifferences((current) => !current)} className={`inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-xs font-semibold transition-colors ${highlightDifferences ? "border-ai-violet bg-purple-100 text-ai-violet" : "border-slate-200 bg-white text-slate-700 hover:border-purple-200"}`}>
-            <GitCompare className="h-3.5 w-3.5" /> {highlightDifferences ? "Differences highlighted" : "Highlight differences"}
-          </button>
-        </div>
+        )}
 
+        {/* Comparison Matrix Table */}
         {loading ? (
-          <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center text-xs font-mono-data text-slate-400 shadow-sm">Loading products for comparison…</div>
+          <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center text-xs font-mono-data text-slate-400 shadow-sm">
+            Evaluating products for comparison matrix…
+          </div>
         ) : comparedProducts.length ? (
           <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
             <table className="w-full border-collapse text-left text-xs">
-              <thead><tr className="border-b border-slate-200 bg-slate-50/75">
-                <th className="w-44 p-4 font-mono-data text-xs font-bold uppercase text-slate-400">Attribute</th>
-                {comparedProducts.map((product, index) => {
-                  const badge = getProviderBadge(product.provider || "kharridlo_verified");
-                  return <th key={product.id} className="min-w-[240px] p-4 align-top sm:p-5"><div className="space-y-2">
-                    <div className="flex items-center justify-between gap-2"><span className="font-mono-data text-[10px] font-bold uppercase text-slate-400">Option {index + 1}</span><button onClick={() => handleRemove(product.id)} aria-label={`Remove ${product.name}`} className="rounded-md p-1 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600"><X className="h-4 w-4" /></button></div>
-                    <div className="relative mb-2 h-32 overflow-hidden rounded-xl bg-slate-100"><ProductImage src={product.image_url} alt={product.name} category={product.category} productId={product.id} className="h-full w-full" /><span className={`absolute left-2 top-2 inline-flex items-center gap-1 rounded border px-2 py-0.5 text-[9px] font-semibold shadow-sm ${badge.badgeClass}`}><span className={`h-1.5 w-1.5 rounded-full ${badge.dotClass}`} />{badge.label}</span></div>
-                    <h3 className="line-clamp-2 font-display text-sm font-bold text-navy-900">{product.name}</h3>
-                    <div className="font-display text-base font-bold text-navy-900">₹{product.price_inr.toLocaleString("en-IN")}</div>
-                    <button onClick={() => handleAddToCart(product)} className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-navy-900 px-3 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-ai-violet"><Plus className="h-3 w-3" /> Add to cart</button>
-                  </div></th>;
-                })}
-              </tr></thead>
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50/80">
+                  <th className="w-48 p-4 font-mono-data text-xs font-bold uppercase text-slate-400">
+                    Feature & Metric
+                  </th>
+                  {comparedProducts.map((product, index) => {
+                    const badge = getProviderBadge(product.provider || "kharridlo_verified");
+                    const isTop = topPick?.id === product.id;
+                    const isAdded = addedItemIds.has(product.id);
+
+                    return (
+                      <th key={product.id} className={`min-w-[260px] p-4 align-top sm:p-5 ${isTop ? "bg-purple-50/30" : ""}`}>
+                        <div className="space-y-2.5">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-mono-data text-[10px] font-bold uppercase text-slate-400">
+                              Option {index + 1} {isTop && "• Top Fit"}
+                            </span>
+                            <button
+                              onClick={() => handleRemove(product.id)}
+                              aria-label={`Remove ${product.name}`}
+                              className="rounded-md p-1 text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+
+                          <div className="relative mb-2 h-36 overflow-hidden rounded-xl bg-slate-100">
+                            <ProductImage
+                              src={product.image_url}
+                              alt={product.name}
+                              category={product.category}
+                              productId={product.id}
+                              className="h-full w-full object-cover"
+                            />
+                            <span className={`absolute left-2 top-2 inline-flex items-center gap-1 rounded border px-2 py-0.5 text-[9px] font-semibold shadow-sm ${badge.badgeClass}`}>
+                              <span className={`h-1.5 w-1.5 rounded-full ${badge.dotClass}`} />
+                              {badge.label}
+                            </span>
+                          </div>
+
+                          <h3 className="line-clamp-2 font-display text-sm font-bold text-navy-900">
+                            {product.name}
+                          </h3>
+
+                          <div className="font-display text-base font-bold text-navy-900">
+                            ₹{product.price_inr.toLocaleString("en-IN")}
+                          </div>
+
+                          <button
+                            onClick={() => handleAddToCart(product)}
+                            className={`inline-flex w-full items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold font-display shadow-sm transition-all active:scale-95 ${
+                              isAdded
+                                ? "bg-growth-emerald text-white"
+                                : "bg-navy-900 text-white hover:bg-ai-violet"
+                            }`}
+                          >
+                            {isAdded ? (
+                              <>
+                                <Check className="h-3.5 w-3.5" /> Added to Cart
+                              </>
+                            ) : (
+                              <>
+                                <Plus className="h-3.5 w-3.5" /> Add to cart
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </th>
+                    );
+                  })}
+                </tr>
+              </thead>
               <tbody className="divide-y divide-slate-100">
                 {comparisonRows.map((row) => {
                   const values = comparedProducts.map(row.value);
-                  const hasDifference = new Set(values.map((value) => value.trim().toLowerCase())).size > 1;
-                  return <tr key={row.label} className="transition-colors hover:bg-slate-50/50"><td className="bg-slate-50/40 p-4 font-mono-data font-semibold text-slate-500">{row.label}</td>{values.map((value, index) => <td key={`${comparedProducts[index].id}-${row.label}`} className={`p-4 font-medium text-navy-900 ${highlightDifferences && hasDifference ? "bg-amber-50/70" : ""}`}>{value}</td>)}</tr>;
+                  const hasDifference = new Set(values.map((v) => v.trim().toLowerCase())).size > 1;
+
+                  return (
+                    <tr key={row.label} className="transition-colors hover:bg-slate-50/50">
+                      <td className="bg-slate-50/50 p-4 font-mono-data font-semibold text-slate-600">
+                        {row.label}
+                      </td>
+                      {values.map((value, index) => (
+                        <td
+                          key={`${comparedProducts[index].id}-${row.label}`}
+                          className={`p-4 font-medium text-navy-900 leading-relaxed ${
+                            highlightDifferences && hasDifference ? "bg-amber-50/80 font-bold text-amber-900" : ""
+                          }`}
+                        >
+                          {value}
+                        </td>
+                      ))}
+                    </tr>
+                  );
                 })}
-                <tr><td className="bg-slate-50/40 p-4 font-mono-data font-semibold text-slate-500">Checkout</td>{comparedProducts.map((product) => <td key={product.id} className="p-4"><span className="inline-flex items-center gap-1 rounded border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-mono-data text-[10px] font-semibold text-growth-dark"><ShieldCheck className="h-3 w-3" /> Verified checkout</span></td>)}</tr>
+                <tr>
+                  <td className="bg-slate-50/50 p-4 font-mono-data font-semibold text-slate-600">
+                    Payment Gateway
+                  </td>
+                  {comparedProducts.map((product) => (
+                    <td key={product.id} className="p-4">
+                      <span className="inline-flex items-center gap-1 rounded border border-emerald-200 bg-emerald-50 px-2.5 py-1 font-mono-data text-[10px] font-semibold text-growth-dark">
+                        <ShieldCheck className="h-3.5 w-3.5" /> Razorpay Test Mode
+                      </span>
+                    </td>
+                  ))}
+                </tr>
               </tbody>
             </table>
           </div>
         ) : (
-          <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center shadow-sm"><GitCompare className="mx-auto h-8 w-8 text-slate-400" /><h2 className="mt-3 font-display font-bold text-navy-900">Start a comparison</h2><p className="mt-1 text-xs text-slate-500">Select products from the catalog to see their specifications side by side.</p><button onClick={() => setIsPickerOpen(true)} className="mt-5 inline-flex items-center gap-1.5 rounded-xl bg-navy-900 px-3 py-2 text-xs font-semibold text-white hover:bg-ai-violet"><Plus className="h-3.5 w-3.5" /> Select products</button></div>
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-12 text-center shadow-sm">
+            <GitCompare className="mx-auto h-8 w-8 text-slate-400" />
+            <h2 className="mt-3 font-display font-bold text-navy-900">Start a comparison</h2>
+            <p className="mt-1 text-xs text-slate-500">
+              Select products from the catalog to see their specifications side by side.
+            </p>
+            <button
+              onClick={() => setIsPickerOpen(true)}
+              className="mt-5 inline-flex items-center gap-1.5 rounded-xl bg-navy-900 px-3.5 py-2 text-xs font-semibold text-white hover:bg-ai-violet"
+            >
+              <Plus className="h-3.5 w-3.5" /> Select products
+            </button>
+          </div>
         )}
       </main>
 
-      {isPickerOpen && <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/45 p-4 sm:items-center" role="dialog" aria-modal="true" aria-label="Select a product to compare"><div className="max-h-[80vh] w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl"><div className="flex items-center justify-between border-b border-slate-100 p-5"><div><h2 className="font-display font-bold text-navy-900">Add a product</h2><p className="mt-0.5 text-xs text-slate-500">Choose up to {MAX_COMPARE_PRODUCTS} products.</p></div><button onClick={() => setIsPickerOpen(false)} className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"><X className="h-5 w-5" /></button></div><div className="border-b border-slate-100 p-4"><label className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2"><Search className="h-4 w-4 text-slate-400" /><input autoFocus value={pickerQuery} onChange={(event) => setPickerQuery(event.target.value)} placeholder="Search by product, brand, or category" className="w-full bg-transparent text-sm text-navy-900 outline-none placeholder:text-slate-400" /></label></div><div className="max-h-[52vh] divide-y divide-slate-100 overflow-y-auto">{pickerProducts.slice(0, 25).map((product) => <button key={product.id} onClick={() => handleAddProduct(product)} className="flex w-full items-center gap-3 p-4 text-left transition-colors hover:bg-purple-50"><div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-50"><ProductImage src={product.image_url} alt={product.name} category={product.category} productId={product.id} className="h-full w-full" /></div><div className="min-w-0 flex-1"><p className="line-clamp-1 text-sm font-semibold text-navy-900">{product.name}</p><p className="mt-0.5 text-xs text-slate-500">{product.brand} · {product.category}</p></div><span className="font-mono-data text-xs font-bold text-navy-900">₹{product.price_inr.toLocaleString("en-IN")}</span><Plus className="h-4 w-4 text-ai-violet" /></button>)}{!pickerProducts.length && <p className="p-8 text-center text-sm text-slate-500">No additional products match that search.</p>}</div></div></div>}
+      {/* Product Selection Modal */}
+      {isPickerOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/45 p-4 sm:items-center"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Select a product to compare"
+        >
+          <div className="max-h-[80vh] w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 p-5">
+              <div>
+                <h2 className="font-display font-bold text-navy-900">Add a product to compare</h2>
+                <p className="mt-0.5 text-xs text-slate-500">Choose up to {MAX_COMPARE_PRODUCTS} products.</p>
+              </div>
+              <button
+                onClick={() => setIsPickerOpen(false)}
+                className="rounded-lg p-2 text-slate-500 hover:bg-slate-100"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="border-b border-slate-100 p-4">
+              <label className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">
+                <Search className="h-4 w-4 text-slate-400" />
+                <input
+                  autoFocus
+                  value={pickerQuery}
+                  onChange={(e) => setPickerQuery(e.target.value)}
+                  placeholder="Search by product, brand, or category..."
+                  className="w-full bg-transparent text-sm text-navy-900 outline-none placeholder:text-slate-400"
+                />
+              </label>
+            </div>
+            <div className="max-h-[52vh] divide-y divide-slate-100 overflow-y-auto">
+              {pickerProducts.slice(0, 25).map((product) => (
+                <button
+                  key={product.id}
+                  onClick={() => handleAddProduct(product)}
+                  className="flex w-full items-center gap-3 p-4 text-left transition-colors hover:bg-purple-50"
+                >
+                  <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+                    <ProductImage
+                      src={product.image_url}
+                      alt={product.name}
+                      category={product.category}
+                      productId={product.id}
+                      className="h-full w-full"
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="line-clamp-1 text-sm font-semibold text-navy-900">{product.name}</p>
+                    <p className="mt-0.5 text-xs text-slate-500">{product.brand} · {product.category}</p>
+                  </div>
+                  <span className="font-mono-data text-xs font-bold text-navy-900">
+                    ₹{product.price_inr.toLocaleString("en-IN")}
+                  </span>
+                  <Plus className="h-4 w-4 text-ai-violet" />
+                </button>
+              ))}
+              {!pickerProducts.length && (
+                <p className="p-8 text-center text-sm text-slate-500">No additional products match that search.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       <BuyerFooter />
     </div>
   );
 }
 
 export default function CompareProductsPage() {
-  return <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-[#F8FAFC] font-mono-data text-xs text-slate-400">Loading product comparison…</div>}><CompareContent /></Suspense>;
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-[#F8FAFC] font-mono-data text-xs text-slate-400">Loading product comparison…</div>}>
+      <CompareContent />
+    </Suspense>
+  );
 }

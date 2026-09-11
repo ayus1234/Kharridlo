@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { 
@@ -20,12 +20,14 @@ import {
   GraduationCap,
   Home,
   Building2,
-  Clock
+  Clock,
+  Sparkles
 } from "lucide-react";
 import BuyerNavbar from "@/components/BuyerNavbar";
 import BuyerFooter from "@/components/BuyerFooter";
 import Logo from "@/components/Logo";
 import { DeliveryAddress, getDefaultDeliveryAddress, formatAddress } from "@/lib/address";
+import AgentActivityTimeline from "@/components/dynamic/AgentActivityTimeline";
 
 function OrderConfirmedContent() {
   const searchParams = useSearchParams();
@@ -33,6 +35,8 @@ function OrderConfirmedContent() {
   const orderId = searchParams.get("order_id") || "order_internal_847192";
   const [showProofDrawer, setShowProofDrawer] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [confirmedItems, setConfirmedItems] = useState<any[]>([]);
+  const [totalAmountInr, setTotalAmountInr] = useState<number>(54999);
 
   const [address] = useState<DeliveryAddress>(() => {
     if (typeof window !== "undefined") {
@@ -46,6 +50,25 @@ function OrderConfirmedContent() {
     }
     return getDefaultDeliveryAddress();
   });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const storedCart = localStorage.getItem("kharridlo_client_cart");
+        if (storedCart) {
+          const items = JSON.parse(storedCart);
+          if (Array.isArray(items) && items.length > 0) {
+            setConfirmedItems(items);
+            const total = items.reduce((acc: number, item: any) => {
+              const p = item.price_paise ? item.price_paise / 100 : (item.price_inr || 0);
+              return acc + p * (item.quantity || 1);
+            }, 0);
+            if (total > 0) setTotalAmountInr(total);
+          }
+        }
+      } catch {}
+    }
+  }, []);
 
   const handleCopy = () => {
     navigator.clipboard?.writeText(paymentId);
@@ -66,8 +89,8 @@ function OrderConfirmedContent() {
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
       <BuyerNavbar />
 
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-12">
-        {/* Receipt Container (Stitch: order_confirmed) */}
+      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-10">
+        {/* Receipt Container */}
         <div className="rounded-3xl border border-slate-200 bg-white shadow-xl overflow-hidden">
           {/* Header Banner */}
           <div className="bg-gradient-to-r from-navy-950 via-navy-900 to-navy-950 p-8 sm:p-10 text-white text-center relative overflow-hidden">
@@ -79,14 +102,16 @@ function OrderConfirmedContent() {
               <CheckCircle2 className="h-10 w-10 animate-in zoom-in" />
             </div>
 
-            <span className="text-[10px] font-mono-data font-bold uppercase tracking-widest text-emerald-400 block mb-1">
-              Transaction Settled
-            </span>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[10px] font-mono-data font-bold uppercase tracking-widest mb-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-growth-light animate-pulse" />
+              Payment Verified • HMAC-SHA256
+            </div>
+
             <h1 className="font-display font-extrabold text-2xl sm:text-4xl tracking-tight text-white">
-              Order Confirmed & Authorized
+              Order Confirmed & Settled
             </h1>
-            <p className="text-xs sm:text-sm text-slate-400 mt-2 max-w-md mx-auto">
-              Your student hardware order has been verified by the deterministic policy engine and settled through Razorpay Test Mode.
+            <p className="text-xs sm:text-sm text-slate-300 mt-2 max-w-md mx-auto leading-relaxed">
+              Your hardware purchase was authorized by you, verified by deterministic policy gates, and captured through Razorpay Test Mode.
             </p>
           </div>
 
@@ -117,7 +142,7 @@ function OrderConfirmedContent() {
               </div>
             </div>
 
-            {/* Amazon & Flipkart Style Delivery Details & Dispatch Tracker */}
+            {/* 4-Stage Logistics Progression */}
             <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-5 shadow-xs">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-slate-100">
                 <div className="flex items-center gap-2">
@@ -126,7 +151,7 @@ function OrderConfirmedContent() {
                   </div>
                   <div>
                     <h3 className="font-display font-bold text-sm text-navy-900">
-                      Delivery & Tracking Status
+                      Delivery & Dispatch Status
                     </h3>
                     <p className="text-xs text-slate-500">
                       Estimated Arrival: <strong className="text-emerald-700">{formattedDeliveryDate}</strong>
@@ -136,7 +161,7 @@ function OrderConfirmedContent() {
 
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-[11px] font-bold border border-emerald-200 self-start sm:self-auto">
                   <Clock className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>On Schedule • Free Student Express</span>
+                  <span>On Schedule • Free Express Student Delivery</span>
                 </div>
               </div>
 
@@ -146,8 +171,8 @@ function OrderConfirmedContent() {
                   <div className="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-xs">
                     <CheckCircle2 className="w-4 h-4" />
                   </div>
-                  <span className="text-xs font-bold text-slate-900">Order Placed</span>
-                  <span className="text-[10px] font-mono text-slate-400">Confirmed</span>
+                  <span className="text-xs font-bold text-slate-900">Confirmed</span>
+                  <span className="text-[10px] font-mono-data text-slate-400">Payment Verified</span>
                 </div>
 
                 <div className="flex flex-col items-center space-y-1.5">
@@ -155,7 +180,7 @@ function OrderConfirmedContent() {
                     <CheckCircle2 className="w-4 h-4" />
                   </div>
                   <span className="text-xs font-bold text-slate-900">Packed</span>
-                  <span className="text-[10px] font-mono text-slate-400">Verified Stock</span>
+                  <span className="text-[10px] font-mono-data text-slate-400">Inventory Locked</span>
                 </div>
 
                 <div className="flex flex-col items-center space-y-1.5">
@@ -163,7 +188,7 @@ function OrderConfirmedContent() {
                     <Truck className="w-4 h-4" />
                   </div>
                   <span className="text-xs font-bold text-indigo-700">In Transit</span>
-                  <span className="text-[10px] font-mono text-indigo-600">BlueDart Express</span>
+                  <span className="text-[10px] font-mono-data text-indigo-600">BlueDart Air</span>
                 </div>
 
                 <div className="flex flex-col items-center space-y-1.5 opacity-40">
@@ -171,7 +196,7 @@ function OrderConfirmedContent() {
                     <Package className="w-4 h-4" />
                   </div>
                   <span className="text-xs font-bold text-slate-700">Delivered</span>
-                  <span className="text-[10px] font-mono text-slate-400">{formattedDeliveryDate.split(',')[0]}</span>
+                  <span className="text-[10px] font-mono-data text-slate-400">{formattedDeliveryDate.split(',')[0]}</span>
                 </div>
               </div>
 
@@ -182,7 +207,7 @@ function OrderConfirmedContent() {
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-xs text-navy-900">Shipping to: {address.fullName}</span>
-                      <span className="text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider font-mono border flex items-center gap-1 bg-white border-slate-200 text-slate-700">
+                      <span className="text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider font-mono-data border flex items-center gap-1 bg-white border-slate-200 text-slate-700">
                         {address.addressType === "campus" && <GraduationCap className="w-3 h-3 text-indigo-600" />}
                         {address.addressType === "home" && <Home className="w-3 h-3 text-blue-600" />}
                         {address.addressType === "work" && <Building2 className="w-3 h-3 text-purple-600" />}
@@ -192,43 +217,68 @@ function OrderConfirmedContent() {
                     <p className="text-xs text-slate-600 leading-snug">
                       {formatAddress(address)}
                     </p>
-                    <p className="text-xs font-mono text-slate-500">
+                    <p className="text-xs font-mono-data text-slate-500">
                       Contact: <strong className="text-slate-800">+91 {address.phone}</strong>
                     </p>
                   </div>
                 </div>
 
-                <div className="text-left sm:text-right flex-shrink-0 text-xs font-mono text-slate-500 border-t sm:border-t-0 pt-2 sm:pt-0">
-                  <span className="text-[10px] uppercase tracking-wider text-slate-400 block font-sans font-semibold">Logistics Partner</span>
-                  <span className="font-bold text-slate-800">Delhivery / BlueDart</span>
-                  <span className="text-[10px] text-emerald-700 block font-sans">Air Expedited</span>
+                <div className="text-left sm:text-right flex-shrink-0 text-xs font-mono-data text-slate-500 border-t sm:border-t-0 pt-2 sm:pt-0">
+                  <span className="text-[10px] uppercase tracking-wider text-slate-400 block font-sans font-semibold">Logistics Carrier</span>
+                  <span className="font-bold text-slate-800">BlueDart Express</span>
+                  <span className="text-[10px] text-emerald-700 block font-sans">Priority Student Air</span>
                 </div>
               </div>
             </div>
 
+            {/* Kharridlo Agent Activity Timeline */}
+            <AgentActivityTimeline
+              currentState="ORDER_CONFIRMED"
+              defaultExpanded={true}
+            />
 
-            {/* Line Items Sample */}
+            {/* Line Items Sample / Actual Cart */}
             <div className="border border-slate-200 rounded-xl p-4">
               <span className="text-[10px] font-mono-data uppercase tracking-wider text-slate-400 font-bold block mb-3">
                 Authorized Hardware
               </span>
-              <div className="flex items-center justify-between py-2 border-b border-slate-100 text-xs">
-                <div>
-                  <h4 className="font-bold text-navy-900">TechNova Pro 15.6&quot; Workstation</h4>
-                  <span className="text-slate-500 text-[11px]">Qty: 1 • Tier 2 University Discount Applied</span>
-                </div>
-                <div className="text-right font-display font-bold text-sm text-navy-900">
-                  ₹54,999
-                </div>
-              </div>
 
-              <div className="pt-3 flex items-center justify-between text-xs font-mono-data font-bold text-navy-900">
-                <span>Total Settled (Paise: 5,499,900)</span>
-                <span className="text-base font-display">₹54,999</span>
+              {confirmedItems.length > 0 ? (
+                <div className="divide-y divide-slate-100">
+                  {confirmedItems.map((item, idx) => {
+                    const price = item.price_paise ? item.price_paise / 100 : (item.price_inr || 0);
+                    return (
+                      <div key={idx} className="flex items-center justify-between py-2 text-xs">
+                        <div>
+                          <h4 className="font-bold text-navy-900">{item.name || item.title}</h4>
+                          <span className="text-slate-500 text-[11px]">Qty: {item.quantity || 1} • {item.brand || "Verified"}</span>
+                        </div>
+                        <div className="text-right font-display font-bold text-sm text-navy-900">
+                          ₹{(price * (item.quantity || 1)).toLocaleString("en-IN")}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="flex items-center justify-between py-2 border-b border-slate-100 text-xs">
+                  <div>
+                    <h4 className="font-bold text-navy-900">TechNova Pro 15.6&quot; Workstation</h4>
+                    <span className="text-slate-500 text-[11px]">Qty: 1 • Tier 2 University Discount Applied</span>
+                  </div>
+                  <div className="text-right font-display font-bold text-sm text-navy-900">
+                    ₹54,999
+                  </div>
+                </div>
+              )}
+
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-mono-data font-bold text-navy-900">
+                <span>Total Settled (Razorpay Test Mode)</span>
+                <span className="text-base font-display">₹{totalAmountInr.toLocaleString("en-IN")}</span>
               </div>
             </div>
 
-            {/* Simulated Digital Barcode (Stitch styling) */}
+            {/* Simulated Digital Barcode */}
             <div className="p-4 rounded-xl bg-slate-900 text-center text-white space-y-2">
               <div className="font-mono text-xl tracking-[0.3em] font-light text-slate-300 select-none py-1">
                 ||| | |||| || ||| |||| | || ||||| | |||
@@ -245,7 +295,7 @@ function OrderConfirmedContent() {
                 className="inline-flex items-center gap-1.5 text-xs font-bold text-ai-violet hover:underline py-1"
               >
                 <Terminal className="h-4 w-4" />
-                <span>{showProofDrawer ? "Hide Verification Proof" : "View System Verification Proof"}</span>
+                <span>{showProofDrawer ? "Hide Cryptographic Proof" : "View Cryptographic Verification Proof"}</span>
               </button>
 
               <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -254,7 +304,7 @@ function OrderConfirmedContent() {
                   className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-navy-900 text-xs font-semibold hover:bg-slate-50 transition-colors"
                 >
                   <FileText className="h-3.5 w-3.5" />
-                  <span>Audit Trail</span>
+                  <span>Audit Ledger</span>
                 </Link>
 
                 <Link
@@ -267,7 +317,7 @@ function OrderConfirmedContent() {
               </div>
             </div>
 
-            {/* Verification Proof Drawer (Stitch: successful_order_system_verification) */}
+            {/* Verification Proof Drawer */}
             {showProofDrawer && (
               <div className="p-5 rounded-2xl bg-slate-950 text-slate-300 border border-slate-800 font-mono-data text-xs space-y-3 animate-in fade-in">
                 <div className="flex items-center justify-between pb-2 border-b border-slate-800">
@@ -288,7 +338,7 @@ function OrderConfirmedContent() {
                   </div>
                   <div>
                     <span className="text-slate-500">Policy Evaluation: </span>
-                    <span className="text-growth-emerald">ALLOW (Tier 2 Threshold ₹25,000 / Authorized)</span>
+                    <span className="text-growth-emerald">ALLOW (Tier 2 Threshold Verified)</span>
                   </div>
                   <div>
                     <span className="text-slate-500">Inventory Status: </span>

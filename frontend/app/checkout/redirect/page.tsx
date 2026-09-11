@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ShieldCheck, Lock, RefreshCw, CheckCircle2, ArrowRight, ExternalLink } from "lucide-react";
+import { ShieldCheck, Lock, RefreshCw, CheckCircle2, ArrowRight, ExternalLink, CreditCard } from "lucide-react";
 import BuyerNavbar from "@/components/BuyerNavbar";
 import BuyerFooter from "@/components/BuyerFooter";
 import Logo from "@/components/Logo";
@@ -34,17 +34,17 @@ export default function SecureCheckoutTransitionPage() {
           // Redirect to Cart page with active Razorpay checkout trigger
           setTimeout(() => {
             router.push(`/cart?auto_pay=1&order_id=${encodeURIComponent(data.razorpay_order_id || "")}`);
-          }, 1500);
+          }, 1200);
         } else {
           // Fallback to cart
           setTimeout(() => {
             router.push("/cart");
-          }, 2000);
+          }, 1800);
         }
       } catch {
         setTimeout(() => {
           router.push("/cart");
-        }, 2000);
+        }, 1800);
       }
     };
 
@@ -56,53 +56,57 @@ export default function SecureCheckoutTransitionPage() {
       <BuyerNavbar />
 
       <main className="flex-1 flex items-center justify-center p-6">
-        {/* Secure Checkout Transition Card (Stitch: secure_checkout_transition) */}
         <div className="w-full max-w-lg rounded-3xl border border-slate-800 bg-navy-900 p-8 sm:p-10 text-white shadow-2xl relative overflow-hidden">
-          {/* Subtle Ambient Glow */}
+          {/* Ambient Glow */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-ai-violet/20 rounded-full blur-3xl pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-growth-emerald/10 rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative z-10 text-center">
-            {/* Brand Logo */}
             <div className="flex justify-center mb-6">
               <Logo variant="compact" theme="dark" size="sm" asLink={false} />
             </div>
 
-            {/* Animated Shield Container */}
             <div className="mx-auto mb-6 h-20 w-20 rounded-2xl bg-slate-800/80 border border-slate-700/60 flex items-center justify-center text-growth-emerald shadow-inner relative">
-              <ShieldCheck className="h-10 w-10 animate-pulse" />
+              <CreditCard className="h-10 w-10 text-growth-light" />
               <div className="absolute inset-0 rounded-2xl border-2 border-growth-emerald/30 animate-ping opacity-25" />
             </div>
 
             <span className="text-[10px] font-mono-data uppercase tracking-widest text-emerald-400 font-bold block mb-2">
-              Encrypted Handoff
+              Ready to Pay
             </span>
 
             <h1 className="font-display font-extrabold text-2xl sm:text-3xl text-white tracking-tight">
-              Secure Checkout Transition
+              Razorpay Gateway Handoff
             </h1>
 
             <p className="text-xs sm:text-sm text-slate-400 mt-2 max-w-sm mx-auto leading-relaxed">
-              Transitioning to Razorpay Gateway under verified buyer authorization. Zero AI payment authority.
+              Autonomous order verified by deterministic policy checks. Opening secure Razorpay Test Mode checkout.
             </p>
 
-            {/* Transition Progress Indicators */}
-            <div className="my-8 rounded-xl bg-slate-950/60 border border-slate-800 p-4 text-left font-mono-data text-xs space-y-2.5">
+            {/* Transition Checkpoints */}
+            <div className="my-6 rounded-xl bg-slate-950/60 border border-slate-800 p-4 text-left font-mono-data text-xs space-y-2.5">
               <div className="flex items-center justify-between text-slate-300">
                 <span className="flex items-center gap-2">
                   <CheckCircle2 className="h-3.5 w-3.5 text-growth-emerald" />
-                  <span>Deterministic Policy Check</span>
-                </span>
-                <span className="text-growth-emerald text-[10px] font-bold">PASSED</span>
-              </div>
-              <div className="flex items-center justify-between text-slate-300">
-                <span className="flex items-center gap-2">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-growth-emerald" />
-                  <span>Buyer Authorization Signature</span>
+                  <span>Cart Validated</span>
                 </span>
                 <span className="text-growth-emerald text-[10px] font-bold">VERIFIED</span>
               </div>
               <div className="flex items-center justify-between text-slate-300">
+                <span className="flex items-center gap-2">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-growth-emerald" />
+                  <span>Spending Policy Checked</span>
+                </span>
+                <span className="text-growth-emerald text-[10px] font-bold">ALLOWED</span>
+              </div>
+              <div className="flex items-center justify-between text-slate-300">
+                <span className="flex items-center gap-2">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-growth-emerald" />
+                  <span>Buyer Authorization Received</span>
+                </span>
+                <span className="text-growth-emerald text-[10px] font-bold">CONFIRMED</span>
+              </div>
+              <div className="flex items-center justify-between text-slate-300 pt-1 border-t border-slate-800">
                 <span className="flex items-center gap-2">
                   {status === "READY" ? (
                     <CheckCircle2 className="h-3.5 w-3.5 text-growth-emerald" />
@@ -111,17 +115,25 @@ export default function SecureCheckoutTransitionPage() {
                   )}
                   <span>Razorpay Order Creation</span>
                 </span>
-                <span className={status === "READY" ? "text-growth-emerald font-bold" : "text-ai-glow"}>
-                  {status === "READY" ? "CREATED" : "IN PROGRESS"}
+                <span className={status === "READY" ? "text-growth-emerald font-bold" : "text-ai-glow font-bold"}>
+                  {status === "READY" ? "READY" : "PREPARING"}
                 </span>
               </div>
             </div>
 
-            {/* Return Link */}
-            <div className="pt-2">
+            {/* Manual Action Button */}
+            <div className="space-y-3">
+              <button
+                onClick={() => router.push(`/cart?auto_pay=1&order_id=${encodeURIComponent(orderData?.razorpay_order_id || "")}`)}
+                className="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-display font-bold text-xs uppercase tracking-wider transition-all shadow-md flex items-center justify-center gap-2"
+              >
+                <span>Continue to Razorpay</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+
               <Link
                 href="/cart"
-                className="text-xs text-slate-400 hover:text-white transition-colors"
+                className="block text-center text-xs text-slate-400 hover:text-white transition-colors"
               >
                 Return to Cart
               </Link>
