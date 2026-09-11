@@ -13,11 +13,19 @@ import {
   Lock, 
   Package, 
   Terminal,
-  ExternalLink 
+  ExternalLink,
+  MapPin,
+  Truck,
+  Calendar,
+  GraduationCap,
+  Home,
+  Building2,
+  Clock
 } from "lucide-react";
 import BuyerNavbar from "@/components/BuyerNavbar";
 import BuyerFooter from "@/components/BuyerFooter";
 import Logo from "@/components/Logo";
+import { DeliveryAddress, getDefaultDeliveryAddress, formatAddress } from "@/lib/address";
 
 function OrderConfirmedContent() {
   const searchParams = useSearchParams();
@@ -26,11 +34,33 @@ function OrderConfirmedContent() {
   const [showProofDrawer, setShowProofDrawer] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  const [address] = useState<DeliveryAddress>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = sessionStorage.getItem("kharridlo_confirmed_delivery_address") || localStorage.getItem("kharridlo_delivery_address");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed && parsed.fullName) return parsed;
+        }
+      } catch {}
+    }
+    return getDefaultDeliveryAddress();
+  });
+
   const handleCopy = () => {
     navigator.clipboard?.writeText(paymentId);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  // Compute estimated delivery date (3 days from now)
+  const deliveryDate = new Date();
+  deliveryDate.setDate(deliveryDate.getDate() + 3);
+  const formattedDeliveryDate = deliveryDate.toLocaleDateString("en-IN", {
+    weekday: "long",
+    day: "numeric",
+    month: "short",
+  });
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
@@ -86,6 +116,96 @@ function OrderConfirmedContent() {
                 </span>
               </div>
             </div>
+
+            {/* Amazon & Flipkart Style Delivery Details & Dispatch Tracker */}
+            <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-5 shadow-xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-xl bg-indigo-50 text-indigo-700">
+                    <Truck className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-display font-bold text-sm text-navy-900">
+                      Delivery & Tracking Status
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Estimated Arrival: <strong className="text-emerald-700">{formattedDeliveryDate}</strong>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-[11px] font-bold border border-emerald-200 self-start sm:self-auto">
+                  <Clock className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>On Schedule • Free Student Express</span>
+                </div>
+              </div>
+
+              {/* 4-Stage Progress Tracker */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                <div className="flex flex-col items-center space-y-1.5">
+                  <div className="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+                    <CheckCircle2 className="w-4 h-4" />
+                  </div>
+                  <span className="text-xs font-bold text-slate-900">Order Placed</span>
+                  <span className="text-[10px] font-mono text-slate-400">Confirmed</span>
+                </div>
+
+                <div className="flex flex-col items-center space-y-1.5">
+                  <div className="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+                    <CheckCircle2 className="w-4 h-4" />
+                  </div>
+                  <span className="text-xs font-bold text-slate-900">Packed</span>
+                  <span className="text-[10px] font-mono text-slate-400">Verified Stock</span>
+                </div>
+
+                <div className="flex flex-col items-center space-y-1.5">
+                  <div className="w-7 h-7 rounded-full bg-indigo-600 text-white flex items-center justify-center shadow-xs ring-4 ring-indigo-100 animate-pulse">
+                    <Truck className="w-4 h-4" />
+                  </div>
+                  <span className="text-xs font-bold text-indigo-700">In Transit</span>
+                  <span className="text-[10px] font-mono text-indigo-600">BlueDart Express</span>
+                </div>
+
+                <div className="flex flex-col items-center space-y-1.5 opacity-40">
+                  <div className="w-7 h-7 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center">
+                    <Package className="w-4 h-4" />
+                  </div>
+                  <span className="text-xs font-bold text-slate-700">Delivered</span>
+                  <span className="text-[10px] font-mono text-slate-400">{formattedDeliveryDate.split(',')[0]}</span>
+                </div>
+              </div>
+
+              {/* Delivery Address Card */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <MapPin className="w-4 h-4 text-indigo-600 flex-shrink-0 mt-0.5" />
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-xs text-navy-900">Shipping to: {address.fullName}</span>
+                      <span className="text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider font-mono border flex items-center gap-1 bg-white border-slate-200 text-slate-700">
+                        {address.addressType === "campus" && <GraduationCap className="w-3 h-3 text-indigo-600" />}
+                        {address.addressType === "home" && <Home className="w-3 h-3 text-blue-600" />}
+                        {address.addressType === "work" && <Building2 className="w-3 h-3 text-purple-600" />}
+                        {address.addressType}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-600 leading-snug">
+                      {formatAddress(address)}
+                    </p>
+                    <p className="text-xs font-mono text-slate-500">
+                      Contact: <strong className="text-slate-800">+91 {address.phone}</strong>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="text-left sm:text-right flex-shrink-0 text-xs font-mono text-slate-500 border-t sm:border-t-0 pt-2 sm:pt-0">
+                  <span className="text-[10px] uppercase tracking-wider text-slate-400 block font-sans font-semibold">Logistics Partner</span>
+                  <span className="font-bold text-slate-800">Delhivery / BlueDart</span>
+                  <span className="text-[10px] text-emerald-700 block font-sans">Air Expedited</span>
+                </div>
+              </div>
+            </div>
+
 
             {/* Line Items Sample */}
             <div className="border border-slate-200 rounded-xl p-4">

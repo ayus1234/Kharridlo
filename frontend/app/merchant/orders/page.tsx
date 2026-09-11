@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { FileText, Search, RefreshCw, ArrowRight, ShieldCheck, CheckCircle2, Lock, Terminal } from "lucide-react";
+import { FileText, Search, RefreshCw, ArrowRight, ShieldCheck, CheckCircle2, Lock, Terminal, MapPin } from "lucide-react";
 import MerchantSidebar from "@/components/MerchantSidebar";
 import MerchantHeader from "@/components/MerchantHeader";
 import StatusPip from "@/components/StatusPip";
@@ -39,6 +39,8 @@ export default function OrdersAuditLogsPage() {
       buyerSession: "sess_99a803_1725453",
       amountInr: 94500,
       itemSummary: "TechNova Pro 15 Workstation + Audio Bundle",
+      destination: "IIT Bombay Campus, Mumbai (400076)",
+      recipient: "Ayush Sharma",
       status: "SETTLED",
       time: "10 mins ago",
     },
@@ -47,6 +49,8 @@ export default function OrdersAuditLogsPage() {
       buyerSession: "sess_a8f921_1725450",
       amountInr: 45999,
       itemSummary: "TechNova CodeCraft Mechanical Keyboard",
+      destination: "Bellandur, Bengaluru (560103)",
+      recipient: "Rohan Patel",
       status: "SETTLED",
       time: "24 mins ago",
     },
@@ -55,6 +59,8 @@ export default function OrdersAuditLogsPage() {
       buyerSession: "sess_c4b102_1725451",
       amountInr: 8498,
       itemSummary: "Dual-Display 4K USB-C Hub",
+      destination: "IIT Delhi Campus, Hauz Khas (110016)",
+      recipient: "Priya Sundaram",
       status: "SETTLED",
       time: "48 mins ago",
     },
@@ -104,6 +110,10 @@ export default function OrdersAuditLogsPage() {
                     <p className="text-slate-700 font-sans font-medium text-[11px]">
                       {o.itemSummary}
                     </p>
+                    <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-sans">
+                      <MapPin className="h-3 w-3 text-indigo-600 flex-shrink-0" />
+                      <span>Deliver to: <strong>{o.recipient}</strong> • {o.destination}</span>
+                    </div>
                     <div className="flex items-center justify-between pt-2 border-t border-slate-200/60 text-slate-500 text-[11px]">
                       <span>Amount: <strong className="text-navy-900">₹{o.amountInr.toLocaleString("en-IN")}</strong></span>
                       <span>{o.time}</span>
