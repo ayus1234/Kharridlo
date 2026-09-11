@@ -27,45 +27,11 @@ import BuyerFooter from "@/components/BuyerFooter";
 import ProductImage from "@/components/ProductImage";
 import BentoCard from "@/components/BentoCard";
 import Logo from "@/components/Logo";
-import { getFilteredCatalog } from "@/lib/curated-catalog";
+import { FEATURED_PREVIEW_PRODUCTS, FeaturedProduct } from "@/lib/featured-preview";
 
 const AIAssistantDrawer = dynamic(() => import("@/components/AIAssistantDrawer"), { 
   ssr: false,
   loading: () => null 
-});
-
-interface Product {
-  id: string;
-  sku: string;
-  name: string;
-  brand: string;
-  category: string;
-  price_paise: number;
-  price_inr: number;
-  mrp_inr?: number;
-  currency: string;
-  description: string;
-  availability_status: "in_stock" | "low_stock" | "out_of_stock";
-  image_url?: string;
-  provider?: string;
-  source_rating?: number;
-}
-
-const mapCuratedToProduct = (c: any): Product => ({
-  id: c.id,
-  sku: c.provider_product_id,
-  name: c.title,
-  brand: c.brand,
-  category: c.category,
-  price_paise: c.source_price_minor || (c.source_price_inr * 100),
-  price_inr: c.source_price_inr,
-  mrp_inr: c.source_mrp_inr,
-  currency: c.source_currency || "INR",
-  description: c.normalized_description || c.original_description || "",
-  availability_status: (c.availability_status as any) || "in_stock",
-  image_url: c.primary_image_url,
-  provider: c.provider,
-  source_rating: c.source_rating,
 });
 
 const INTENT_PILLS = [
@@ -79,11 +45,8 @@ const INTENT_PILLS = [
 export default function HomePage() {
   const router = useRouter();
   const [prompt, setPrompt] = useState("");
-  // Instant Initial Paint: Initialize with curated products in 0ms
-  const [featuredProducts, setFeaturedProducts] = useState<Product[]>(() => {
-    const curated = getFilteredCatalog({ pageSize: 6 });
-    return curated.items.map(mapCuratedToProduct);
-  });
+  // Instant Initial Paint: Initialize with lightweight 2KB preview products (0ms, zero-delay)
+  const [featuredProducts, setFeaturedProducts] = useState<FeaturedProduct[]>(FEATURED_PREVIEW_PRODUCTS);
   const [loading, setLoading] = useState(false);
   const [backendOnline, setBackendOnline] = useState(true);
 
@@ -91,39 +54,45 @@ export default function HomePage() {
 
   useEffect(() => {
     let isMounted = true;
+    let timeoutId: any;
 
-    // Non-blocking background revalidation with fast timeout
-    const revalidateCatalog = async () => {
-      try {
-        const isHttpsLocalhost = typeof window !== "undefined" &&
-          window.location.protocol === "https:" &&
-          apiBaseUrl.startsWith("http://localhost");
+    // Defer non-blocking background revalidation until page is fully painted and idle
+    const scheduleRevalidation = () => {
+      timeoutId = setTimeout(async () => {
+        try {
+          const isHttpsLocalhost = typeof window !== "undefined" &&
+            window.location.protocol === "https:" &&
+            apiBaseUrl.startsWith("http://localhost");
 
-        if (isHttpsLocalhost) {
-          const curated = getFilteredCatalog({ pageSize: 6 });
-          if (isMounted) setFeaturedProducts(curated.items.map(mapCuratedToProduct));
-          return;
-        }
+          if (isHttpsLocalhost) return;
 
-        const res = await fetch(`${apiBaseUrl}/api/v1/products?limit=6`, {
-          cache: "no-store",
-          signal: AbortSignal.timeout(2000),
-        }).catch(() => null);
+          const res = await fetch(`${apiBaseUrl}/api/v1/products?limit=6`, {
+            cache: "no-store",
+            signal: AbortSignal.timeout(2500),
+          }).catch(() => null);
 
-        if (res && res.ok && isMounted) {
-          const data = await res.json();
-          if (data.items && data.items.length > 0) {
-            setFeaturedProducts(data.items);
-            return;
+          if (res && res.ok && isMounted) {
+            const data = await res.json();
+            if (data.items && data.items.length > 0) {
+              setFeaturedProducts(data.items);
+            }
           }
+        } catch {
+          if (isMounted) setBackendOnline(false);
         }
-      } catch {
-        if (isMounted) setBackendOnline(false);
-      }
+      }, 3000);
     };
 
-    revalidateCatalog();
-    return () => { isMounted = false; };
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+      (window as any).requestIdleCallback(scheduleRevalidation);
+    } else {
+      scheduleRevalidation();
+    }
+
+    return () => {
+      isMounted = false;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [apiBaseUrl]);
 
   const handleSearch = (e: React.FormEvent) => {

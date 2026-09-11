@@ -44,9 +44,9 @@ const config: Config = {
         },
       },
       fontFamily: {
-        display: ['"Hanken Grotesk"', "sans-serif"],
-        sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
-        mono: ['"Geist Mono"', "monospace"],
+        display: ["var(--font-hanken)", '"Hanken Grotesk"', "sans-serif"],
+        sans: ["var(--font-inter)", "Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "sans-serif"],
+        mono: ["var(--font-mono)", '"Geist Mono"', "ui-monospace", "monospace"],
       },
     },
   },

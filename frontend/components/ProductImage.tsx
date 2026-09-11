@@ -215,9 +215,9 @@ export default function ProductImage({
   }, [currentSrc, resolvedPath]);
 
   return (
-    <div className={`relative overflow-hidden bg-slate-50 flex items-center justify-center ${className}`}>
+    <div className={`relative overflow-hidden bg-slate-100 flex items-center justify-center aspect-[4/3] w-full ${className}`}>
       {!isLoaded && !hasFailed && (
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-100 via-slate-200/50 to-slate-100 animate-pulse" />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-100 via-slate-200/40 to-slate-100 animate-pulse" />
       )}
       {hasFailed ? (
         <div className="flex flex-col items-center justify-center p-3 text-center text-slate-400">
@@ -237,8 +237,8 @@ export default function ProductImage({
           unoptimized={true}
           onLoad={() => setIsLoaded(true)}
           onError={handleError}
-          className={`h-full w-full object-cover transition-all duration-300 group-hover:scale-105 ${
-            isLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95"
+          className={`h-full w-full object-cover transition-opacity duration-300 group-hover:scale-105 ${
+            isLoaded ? "opacity-100" : "opacity-0"
           }`}
         />
       )}

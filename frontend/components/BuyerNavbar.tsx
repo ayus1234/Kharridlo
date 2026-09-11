@@ -41,38 +41,41 @@ export default function BuyerNavbar() {
     const fetchCount = async () => {
       try {
         const sid = getOrCreateSessionId();
+        
+        // 1. Fast local verification first (cookie-backed, runs in <5ms, zero cold-start)
+        const localRes = await fetch(`/api/cart/${sid}`, {
+          cache: "no-store",
+          signal: AbortSignal.timeout(800),
+        }).catch(() => null);
+
+        if (localRes && localRes.ok && isMounted) {
+          const data = await localRes.json();
+          const count = Number(data.total_items_count) || 0;
+          setCartCount(count);
+          if (typeof window !== "undefined") {
+            sessionStorage.setItem("kharridlo_cart_count", String(count));
+          }
+          return;
+        }
+
+        // 2. Fallback to external backend only if local route is unavailable
         const isHttpsLocalhost = typeof window !== "undefined" &&
           window.location.protocol === "https:" &&
           apiBaseUrl.startsWith("http://localhost");
 
-        const targetUrl = isHttpsLocalhost ? `/api/cart/${sid}` : `${apiBaseUrl}/api/v1/cart/${sid}`;
-
-        // Single background fetch with fast 1500ms timeout
-        const res = await fetch(targetUrl, {
-          cache: "no-store",
-          signal: AbortSignal.timeout(1500),
-        }).catch(() => null);
-
-        if (res && res.ok && isMounted) {
-          const data = await res.json();
-          const count = Number(data.total_items_count) || 0;
-          setCartCount(count);
-          sessionStorage.setItem("kharridlo_cart_count", String(count));
-          return;
-        }
-
-        // If external failed or timeout, check internal session cart once
         if (!isHttpsLocalhost && isMounted) {
-          const localRes = await fetch(`/api/cart/${sid}`, {
+          const extRes = await fetch(`${apiBaseUrl}/api/v1/cart/${sid}`, {
             cache: "no-store",
             signal: AbortSignal.timeout(1200),
           }).catch(() => null);
 
-          if (localRes && localRes.ok && isMounted) {
-            const fbData = await localRes.json();
-            const count = Number(fbData.total_items_count) || 0;
+          if (extRes && extRes.ok && isMounted) {
+            const data = await extRes.json();
+            const count = Number(data.total_items_count) || 0;
             setCartCount(count);
-            sessionStorage.setItem("kharridlo_cart_count", String(count));
+            if (typeof window !== "undefined") {
+              sessionStorage.setItem("kharridlo_cart_count", String(count));
+            }
           }
         }
       } catch {
@@ -80,11 +83,19 @@ export default function BuyerNavbar() {
       }
     };
 
-    fetchCount();
+    // On initial mount, we already have the synchronous sessionStorage value.
+    // Sync non-blockingly when cart changes or after mount.
     const handleCartUpdate = () => fetchCount();
     window.addEventListener("cart-updated", handleCartUpdate);
+
+    // Run one background sync after page is interactive
+    const timer = setTimeout(() => {
+      fetchCount();
+    }, 1000);
+
     return () => {
       isMounted = false;
+      clearTimeout(timer);
       window.removeEventListener("cart-updated", handleCartUpdate);
     };
   }, [pathname, apiBaseUrl]);
