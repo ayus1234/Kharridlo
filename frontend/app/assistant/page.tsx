@@ -41,6 +41,8 @@ interface ChatMessage {
   recommendedProductIds?: string[];
   recommendedProducts?: Product[];
   requirements?: ShoppingRequirements | null;
+  clarificationOptions?: { label: string; prompt: string }[];
+  budgetGapNotice?: string | null;
 }
 
 interface Product {
@@ -62,6 +64,9 @@ interface Product {
   matchScore?: number;
   matchReason?: string;
   whyRecommended?: string[];
+  tradeoffType?: string;
+  tradeoffSummary?: string;
+  reasons?: string[];
 }
 
 const STARTER_PROMPTS = [
@@ -77,7 +82,12 @@ function normalizeProduct(raw: any, index = 0): Product | null {
   if (!id || !name) return null;
   const priceInr = Number(raw.price_inr ?? raw.source_price_inr ?? (raw.price_paise ?? raw.source_price_minor ?? 0) / 100);
   
-  const matchTier: MatchTier = index === 0 ? "Strong Match" : index < 3 ? "Good Match" : "Alternative";
+  const matchTier: MatchTier =
+    raw.tradeoffType === "BEST OVERALL" ? "Strong Match" :
+    raw.tradeoffType === "BEST VALUE" ? "Good Match" :
+    raw.tradeoffType === "BEST PERFORMANCE" ? "Strong Match" :
+    raw.tradeoffType === "BUDGET ALTERNATIVE" ? "Alternative" :
+    index === 0 ? "Strong Match" : index < 3 ? "Good Match" : "Alternative";
 
   return {
     id: String(id),
@@ -96,7 +106,10 @@ function normalizeProduct(raw: any, index = 0): Product | null {
     can_authoritative_checkout: raw.can_authoritative_checkout ?? raw.mapping?.can_authoritative_checkout,
     matchTier,
     matchScore: Number(raw.matchScore ?? raw.match_score ?? Math.max(72, 98 - index * 6)),
-    matchReason: raw.matchReason ?? raw.match_reason,
+    matchReason: raw.matchReason ?? raw.match_reason ?? raw.tradeoffSummary,
+    tradeoffType: raw.tradeoffType,
+    tradeoffSummary: raw.tradeoffSummary,
+    reasons: Array.isArray(raw.reasons) ? raw.reasons : undefined,
   };
 }
 
@@ -104,6 +117,12 @@ function extractRecommendedProducts(data: any, toolCalls: { name: string; args: 
   const candidates = [
     ...(Array.isArray(data?.recommended_products) ? data.recommended_products : []),
     ...(Array.isArray(data?.products) ? data.products : []),
+    ...(data?.tradeoff_groups ? [
+      data.tradeoff_groups.bestOverall,
+      data.tradeoff_groups.bestValue,
+      data.tradeoff_groups.bestPerformance,
+      data.tradeoff_groups.budgetAlternative,
+    ].filter(Boolean) : []),
     ...toolCalls.flatMap((call) => {
       const result = call.result ?? {};
       return Array.isArray(result.products) ? result.products : Array.isArray(result.items) ? result.items : [];
@@ -200,7 +219,12 @@ function AssistantContent() {
     // Extract structured requirements
     const parsedReqs = parseRequirementsFromPrompt(promptToSend.trim());
     if (parsedReqs) {
-      setActiveRequirements(parsedReqs);
+      setActiveRequirements((prev) => ({
+        ...(prev || {}),
+        ...parsedReqs,
+        exclusions: [...(prev?.exclusions || []), ...(parsedReqs.exclusions || [])],
+        useCases: Array.from(new Set([...(prev?.useCases || []), ...(parsedReqs.useCases || [])])),
+      }));
     }
 
     const userMsg: ChatMessage = {
@@ -208,7 +232,7 @@ function AssistantContent() {
       role: "user",
       content: promptToSend.trim(),
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      requirements: parsedReqs,
+      requirements: parsedReqs || activeRequirements,
     };
 
     setMessages((prev) => [...prev, userMsg]);
@@ -222,6 +246,7 @@ function AssistantContent() {
         body: JSON.stringify({
           session_id: currentSid || sessionId,
           message: promptToSend.trim(),
+          previous_requirements: activeRequirements,
         }),
       });
 
@@ -230,6 +255,9 @@ function AssistantContent() {
       }
 
       const data = await res.json();
+      if (data.requirements) {
+        setActiveRequirements(data.requirements);
+      }
       const toolCalls = Array.isArray(data.tool_calls)
         ? data.tool_calls.map((call: any) => ({
             name: call.name ?? call.tool_name ?? "commerce_tool",
@@ -245,6 +273,8 @@ function AssistantContent() {
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         toolCalls,
         recommendedProducts,
+        clarificationOptions: Array.isArray(data.clarification_options) ? data.clarification_options : undefined,
+        budgetGapNotice: data.budget_gap_notice || null,
       };
 
       setMessages((prev) => [...prev, modelMsg]);
@@ -357,6 +387,7 @@ function AssistantContent() {
               <RequirementSummaryCard
                 requirements={activeRequirements}
                 onUpdateRequirement={(updated) => setActiveRequirements(updated)}
+                onQuickCorrection={(prompt) => sendMessage(prompt, sessionId)}
               />
             </div>
           )}
@@ -399,7 +430,41 @@ function AssistantContent() {
                         </div>
                       )}
 
+                      {/* Budget Gap Integrity Alert */}
+                      {m.budgetGapNotice && (
+                        <div className="mb-3 rounded-xl bg-amber-50/95 border border-amber-200/90 p-3 text-xs text-amber-900 flex items-start gap-2.5 shadow-2xs">
+                          <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                          <div className="space-y-1">
+                            <div className="font-semibold text-amber-800 flex items-center gap-1.5">
+                              <span>Budget Integrity Notice</span>
+                            </div>
+                            <p className="text-[11px] leading-relaxed text-amber-900/90">{m.budgetGapNotice}</p>
+                          </div>
+                        </div>
+                      )}
+
                       <p className="whitespace-pre-wrap">{m.content}</p>
+
+                      {/* Single-step Clarification Quick Selection */}
+                      {m.clarificationOptions && m.clarificationOptions.length > 0 && (
+                        <div className="mt-3 pt-2.5 border-t border-slate-200/70 space-y-1.5">
+                          <span className="text-[10px] font-mono-data uppercase font-bold text-slate-400 block">
+                            Quick Selection
+                          </span>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                            {m.clarificationOptions.map((opt, optIdx) => (
+                              <button
+                                key={optIdx}
+                                onClick={() => sendMessage(opt.prompt, sessionId)}
+                                className="text-left px-3 py-2 rounded-xl bg-white border border-indigo-100 hover:border-ai-violet hover:bg-purple-50/40 text-xs font-semibold text-navy-900 transition-all flex items-center justify-between group shadow-2xs"
+                              >
+                                <span className="truncate group-hover:text-ai-violet">{opt.label}</span>
+                                <ArrowRight className="h-3 w-3 text-slate-400 group-hover:text-ai-violet transition-colors shrink-0 ml-1" />
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
 
                       {/* Tool Call Chips */}
                       {m.toolCalls && m.toolCalls.length > 0 && (
@@ -421,6 +486,17 @@ function AssistantContent() {
                         <div className="mt-3 grid gap-2.5 border-t border-slate-200/70 pt-3 sm:grid-cols-2">
                           {m.recommendedProducts.map((product) => {
                             const isAdded = addedItemIds.has(product.id);
+                            const badgeStyle =
+                              product.tradeoffType === "BEST OVERALL"
+                                ? "bg-purple-50 text-ai-violet border-purple-200"
+                                : product.tradeoffType === "BEST VALUE"
+                                ? "bg-emerald-50 text-growth-dark border-emerald-200"
+                                : product.tradeoffType === "BEST PERFORMANCE"
+                                ? "bg-indigo-50 text-indigo-700 border-indigo-200"
+                                : product.tradeoffType === "BUDGET ALTERNATIVE"
+                                ? "bg-amber-50 text-amber-700 border-amber-200"
+                                : "bg-emerald-50 text-growth-dark border-emerald-200";
+
                             return (
                               <div key={product.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white p-3 shadow-sm flex flex-col justify-between">
                                 <div>
@@ -428,9 +504,9 @@ function AssistantContent() {
                                     <span className="text-[9px] font-mono-data uppercase font-bold text-slate-400">
                                       {product.category}
                                     </span>
-                                    <span className="inline-flex items-center gap-0.5 text-[9px] font-mono-data font-bold px-1.5 py-0.5 rounded bg-emerald-50 text-growth-dark border border-emerald-200">
+                                    <span className={`inline-flex items-center gap-0.5 text-[9px] font-mono-data font-bold px-1.5 py-0.5 rounded border ${badgeStyle}`}>
                                       <Sparkles className="w-2 h-2 text-ai-violet" />
-                                      {product.matchTier || "Strong Match"}
+                                      {product.tradeoffType || product.matchTier || "Strong Match"}
                                     </span>
                                   </div>
 
@@ -459,6 +535,9 @@ function AssistantContent() {
                                     budgetInr={activeRequirements?.budgetInr}
                                     category={product.category}
                                     specs={product.specs}
+                                    tradeoffType={product.tradeoffType}
+                                    tradeoffSummary={product.tradeoffSummary}
+                                    reasons={product.reasons}
                                     compact
                                     className="mb-2.5"
                                   />
@@ -608,8 +687,14 @@ function AssistantContent() {
                         <span className="text-[9px] font-mono-data font-bold uppercase tracking-wider text-slate-500">
                           {p.category}
                         </span>
-                        <span className="text-[10px] font-mono-data font-bold text-growth-dark bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
-                          {p.matchTier || "Strong Match"}
+                        <span className={`text-[10px] font-mono-data font-bold px-1.5 py-0.5 rounded border ${
+                          p.tradeoffType === "BEST OVERALL" ? "bg-purple-50 text-ai-violet border-purple-200" :
+                          p.tradeoffType === "BEST VALUE" ? "bg-emerald-50 text-growth-dark border-emerald-200" :
+                          p.tradeoffType === "BEST PERFORMANCE" ? "bg-indigo-50 text-indigo-700 border-indigo-200" :
+                          p.tradeoffType === "BUDGET ALTERNATIVE" ? "bg-amber-50 text-amber-700 border-amber-200" :
+                          "bg-emerald-50 text-growth-dark border-emerald-200"
+                        }`}>
+                          {p.tradeoffType || p.matchTier || "Strong Match"}
                         </span>
                       </div>
                       <h3 className="font-display font-bold text-xs text-navy-900 line-clamp-1 group-hover:text-ai-violet transition-colors">
@@ -627,6 +712,9 @@ function AssistantContent() {
                     budgetInr={activeRequirements?.budgetInr}
                     category={p.category}
                     specs={p.specs}
+                    tradeoffType={p.tradeoffType}
+                    tradeoffSummary={p.tradeoffSummary}
+                    reasons={p.reasons}
                     compact
                     className="mt-2"
                   />

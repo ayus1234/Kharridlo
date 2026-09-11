@@ -19,6 +19,12 @@ interface AgentActivityTimelineProps {
 }
 
 const DEFAULT_EVENTS: Record<string, ActivityEvent[]> = {
+  DISCOVERY: [
+    { id: "e1", title: "Understood shopping requirements", detail: "Extracted category, use cases & hardware specifications", completed: true },
+    { id: "e2", title: "Applied budget constraint & negative exclusions", detail: "Filtered out excluded brands and price ceilings", completed: true },
+    { id: "e3", title: "Matched verified catalog hardware", detail: "Evaluated CPU, RAM, storage, battery & camera benchmarks", completed: true },
+    { id: "e4", title: "Ranked candidates & identified trade-offs", detail: "Segmented into Best Overall, Best Value, and Best Performance", completed: true },
+  ],
   ORDER_CONFIRMED: [
     { id: "e1", title: "Understood student requirements", detail: "Extracted course & hardware specifications", completed: true },
     { id: "e2", title: "Curated matching catalog items", detail: "Filtered verified engineering & developer hardware", completed: true },

@@ -361,25 +361,46 @@ class AgentService:
 
         # 4. Product Search & Discovery Intent
         max_paise = None
-        budget_match = re.search(r"under\s+(₹|rs\.?\s*)?(\d+)(k|000)?", lower_msg)
+        budget_match = re.search(r"(?:under|below|less than|above|max|budget)\s*(?:₹|rs\.?\s*)?(\d+)(k|lakh|000)?", lower_msg)
+        if not budget_match:
+            budget_match = re.search(r"(?:₹|rs\.?\s*)?(\d+)(k|lakh|000)?", lower_msg)
         if budget_match:
-            num = int(budget_match.group(2))
-            if budget_match.group(3) == "k":
+            num = int(budget_match.group(1))
+            unit = budget_match.group(2) or ""
+            if "lakh" in lower_msg or "lakh" in unit:
+                num = num * 100000 if num <= 10 else num
+            elif "k" in unit or ("k" in lower_msg and num < 1000):
                 num *= 1000
-            elif not budget_match.group(3) and num < 1000:
+            elif num < 1000:
                 num *= 1000
             max_paise = num * 100
 
         # Query keywords
         is_dev = any(k in lower_msg for k in ["develop", "code", "coding", "program"])
         query = "developer" if is_dev else ("laptop" if "laptop" in lower_msg else ("mouse" if "mouse" in lower_msg else ("phone" if "phone" in lower_msg else None)))
-        category = "laptop" if "laptop" in lower_msg else None
+        category = "laptop" if "laptop" in lower_msg else ("phone" if "phone" in lower_msg else None)
 
-        tool_args = {"query": query, "category": category, "max_price_paise": max_paise, "in_stock_only": True, "limit": 4}
+        tool_args = {"query": query, "category": category, "max_price_paise": max_paise, "in_stock_only": True, "limit": 6}
         tool_res = cls.execute_tool(context, "search_products", tool_args)
         tool_records.append(ToolCallRecord(tool_name="search_products", arguments=tool_args, result=tool_res))
 
         products = tool_res.get("products", [])
+
+        # Apply negative exclusions
+        if "apple" in lower_msg and any(neg in lower_msg for neg in ["no", "don't", "dont", "exclude", "not"]):
+            products = [
+                p for p in products
+                if "apple" not in p.get("brand", "").lower()
+                and "apple" not in p.get("name", "").lower()
+                and "macbook" not in p.get("name", "").lower()
+            ]
+        if "gaming" in lower_msg and any(neg in lower_msg for neg in ["no", "remove", "without", "exclude"]):
+            products = [
+                p for p in products
+                if "gaming" not in p.get("name", "").lower()
+                and "gaming" not in str(p.get("specs", "")).lower()
+            ]
+
         if products:
             top_pick = next((p for p in products if p["sku"] == "DK-LP-15"), products[0])
             clean_name = top_pick["name"].replace("<untrusted_catalog_data>", "").replace("</untrusted_catalog_data>", "")

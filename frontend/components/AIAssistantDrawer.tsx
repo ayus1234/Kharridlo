@@ -39,6 +39,9 @@ interface ProductRecommendation {
   brand: string;
   image_url?: string;
   specs?: Record<string, any>;
+  tradeoffType?: string;
+  tradeoffSummary?: string;
+  reasons?: string[];
 }
 
 interface Message {
@@ -50,6 +53,9 @@ interface Message {
   cart?: any;
   recommendedProducts?: ProductRecommendation[];
   requirements?: ShoppingRequirements | null;
+  clarification_question?: string;
+  clarification_options?: string[];
+  budget_gap_notice?: string | null;
   execution_mode?: string;
   model?: string;
   timestamp: string;
@@ -60,11 +66,11 @@ interface AIAssistantDrawerProps {
 }
 
 const QUICK_PROMPTS = [
-  "Find me a coding laptop under ₹70k",
+  "Find me a coding laptop under ₹80k",
+  "Phone under ₹40k with good camera",
+  "Show me something cheaper",
   "Noise-cancelling headphones for study",
-  "Mechanical keyboard for dorm",
   "Compare developer monitors",
-  "What is in my cart?",
 ];
 
 export default function AIAssistantDrawer({ onCartUpdated }: AIAssistantDrawerProps) {
@@ -75,7 +81,7 @@ export default function AIAssistantDrawer({ onCartUpdated }: AIAssistantDrawerPr
     {
       id: "welcome",
       sender: "assistant",
-      text: "Hello! I am your Kharridlo AI Shopping Companion, powered by Gemini 2.0 with 7 bounded tools. Tell me your major, budget, or hardware specs, and I'll find the ideal match.",
+      text: "Hello! I am your Kharridlo AI Shopping Companion, powered by Gemini 2.0 and bounded commerce tools. Tell me your needs, budget, or preferred specs (e.g. *'Laptop under ₹80k for coding'*), and I'll recommend the best options with transparent trade-offs.",
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     },
   ]);
@@ -118,11 +124,20 @@ export default function AIAssistantDrawer({ onCartUpdated }: AIAssistantDrawerPr
         price_inr: priceInr || 24999,
         image_url: raw.image_url || raw.primary_image_url,
         specs: raw.specs || raw.specifications || {},
+        tradeoffType: raw.tradeoffType,
+        tradeoffSummary: raw.tradeoffSummary,
+        reasons: Array.isArray(raw.reasons) ? raw.reasons : undefined,
       });
     };
 
     if (Array.isArray(data.recommended_products)) {
       data.recommended_products.forEach(addCandidate);
+    }
+    if (data.tradeoff_groups) {
+      addCandidate(data.tradeoff_groups.bestOverall);
+      addCandidate(data.tradeoff_groups.bestValue);
+      addCandidate(data.tradeoff_groups.bestPerformance);
+      addCandidate(data.tradeoff_groups.budgetAlternative);
     }
     if (Array.isArray(data.products)) {
       data.products.forEach(addCandidate);
@@ -135,7 +150,7 @@ export default function AIAssistantDrawer({ onCartUpdated }: AIAssistantDrawerPr
       });
     }
 
-    return products.slice(0, 3);
+    return products.slice(0, 4);
   };
 
   const handleAddToCart = async (product: ProductRecommendation) => {
@@ -171,8 +186,12 @@ export default function AIAssistantDrawer({ onCartUpdated }: AIAssistantDrawerPr
 
     // Check if message specifies requirements
     const parsedReqs = parseRequirementsFromPrompt(messageText);
+    const updatedReqs = parsedReqs
+      ? { ...activeRequirements, ...parsedReqs }
+      : activeRequirements;
+
     if (parsedReqs) {
-      setActiveRequirements(parsedReqs);
+      setActiveRequirements(updatedReqs);
     }
 
     const userMessage: Message = {
@@ -197,6 +216,7 @@ export default function AIAssistantDrawer({ onCartUpdated }: AIAssistantDrawerPr
         body: JSON.stringify({
           message: messageText,
           session_id: sessionId,
+          previous_requirements: updatedReqs,
         }),
       });
 
@@ -207,6 +227,10 @@ export default function AIAssistantDrawer({ onCartUpdated }: AIAssistantDrawerPr
       const data = await res.json();
       const extractedProds = extractProductsFromResponse(data);
 
+      if (data.requirements) {
+        setActiveRequirements(data.requirements);
+      }
+
       const assistantMessage: Message = {
         id: `asst_${Date.now()}`,
         sender: "assistant",
@@ -215,6 +239,10 @@ export default function AIAssistantDrawer({ onCartUpdated }: AIAssistantDrawerPr
         policy: data.policy,
         cart: data.cart,
         recommendedProducts: extractedProds,
+        requirements: data.requirements,
+        clarification_question: data.clarification_question,
+        clarification_options: data.clarification_options,
+        budget_gap_notice: data.budget_gap_notice,
         execution_mode: data.execution_mode,
         model: data.model,
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
@@ -226,7 +254,7 @@ export default function AIAssistantDrawer({ onCartUpdated }: AIAssistantDrawerPr
       if (data.cart || (data.tool_calls && data.tool_calls.some((t: ToolCall) => t.tool_name === "add_to_cart" || t.tool_name === "remove_from_cart"))) {
         if (onCartUpdated) onCartUpdated();
       }
-    } catch (err: any) {
+    } catch {
       setMessages((prev) => [
         ...prev,
         {
@@ -297,33 +325,17 @@ export default function AIAssistantDrawer({ onCartUpdated }: AIAssistantDrawerPr
 
         {/* Active Requirements Bar (if user has active shopping parameters) */}
         {activeRequirements && (
-          <div className="px-4 py-2.5 bg-slate-950 border-b border-slate-800 text-xs">
-            <div className="flex items-center justify-between text-slate-300">
-              <span className="text-[10px] font-mono-data uppercase text-purple-300 font-bold">
-                Active Intent:
-              </span>
-              <button
-                onClick={() => setActiveRequirements(null)}
-                className="text-[10px] text-slate-500 hover:text-slate-300"
-              >
-                Clear
-              </button>
-            </div>
-            <div className="flex flex-wrap gap-1.5 mt-1">
-              <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-200 text-[11px] font-semibold border border-slate-700">
-                {activeRequirements.category}
-              </span>
-              {activeRequirements.budgetInr && (
-                <span className="px-2 py-0.5 rounded bg-emerald-950/60 text-emerald-300 text-[11px] font-mono-data font-bold border border-emerald-800/60">
-                  ≤ ₹{activeRequirements.budgetInr.toLocaleString("en-IN")}
-                </span>
-              )}
-              {activeRequirements.useCase && (
-                <span className="px-2 py-0.5 rounded bg-purple-950/60 text-purple-300 text-[11px] font-medium border border-purple-800/60">
-                  {activeRequirements.useCase}
-                </span>
-              )}
-            </div>
+          <div className="p-3 bg-slate-950/80 border-b border-slate-800 text-xs">
+            <RequirementSummaryCard
+              requirements={activeRequirements}
+              onQuickCorrection={(prompt) => sendMessage(prompt)}
+              onUpdateRequirement={(updated) => {
+                setActiveRequirements(updated);
+                sendMessage(`Change budget to ₹${updated.budgetInr?.toLocaleString("en-IN")}`);
+              }}
+              compact
+              className="bg-slate-900 border-slate-800 text-slate-200"
+            />
           </div>
         )}
 
@@ -396,9 +408,31 @@ export default function AIAssistantDrawer({ onCartUpdated }: AIAssistantDrawerPr
                 {/* Message Text */}
                 <p className="whitespace-pre-line text-xs sm:text-sm">{m.text}</p>
 
+                {/* Clarification Quick Option Chips (Single concise question answered in 1 tap) */}
+                {m.clarification_options && m.clarification_options.length > 0 && (
+                  <div className="mt-3 pt-2.5 border-t border-slate-700/70">
+                    <p className="text-[10px] font-mono-data uppercase font-bold text-slate-400 tracking-wider mb-2">
+                      Choose an option to continue:
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {m.clarification_options.map((opt, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => sendMessage(opt)}
+                          disabled={isLoading}
+                          className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-purple-900/40 hover:bg-ai-violet/50 text-purple-200 border border-purple-500/40 hover:border-purple-400 transition-all active:scale-95 text-left shadow-2xs"
+                        >
+                          <span>{opt}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Contextual Product Recommendations Inside Chat */}
                 {m.recommendedProducts && m.recommendedProducts.length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-slate-700/70 space-y-2">
+                  <div className="mt-3 pt-3 border-t border-slate-700/70 space-y-2.5">
                     <p className="text-[10px] font-mono-data uppercase font-bold text-slate-400 tracking-wider">
                       Matches Found in Catalog:
                     </p>
@@ -420,12 +454,20 @@ export default function AIAssistantDrawer({ onCartUpdated }: AIAssistantDrawerPr
                             />
                           </div>
                           <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between gap-1 mb-0.5">
+                              <span className="text-[10px] font-mono-data text-slate-400 block truncate">
+                                {p.brand} • {p.category}
+                              </span>
+                              {p.tradeoffType && (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                                  <Sparkles className="w-2 h-2" />
+                                  {p.tradeoffType}
+                                </span>
+                              )}
+                            </div>
                             <h5 className="text-xs font-bold text-white line-clamp-1">
                               {p.name}
                             </h5>
-                            <span className="text-[10px] font-mono-data text-slate-400 block">
-                              {p.brand} • {p.category}
-                            </span>
                             <div className="text-xs font-mono-data font-bold text-emerald-400 mt-0.5">
                               ₹{p.price_inr.toLocaleString("en-IN")}
                             </div>
@@ -438,6 +480,9 @@ export default function AIAssistantDrawer({ onCartUpdated }: AIAssistantDrawerPr
                             priceInr={p.price_inr}
                             category={p.category}
                             specs={p.specs}
+                            tradeoffType={p.tradeoffType}
+                            tradeoffSummary={p.tradeoffSummary}
+                            reasons={p.reasons}
                             compact
                           />
                         </div>

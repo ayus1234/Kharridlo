@@ -35,6 +35,8 @@ export interface DynamicProduct {
   specs?: Record<string, any>;
   matchBadge?: MatchTier;
   matchScore?: number;
+  tradeoffType?: string;
+  tradeoffSummary?: string;
   whyRecommended?: string[];
   inStock?: boolean;
 }
@@ -130,24 +132,31 @@ export default function DynamicProductCard({
 
   // Extract key specs for quick chips
   const specs = product.specs || {};
-  const processor = specs.processor || specs.cpu || specs.processor_type;
-  const memory = specs.memory || specs.ram;
+  const processor = specs.processor || specs.cpu || specs.processor_type || specs.Processor;
+  const memory = specs.memory || specs.ram || specs["Memory and Storage"] || specs.Memory;
   const storage = specs.storage || specs.storage_capacity;
+  const camera = specs.camera || specs.Camera || specs.primary_camera;
+  const battery = specs.battery || specs.Battery || specs["Battery Life"];
 
   return (
     <div
       className={`group relative flex flex-col rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-xs hover:shadow-xl hover:shadow-indigo-500/10 hover:border-indigo-300 hover:-translate-y-1 transition-all duration-200 ease-out ${className}`}
     >
-      {/* Top Meta: Category & Qualitative Match Indicator */}
-      <div className="flex items-center justify-between gap-2 mb-3">
-        <span className="text-[10px] font-mono-data font-bold uppercase tracking-wider text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
+      {/* Top Meta: Category & Qualitative Match Indicator & Tradeoff Tag */}
+      <div className="flex items-center justify-between gap-1.5 mb-3">
+        <span className="text-[10px] font-mono-data font-bold uppercase tracking-wider text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md truncate max-w-[120px]">
           {product.category}
         </span>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 flex-wrap justify-end">
+          {product.tradeoffType && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold font-display uppercase tracking-wide bg-purple-50 text-ai-violet border border-purple-200">
+              <Sparkles className="w-2.5 h-2.5" />
+              {product.tradeoffType}
+            </span>
+          )}
           <span
-            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold font-display uppercase tracking-wide border ${badgeStyles}`}
+            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold font-display uppercase tracking-wide border ${badgeStyles}`}
           >
-            <Sparkles className="w-2.5 h-2.5" />
             {matchTier}
           </span>
         </div>
@@ -170,7 +179,7 @@ export default function DynamicProductCard({
         <div className="absolute top-2 left-2">
           <span className="inline-flex items-center gap-1 text-[9px] font-bold bg-navy-900/85 backdrop-blur-xs text-white px-2 py-0.5 rounded-full shadow-2xs">
             <span className="w-1.5 h-1.5 rounded-full bg-growth-light" />
-            Student Verified
+            Verified
           </span>
         </div>
       </Link>
@@ -192,7 +201,7 @@ export default function DynamicProductCard({
           </h3>
 
           {/* Quick Hardware Spec Pills */}
-          {(processor || memory || storage) && (
+          {(processor || memory || storage || camera || battery) && (
             <div className="mt-2 flex flex-wrap items-center gap-1 text-[10px] font-mono-data text-slate-600">
               {processor && (
                 <span className="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200/60 truncate max-w-[140px]">
@@ -200,13 +209,18 @@ export default function DynamicProductCard({
                 </span>
               )}
               {memory && (
-                <span className="px-1.5 py-0.5 rounded bg-purple-50 text-ai-violet border border-purple-200/60">
+                <span className="px-1.5 py-0.5 rounded bg-purple-50 text-ai-violet border border-purple-200/60 truncate max-w-[120px]">
                   {String(memory)}
                 </span>
               )}
-              {storage && (
-                <span className="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200/60">
-                  {String(storage)}
+              {camera && (
+                <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-growth-dark border border-emerald-200/60 truncate max-w-[120px]">
+                  {String(camera).slice(0, 20)}
+                </span>
+              )}
+              {battery && (
+                <span className="px-1.5 py-0.5 rounded bg-teal-50 text-teal-800 border border-teal-200/60 truncate max-w-[120px]">
+                  {String(battery).slice(0, 18)}
                 </span>
               )}
             </div>
@@ -220,6 +234,8 @@ export default function DynamicProductCard({
               budgetInr={userBudgetInr}
               priceInr={product.price_inr}
               specs={product.specs}
+              tradeoffType={product.tradeoffType}
+              tradeoffSummary={product.tradeoffSummary}
               compact
             />
           </div>

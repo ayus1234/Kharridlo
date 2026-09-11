@@ -1,128 +1,76 @@
 "use client";
 
 import { useState } from "react";
-import { Sliders, Sparkles, Check, Edit3, X } from "lucide-react";
+import { Sliders, Check, Edit3, X, Sparkles, ArrowRight, ShieldCheck } from "lucide-react";
+import { ShoppingRequirements, extractRequirements } from "@/lib/discovery-engine";
 
-export interface ShoppingRequirements {
-  category?: string;
-  budgetInr?: number;
-  useCase?: string;
-  priority?: string;
-  constraints?: string[];
-  brand?: string;
+export type { ShoppingRequirements };
+
+export function parseRequirementsFromPrompt(query: string): ShoppingRequirements | null {
+  return extractRequirements(query);
 }
 
 interface RequirementSummaryCardProps {
   requirements: ShoppingRequirements;
   onEdit?: () => void;
   onUpdateRequirement?: (updated: ShoppingRequirements) => void;
+  onQuickCorrection?: (actionPrompt: string) => void;
   className?: string;
   compact?: boolean;
-}
-
-/**
- * Utility helper to safely extract structured requirements from freeform queries
- * (e.g., "Laptops for CS & Coding under ₹60k", "find a 16gb laptop under 70000").
- */
-export function parseRequirementsFromPrompt(query: string): ShoppingRequirements | null {
-  if (!query || query.trim().length < 4) return null;
-  const q = query.toLowerCase();
-
-  let category: string | undefined = undefined;
-  if (q.includes("laptop") || q.includes("notebook") || q.includes("macbook")) category = "Laptop";
-  else if (q.includes("headphone") || q.includes("headset") || q.includes("earbuds") || q.includes("audio")) category = "Audio";
-  else if (q.includes("monitor") || q.includes("display") || q.includes("screen")) category = "Monitor";
-  else if (q.includes("keyboard") || q.includes("keychron")) category = "Keyboard";
-  else if (q.includes("ssd") || q.includes("storage") || q.includes("nvme")) category = "Storage";
-
-  let budgetInr: number | undefined = undefined;
-  const budgetMatch = q.match(/(?:under|below|budget|within|<=|<|₹|rs\.?)\s*(?:₹|rs\.?)?\s*(\d{1,3}(?:,\d{2,3})*|\d+)\s*(k|thousand|lakh)?/i);
-  if (budgetMatch) {
-    const rawNum = parseFloat(budgetMatch[1].replace(/,/g, ""));
-    const unit = budgetMatch[2]?.toLowerCase();
-    if (unit === "k" || unit === "thousand") {
-      budgetInr = rawNum * 1000;
-    } else if (unit === "lakh") {
-      budgetInr = rawNum * 100000;
-    } else if (rawNum < 500) {
-      // e.g. "under 70k" but without k
-      budgetInr = rawNum * 1000;
-    } else {
-      budgetInr = rawNum;
-    }
-  }
-
-  let useCase: string | undefined = undefined;
-  if (q.includes("coding") || q.includes("programming") || q.includes("developer") || q.includes("cs") || q.includes("computer science") || q.includes("ai/ml") || q.includes("engineering")) {
-    useCase = "Coding & Engineering";
-  } else if (q.includes("study") || q.includes("college") || q.includes("student") || q.includes("school")) {
-    useCase = "Academic & Study";
-  } else if (q.includes("gaming") || q.includes("game")) {
-    useCase = "Gaming & High Compute";
-  } else if (q.includes("design") || q.includes("editing") || q.includes("video")) {
-    useCase = "Design & Creative Work";
-  }
-
-  const constraints: string[] = [];
-  if (q.includes("16gb") || q.includes("16 gb")) constraints.push("16GB RAM");
-  if (q.includes("32gb") || q.includes("32 gb")) constraints.push("32GB RAM");
-  if (q.includes("anc") || q.includes("noise cancel")) constraints.push("Active Noise Cancellation");
-  if (q.includes("4k")) constraints.push("4K Resolution");
-  if (q.includes("silent")) constraints.push("Silent Switches");
-  if (q.includes("lightweight") || q.includes("portable")) constraints.push("Ultraportable");
-
-  let priority: string | undefined = undefined;
-  if (q.includes("budget") || q.includes("cheap") || q.includes("affordable") || q.includes("value")) {
-    priority = "Maximum Value / Low Price";
-  } else if (q.includes("performance") || q.includes("fast") || q.includes("speed")) {
-    priority = "High Sustained Performance";
-  } else if (q.includes("battery")) {
-    priority = "All-day Battery Life";
-  }
-
-  if (!category && !budgetInr && !useCase && constraints.length === 0) {
-    return null;
-  }
-
-  return {
-    category: category || "Tech Gear",
-    budgetInr,
-    useCase: useCase || "General Student Productivity",
-    priority: priority || "Academic Fit & Reliability",
-    constraints: constraints.length > 0 ? constraints : ["Student Verified"],
-  };
 }
 
 export default function RequirementSummaryCard({
   requirements,
   onEdit,
   onUpdateRequirement,
+  onQuickCorrection,
   className = "",
   compact = false,
 }: RequirementSummaryCardProps) {
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditingBudget, setIsEditingBudget] = useState(false);
   const [draftBudget, setDraftBudget] = useState(requirements.budgetInr?.toString() || "");
 
   const handleSaveBudget = (e: React.FormEvent) => {
     e.preventDefault();
     const num = parseInt(draftBudget.replace(/\D/g, ""), 10);
-    if (onUpdateRequirement && !isNaN(num) && num > 0) {
-      onUpdateRequirement({
-        ...requirements,
-        budgetInr: num,
-      });
+    if (!isNaN(num) && num > 0) {
+      if (onUpdateRequirement) {
+        onUpdateRequirement({
+          ...requirements,
+          budgetInr: num,
+          budgetPaise: num * 100,
+        });
+      } else if (onQuickCorrection) {
+        onQuickCorrection(`Change my budget to ₹${num.toLocaleString("en-IN")}`);
+      }
     }
-    setIsEditing(false);
+    setIsEditingBudget(false);
   };
 
+  const handleChipClick = (actionPrompt: string) => {
+    if (onQuickCorrection) {
+      onQuickCorrection(actionPrompt);
+    } else if (onUpdateRequirement) {
+      if (actionPrompt === "Show cheaper options") {
+        onUpdateRequirement({ ...requirements, priority: "Value" });
+      } else if (actionPrompt === "Prioritize battery") {
+        onUpdateRequirement({ ...requirements, priority: "Battery" });
+      } else if (actionPrompt === "Remove gaming") {
+        const filteredUseCases = (requirements.useCases || []).filter((u) => !u.toLowerCase().includes("gaming"));
+        onUpdateRequirement({ ...requirements, useCases: filteredUseCases });
+      }
+    }
+  };
+
+  // Compact Mode (used in chat bubbles or mobile context rails)
   if (compact) {
     return (
-      <div className={`rounded-xl border border-indigo-100 bg-white p-3 shadow-xs ${className}`}>
+      <div className={`rounded-xl border border-indigo-100 bg-white/95 backdrop-blur-xs p-3 shadow-2xs ${className}`}>
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-1.5">
             <Sliders className="w-3.5 h-3.5 text-ai-violet" />
             <span className="text-[11px] font-mono-data uppercase font-bold tracking-wider text-navy-900">
-              Active Shopping Intent
+              Here&apos;s what I understood
             </span>
           </div>
           {onEdit && (
@@ -130,13 +78,13 @@ export default function RequirementSummaryCard({
               onClick={onEdit}
               className="text-[10px] font-semibold text-ai-violet hover:underline flex items-center gap-1"
             >
-              <Edit3 className="w-2.5 h-2.5" /> Edit
+              <Edit3 className="w-2.5 h-2.5" /> Adjust
             </button>
           )}
         </div>
         <div className="flex flex-wrap items-center gap-1.5 text-xs">
           {requirements.category && (
-            <span className="px-2 py-0.5 rounded-md bg-slate-100 font-semibold text-slate-700">
+            <span className="px-2 py-0.5 rounded-md bg-slate-100 font-semibold text-slate-700 capitalize">
               {requirements.category}
             </span>
           )}
@@ -145,9 +93,14 @@ export default function RequirementSummaryCard({
               ≤ ₹{requirements.budgetInr.toLocaleString("en-IN")}
             </span>
           )}
-          {requirements.useCase && (
-            <span className="px-2 py-0.5 rounded-md bg-purple-50 text-ai-violet font-medium border border-purple-200">
-              {requirements.useCase}
+          {requirements.useCases && requirements.useCases.length > 0 && (
+            <span className="px-2 py-0.5 rounded-md bg-purple-50 text-ai-violet font-medium border border-purple-200 truncate max-w-[180px]">
+              {requirements.useCases.join(" + ")}
+            </span>
+          )}
+          {requirements.priority && (
+            <span className="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 font-medium border border-indigo-200">
+              {requirements.priority}
             </span>
           )}
         </div>
@@ -155,8 +108,20 @@ export default function RequirementSummaryCard({
     );
   }
 
+  // Full Rich Mode with Quick Correction Chips
+  const useCaseText = requirements.useCases && requirements.useCases.length > 0
+    ? requirements.useCases.join(" + ")
+    : "General Productivity";
+
+  const preferencesText = [
+    ...(requirements.preferredSpecs || []),
+    ...(requirements.mustHave || []),
+  ].filter(Boolean).join(", ") || "Standard verified hardware";
+
+  const hasGaming = requirements.useCases?.some((u) => u.toLowerCase().includes("gaming"));
+
   return (
-    <div className={`rounded-2xl border border-indigo-200/80 bg-gradient-to-br from-white via-indigo-50/20 to-purple-50/30 p-4 sm:p-5 shadow-sm ${className}`}>
+    <div className={`rounded-2xl border border-indigo-200/80 bg-gradient-to-br from-white via-indigo-50/20 to-purple-50/30 p-4 sm:p-5 shadow-xs ${className}`}>
       {/* Header */}
       <div className="flex items-center justify-between pb-3 mb-3 border-b border-indigo-100/70">
         <div className="flex items-center gap-2">
@@ -165,64 +130,45 @@ export default function RequirementSummaryCard({
           </div>
           <div>
             <h3 className="font-display font-bold text-xs sm:text-sm text-navy-900 tracking-tight">
-              Understanding Your Need
+              Here&apos;s what I understood
             </h3>
             <p className="text-[10px] text-slate-500 font-mono-data">
-              Kharridlo Intent Engine • Real-time commerce constraints
+              Kharridlo Natural-Language Requirement Engine • Session isolated
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          {onEdit ? (
-            <button
-              onClick={onEdit}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold text-ai-violet bg-white border border-purple-200 hover:bg-purple-50 active:scale-95 transition-all shadow-2xs"
-            >
-              <Edit3 className="w-3 h-3" />
-              <span>Edit requirements</span>
-            </button>
-          ) : (
-            <button
-              onClick={() => setIsEditing(!isEditing)}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-600 bg-white border border-slate-200 hover:border-purple-300 hover:text-ai-violet active:scale-95 transition-all shadow-2xs"
-            >
-              <Edit3 className="w-3 h-3" />
-              <span>{isEditing ? "Close" : "Adjust"}</span>
-            </button>
-          )}
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setIsEditingBudget(!isEditingBudget)}
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-600 bg-white border border-slate-200 hover:border-purple-300 hover:text-ai-violet active:scale-95 transition-all shadow-2xs"
+          >
+            <Edit3 className="w-3 h-3" />
+            <span>{isEditingBudget ? "Cancel" : "Change budget"}</span>
+          </button>
         </div>
       </div>
 
-      {/* Requirements Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-left">
-        {/* Category */}
-        <div className="p-2.5 rounded-xl bg-white border border-slate-200/70 shadow-2xs">
-          <span className="text-[10px] font-mono-data uppercase text-slate-400 font-semibold block">
-            Category
-          </span>
-          <span className="text-xs sm:text-sm font-bold text-navy-900 block mt-0.5 truncate">
-            {requirements.category || "All Hardware"}
-          </span>
-        </div>
-
+      {/* Structured Summary Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-left">
         {/* Budget */}
         <div className="p-2.5 rounded-xl bg-white border border-emerald-200/80 shadow-2xs">
           <span className="text-[10px] font-mono-data uppercase text-emerald-600 font-semibold block">
-            Target Budget
+            Budget
           </span>
           <span className="text-xs sm:text-sm font-bold text-growth-dark font-mono-data block mt-0.5">
             {requirements.budgetInr ? `₹${requirements.budgetInr.toLocaleString("en-IN")}` : "Flexible"}
           </span>
         </div>
 
-        {/* Use Case */}
+        {/* Use Cases */}
         <div className="p-2.5 rounded-xl bg-white border border-slate-200/70 shadow-2xs">
           <span className="text-[10px] font-mono-data uppercase text-slate-400 font-semibold block">
-            Use Case
+            Use
           </span>
-          <span className="text-xs sm:text-sm font-bold text-navy-900 block mt-0.5 truncate">
-            {requirements.useCase || "Student General"}
+          <span className="text-xs sm:text-sm font-bold text-navy-900 block mt-0.5 truncate" title={useCaseText}>
+            {useCaseText}
           </span>
         </div>
 
@@ -232,55 +178,108 @@ export default function RequirementSummaryCard({
             Priority
           </span>
           <span className="text-xs sm:text-sm font-bold text-ai-violet block mt-0.5 truncate">
-            {requirements.priority || "Hardware Value"}
+            {requirements.priority || "Balanced"}
+          </span>
+        </div>
+
+        {/* Preferences */}
+        <div className="p-2.5 rounded-xl bg-white border border-slate-200/70 shadow-2xs">
+          <span className="text-[10px] font-mono-data uppercase text-slate-400 font-semibold block">
+            Preferences
+          </span>
+          <span className="text-xs sm:text-sm font-bold text-slate-700 block mt-0.5 truncate" title={preferencesText}>
+            {preferencesText}
           </span>
         </div>
       </div>
 
-      {/* Constraints / Preference Tags */}
-      {requirements.constraints && requirements.constraints.length > 0 && (
-        <div className="mt-3 pt-3 border-t border-indigo-100/60 flex flex-wrap items-center gap-1.5">
-          <span className="text-[10px] font-mono-data uppercase text-slate-400 font-semibold mr-1">
-            Constraints:
+      {/* Exclusions Banner if active */}
+      {requirements.exclusions && requirements.exclusions.length > 0 && (
+        <div className="mt-2.5 flex flex-wrap items-center gap-1.5 text-xs text-slate-600">
+          <span className="text-[10px] font-mono-data uppercase text-rose-500 font-bold mr-1">
+            Excluded:
           </span>
-          {requirements.constraints.map((c, i) => (
+          {requirements.exclusions.map((excl, i) => (
             <span
               key={i}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-white border border-slate-200 text-slate-700 shadow-2xs"
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200"
             >
-              <Check className="w-2.5 h-2.5 text-growth-emerald" />
-              <span>{c}</span>
+              <X className="w-2.5 h-2.5" />
+              <span>{excl}</span>
             </span>
           ))}
         </div>
       )}
 
-      {/* Inline Editing Form */}
-      {isEditing && (
+      {/* Inline Budget Editor */}
+      {isEditingBudget && (
         <form onSubmit={handleSaveBudget} className="mt-3 pt-3 border-t border-indigo-100/80 flex items-center gap-2">
-          <span className="text-xs font-semibold text-slate-700 whitespace-nowrap">Adjust Budget (₹):</span>
+          <span className="text-xs font-semibold text-slate-700 whitespace-nowrap">Target Budget (₹):</span>
           <input
             type="number"
             value={draftBudget}
             onChange={(e) => setDraftBudget(e.target.value)}
-            placeholder="e.g. 70000"
+            placeholder="e.g. 80000"
             className="w-32 bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs font-mono-data text-navy-900 focus:outline-none focus:ring-2 focus:ring-ai-violet"
+            autoFocus
           />
           <button
             type="submit"
             className="px-3 py-1 rounded-lg bg-navy-900 text-white text-xs font-semibold hover:bg-ai-violet transition-colors"
           >
-            Update
+            Apply
           </button>
           <button
             type="button"
-            onClick={() => setIsEditing(false)}
+            onClick={() => setIsEditingBudget(false)}
             className="p-1 text-slate-400 hover:text-slate-600"
           >
             <X className="w-4 h-4" />
           </button>
         </form>
       )}
+
+      {/* Clear Way to Correct: Quick Correction Chips */}
+      <div className="mt-3 pt-2.5 border-t border-indigo-100/60 flex flex-wrap items-center gap-1.5">
+        <span className="text-[10px] font-mono-data uppercase text-slate-400 font-semibold mr-1">
+          Quick Adjust:
+        </span>
+
+        <button
+          type="button"
+          onClick={() => setIsEditingBudget(true)}
+          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-white border border-slate-200 text-slate-700 hover:border-indigo-300 hover:text-ai-violet hover:bg-indigo-50/40 transition-colors shadow-2xs"
+        >
+          <span>Change budget</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleChipClick("Prioritize battery")}
+          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-white border border-slate-200 text-slate-700 hover:border-indigo-300 hover:text-ai-violet hover:bg-indigo-50/40 transition-colors shadow-2xs"
+        >
+          <span>Prioritize battery</span>
+        </button>
+
+        {hasGaming && (
+          <button
+            type="button"
+            onClick={() => handleChipClick("Remove gaming")}
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-white border border-slate-200 text-slate-700 hover:border-rose-300 hover:text-rose-700 hover:bg-rose-50/40 transition-colors shadow-2xs"
+          >
+            <X className="w-2.5 h-2.5" />
+            <span>Remove gaming</span>
+          </button>
+        )}
+
+        <button
+          type="button"
+          onClick={() => handleChipClick("Show cheaper options")}
+          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-white border border-slate-200 text-slate-700 hover:border-emerald-300 hover:text-growth-dark hover:bg-emerald-50/40 transition-colors shadow-2xs"
+        >
+          <span>Show cheaper options</span>
+        </button>
+      </div>
     </div>
   );
 }
