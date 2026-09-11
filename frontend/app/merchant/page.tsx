@@ -154,12 +154,12 @@ export default function MerchantDashboardOverviewPage() {
   };
 
   return (
-    <div className="min-h-screen flex bg-slate-50 text-slate-900">
-      {/* 280px Fixed Midnight Navy Sidebar */}
+    <div className="h-screen flex overflow-hidden bg-slate-50 text-slate-900">
+      {/* Fixed Midnight Navy Sidebar */}
       <MerchantSidebar />
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      {/* Main Content Area with dedicated scroll */}
+      <div className="flex-1 flex flex-col h-screen overflow-y-auto min-w-0">
         <MerchantHeader
           title="Merchant Dashboard Overview"
           subtitle="Autonomous commerce telemetry, conversion benchmarks, and real-time ledger"
@@ -169,7 +169,7 @@ export default function MerchantDashboardOverviewPage() {
           isLoading={loading}
         />
 
-        <main className="flex-1 p-6 space-y-6 max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-6 space-y-6 w-full max-w-7xl">
           {/* Top Banner (Preserves Test Selector: Autonomous Commerce Governance & Payment Audit Trail) */}
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">

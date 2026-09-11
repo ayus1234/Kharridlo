@@ -67,10 +67,10 @@ export default function OrdersAuditLogsPage() {
   ];
 
   return (
-    <div className="min-h-screen flex bg-slate-50 text-slate-900">
+    <div className="h-screen flex overflow-hidden bg-slate-50 text-slate-900">
       <MerchantSidebar />
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col h-screen overflow-y-auto min-w-0">
         <MerchantHeader
           title="Orders & Audit Logs Dual Workbench"
           subtitle="Real-time order settlements paired with immutable system event stream"
@@ -80,7 +80,7 @@ export default function OrdersAuditLogsPage() {
           isLoading={loading}
         />
 
-        <main className="flex-1 p-6 space-y-6 max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-6 space-y-6 w-full max-w-7xl">
           {/* Dual Panel Grid (orders_audit_logs) */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Left 6 cols: Authoritative Order Ledger */}

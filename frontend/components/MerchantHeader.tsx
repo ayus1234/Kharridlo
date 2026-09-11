@@ -35,14 +35,14 @@ export default function MerchantHeader({
         {/* Mobile Hamburger Button */}
         <button
           onClick={handleToggleSidebar}
-          className="lg:hidden p-2 -ml-2 mr-2 rounded-xl text-slate-700 hover:bg-slate-100 min-h-[44px] min-w-[44px] flex items-center justify-center flex-shrink-0"
+          className="md:hidden p-2 -ml-2 mr-2 rounded-xl text-slate-700 hover:bg-slate-100 min-h-[44px] min-w-[44px] flex items-center justify-center flex-shrink-0"
           aria-label="Toggle Merchant Navigation Menu"
         >
           <Menu className="h-5 w-5" />
         </button>
 
         {/* Mobile Brand Icon */}
-        <div className="lg:hidden mr-2.5 flex items-center flex-shrink-0">
+        <div className="md:hidden mr-2.5 flex items-center flex-shrink-0">
           <Logo variant="icon" size="sm" href="/merchant" />
         </div>
 

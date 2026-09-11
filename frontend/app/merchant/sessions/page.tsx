@@ -20,10 +20,10 @@ export default function ActiveSessionsPage() {
   });
 
   return (
-    <div className="min-h-screen flex bg-slate-50 text-slate-900">
+    <div className="h-screen flex overflow-hidden bg-slate-50 text-slate-900">
       <MerchantSidebar />
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col h-screen overflow-y-auto min-w-0">
         <MerchantHeader
           title="Active AI Buyer Sessions"
           subtitle="Real-time session monitoring: cart values, browsing intent, and risk scores"
@@ -31,7 +31,7 @@ export default function ActiveSessionsPage() {
           isSimulated={true}
         />
 
-        <main className="flex-1 p-6 space-y-6 max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-6 space-y-6 w-full max-w-7xl">
           {/* Top Filter Controls (active_ai_buyer_sessions) */}
           <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">

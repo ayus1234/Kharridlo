@@ -170,8 +170,8 @@ export default function MerchantSidebar() {
 
   return (
     <>
-      {/* Desktop Sticky Sidebar (lg and above) - Locked to viewport height */}
-      <aside className="hidden lg:flex w-72 flex-shrink-0 bg-navy-900 border-r border-slate-800 text-slate-300 h-screen sticky top-0 flex-col select-none z-30">
+      {/* Desktop & Tablet Sticky Sidebar (md and above) - Locked to viewport height */}
+      <aside className="hidden md:flex w-64 lg:w-72 flex-shrink-0 bg-navy-900 border-r border-slate-800 text-slate-300 h-screen sticky top-0 flex-col select-none z-30">
         {/* Merchant Brand Header - Fixed at Top */}
         <div className="p-4 border-b border-slate-800/80 flex items-center flex-shrink-0">
           <div className="inline-flex items-center bg-white px-3 py-1.5 rounded-2xl shadow-sm">
@@ -190,9 +190,9 @@ export default function MerchantSidebar() {
         </div>
       </aside>
 
-      {/* Mobile Slide-Over Drawer (Below lg) */}
+      {/* Mobile Slide-Over Drawer (Below md / phones only) */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden flex">
+        <div className="fixed inset-0 z-50 md:hidden flex">
           {/* Backdrop */}
           <div 
             className="fixed inset-0 bg-navy-900/80 backdrop-blur-xs transition-opacity" 
