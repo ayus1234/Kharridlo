@@ -69,12 +69,12 @@ export default function ActiveSessionsPage() {
             </div>
           </div>
 
-          {/* Sessions Table */}
+          {/* Sessions Table with Smooth Scroller Pane */}
           <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
+            <div className="max-h-[460px] overflow-y-auto overflow-x-auto scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100 scroll-smooth">
               <table className="w-full text-left border-collapse text-xs font-mono-data">
-                <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50 text-slate-400">
+                <thead className="sticky top-0 z-10 bg-slate-100/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
+                  <tr className="text-slate-500 font-bold uppercase text-[10px] tracking-wider">
                     <th className="p-3.5">Session ID</th>
                     <th className="p-3.5">Tier</th>
                     <th className="p-3.5">Student Intent Prompt</th>

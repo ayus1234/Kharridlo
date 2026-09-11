@@ -97,7 +97,7 @@ export default function OrdersAuditLogsPage() {
                 </span>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1 scrollbar-thin">
                 {sampleOrders.map((o) => (
                   <div
                     key={o.orderId}
