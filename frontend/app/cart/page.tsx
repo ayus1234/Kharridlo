@@ -1064,7 +1064,12 @@ export default function CartPage() {
               <button
                 type="button"
                 onClick={() => {
-                  window.dispatchEvent(new CustomEvent("open-ai-chat", { detail: { prompt: "How can I optimize or make this cart cheaper?" } }));
+                  window.dispatchEvent(new CustomEvent("open-ai-chat", {
+                    detail: {
+                      prompt: "How can I optimize or make this cart cheaper?",
+                      cart_items: cart?.items || []
+                    }
+                  }));
                 }}
                 className="px-2.5 py-1.5 rounded-xl text-xs font-semibold text-indigo-700 bg-white border border-indigo-200 hover:bg-indigo-50 transition-colors shadow-2xs"
               >
@@ -1073,7 +1078,12 @@ export default function CartPage() {
               <button
                 type="button"
                 onClick={() => {
-                  window.dispatchEvent(new CustomEvent("open-ai-chat", { detail: { prompt: "What is my cart total and does it pass policy?" } }));
+                  window.dispatchEvent(new CustomEvent("open-ai-chat", {
+                    detail: {
+                      prompt: "What is my cart total and does it pass policy?",
+                      cart_items: cart?.items || []
+                    }
+                  }));
                 }}
                 className="px-2.5 py-1.5 rounded-xl text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 transition-colors shadow-2xs"
               >
@@ -1082,7 +1092,12 @@ export default function CartPage() {
               <button
                 type="button"
                 onClick={() => {
-                  window.dispatchEvent(new CustomEvent("open-ai-chat", { detail: { prompt: "Remove the most expensive item from my cart" } }));
+                  window.dispatchEvent(new CustomEvent("open-ai-chat", {
+                    detail: {
+                      prompt: "Remove the most expensive item from my cart",
+                      cart_items: cart?.items || []
+                    }
+                  }));
                 }}
                 className="px-2.5 py-1.5 rounded-xl text-xs font-semibold text-rose-700 bg-white border border-rose-200 hover:bg-rose-50 transition-colors shadow-2xs"
               >

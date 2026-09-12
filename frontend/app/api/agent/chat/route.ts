@@ -19,6 +19,7 @@ interface ChatRequest {
   message: string;
   session_id?: string;
   previous_requirements?: ShoppingRequirements | null;
+  cart_items?: any[];
 }
 
 function parseQty(text: string): number {
@@ -64,7 +65,35 @@ export async function POST(request: NextRequest) {
   const tiers = getPolicyTiersData();
   const currentTierCode = getSessionPolicyTier(sessionId);
   const currentTier = tiers.find((t) => t.tier === currentTierCode) || tiers[1];
-  let cart = getOrCreateServerCart(sessionId);
+
+  const cookieHeader = request.headers.get("cookie");
+  let cart = getOrCreateServerCart(sessionId, cookieHeader);
+
+  // Synchronize cart from client if client provided active cart items
+  if (body?.cart_items && Array.isArray(body.cart_items) && body.cart_items.length > 0) {
+    cart.items = [];
+    for (const ci of body.cart_items) {
+      const pid = ci.product_id || ci.id;
+      const qty = ci.quantity || 1;
+      const pricePaise = ci.unit_price_paise || (ci.unit_price_inr ? Math.round(ci.unit_price_inr * 100) : (ci.price_inr ? Math.round(ci.price_inr * 100) : 49900));
+      cart.items.push({
+        id: ci.id || `ci_${pid}_${qty}`,
+        cart_id: cart.id,
+        product_id: pid,
+        sku: ci.sku || pid,
+        name: ci.name || ci.title || "Curated Product",
+        brand: ci.brand || "Verified",
+        category: ci.category || "gear",
+        image_url: ci.image_url,
+        provider: ci.provider || "kharridlo_verified",
+        quantity: qty,
+        unit_price_paise: pricePaise,
+        line_total_paise: pricePaise * qty,
+        availability_status: "in_stock",
+      });
+    }
+    recalculateCartTotals(cart);
+  }
 
   // ---------------------------------------------------------------------------
   // 1. Checkout Readiness & Human Authorization Handoff

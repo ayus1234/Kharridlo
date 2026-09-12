@@ -99,7 +99,7 @@ export default function AIAssistantDrawer({ onCartUpdated }: AIAssistantDrawerPr
       setIsOpen(true);
       if (e.detail?.prompt) {
         setTimeout(() => {
-          sendMessage(e.detail.prompt);
+          sendMessage(e.detail.prompt, e.detail?.cart_items);
         }, 150);
       }
     };
@@ -193,7 +193,7 @@ export default function AIAssistantDrawer({ onCartUpdated }: AIAssistantDrawerPr
     }
   };
 
-  const sendMessage = async (textToSend?: string) => {
+  const sendMessage = async (textToSend?: string, passedCartItems?: any[]) => {
     const messageText = textToSend || inputValue.trim();
     if (!messageText || isLoading) return;
 
@@ -219,6 +219,17 @@ export default function AIAssistantDrawer({ onCartUpdated }: AIAssistantDrawerPr
     if (!textToSend) setInputValue("");
     setIsLoading(true);
 
+    let clientCartItems: any[] = passedCartItems || [];
+    if (clientCartItems.length === 0 && typeof window !== "undefined") {
+      try {
+        const raw = localStorage.getItem("kharridlo_client_cart");
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) clientCartItems = parsed;
+        }
+      } catch {}
+    }
+
     try {
       const res = await fetch("/api/agent/chat", {
         method: "POST",
@@ -230,6 +241,7 @@ export default function AIAssistantDrawer({ onCartUpdated }: AIAssistantDrawerPr
           message: messageText,
           session_id: sessionId,
           previous_requirements: updatedReqs,
+          cart_items: clientCartItems,
         }),
       });
 
@@ -264,19 +276,32 @@ export default function AIAssistantDrawer({ onCartUpdated }: AIAssistantDrawerPr
 
       setMessages((prev) => [...prev, assistantMessage]);
 
-      // If tool mutated cart, notify parent and dispatch event
-      const hasCartMutation = Boolean(
-        data.cart ||
-        (data.tool_calls && data.tool_calls.some((t: ToolCall) =>
-          t.tool_name === "add_to_cart" ||
-          t.tool_name === "remove_from_cart" ||
-          t.tool_name === "update_cart_item" ||
-          t.tool_name === "clear_cart"
-        ))
-      );
-      if (hasCartMutation) {
+      // If tool mutated cart or updated cart was returned, sync persistent state and notify
+      if (data.cart) {
+        if (typeof window !== "undefined") {
+          try {
+            if (data.cart.items && data.cart.items.length > 0) {
+              localStorage.setItem("kharridlo_client_cart", JSON.stringify(data.cart.items));
+            } else {
+              localStorage.removeItem("kharridlo_client_cart");
+            }
+          } catch {}
+        }
         window.dispatchEvent(new Event("cart-updated"));
         if (onCartUpdated) onCartUpdated();
+      } else {
+        const hasCartMutation = Boolean(
+          data.tool_calls && data.tool_calls.some((t: ToolCall) =>
+            t.tool_name === "add_to_cart" ||
+            t.tool_name === "remove_from_cart" ||
+            t.tool_name === "update_cart_item" ||
+            t.tool_name === "clear_cart"
+          )
+        );
+        if (hasCartMutation) {
+          window.dispatchEvent(new Event("cart-updated"));
+          if (onCartUpdated) onCartUpdated();
+        }
       }
     } catch {
       setMessages((prev) => [
