@@ -259,8 +259,115 @@ class AgentService:
                 tool_calls=[],
             )
 
-        # 1. Evaluate Policy Intent ("can i buy", "check policy", "within limit", "is this allowed")
-        if any(w in lower_msg for w in ["can i buy", "policy", "within limit", "allowed", "check my cart limit"]):
+        def parse_qty(text: str, default: int = 1) -> int:
+            # First strip SKUs like DK-LP-15, DK-MS-01 so their model numbers are not mistaken for quantities
+            cleaned = re.sub(r"dk-[a-z0-9_\-]+", "", text, flags=re.IGNORECASE)
+
+            # Explicit patterns: "quantity to 2", "qty 2", "make it 3", "add 2", "keep 1", etc.
+            explicit_m = re.search(r"(?:quantity|qty|make it|set to|change to|to|add|keep|only)\s*[:=]?\s*(\d+)", cleaned)
+            if explicit_m:
+                return int(explicit_m.group(1))
+
+            unit_m = re.search(r"(\d+)\s*(?:units?|pieces?|items?|of those|of them)", cleaned)
+            if unit_m:
+                return int(unit_m.group(1))
+
+            num_words = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10}
+            for word, val in num_words.items():
+                if re.search(rf"\b{word}\b", cleaned):
+                    return val
+            return default
+
+        def resolve_target_sku(text: str) -> str:
+            upper = text.upper()
+            if "MOUSE" in upper or "MS-01" in upper:
+                return "DK-MS-01"
+            elif "ULTRA" in upper:
+                return "DK-LP-ULTRA"
+            elif "OOS" in upper or "OUT" in upper:
+                return "DK-LP-14-OOS"
+            elif "LOW" in upper:
+                return "DK-LP-LOW-01"
+            elif "15" in upper or "LAPTOP" in upper or "FIRST" in upper or "BEST" in upper or "RECOMMENDED" in upper:
+                return "DK-LP-15"
+            match = re.search(r"(DK-[A-Z0-9_\-]+)", upper)
+            if match:
+                return match.group(1)
+            return "DK-LP-15"
+
+        # 1. Checkout Readiness & Purchase Authorization Intent ("ready to checkout", "i'm ready", "buy it", "checkout")
+        # Explicit authorization boundary: AI NEVER directly charges or initiates payment.
+        if (
+            any(w in lower_msg for w in ["ready to checkout", "ready to pay", "okay, i'm ready", "ok, i'm ready", "i'm ready", "i am ready", "proceed to checkout", "proceed to payment", "buy it", "checkout now", "take me to checkout"])
+            and not any(w in lower_msg for w in ["can i buy", "why can't i buy", "is this allowed"])
+        ):
+            tool_res = cls.execute_tool(context, "evaluate_policy", {})
+            tool_records.append(ToolCallRecord(tool_name="evaluate_policy", arguments={}, result=tool_res))
+            cart_orm = CartService.get_cart(context.db, context.session_id)
+
+            if not cart_orm or not cart_orm.items:
+                return AgentChatResponse(
+                    message="Your cart is currently empty. Please add a product to your cart before proceeding to checkout.",
+                    session_id=context.session_id,
+                    tool_calls=tool_records,
+                    cart=_cart_to_response(cart_orm) if cart_orm else None,
+                    policy=PolicyService.evaluate_cart(context.db, context.session_id),
+                )
+
+            decision = tool_res.get("decision")
+            total_inr = tool_res.get("cart_total_inr", 0)
+
+            if decision == "BLOCK":
+                first_reason = tool_res.get("reasons", [{}])[0].get("message", "Spending limit exceeded.")
+                msg = (
+                    f"The transaction is BLOCKED by your current {tool_res.get('policy_tier')} policy. "
+                    f"{first_reason} Payment has not been initiated. Please adjust your cart before authorizing."
+                )
+            else:
+                msg = (
+                    f"Your cart is ready for checkout.\n"
+                    f"• Subtotal: ₹{total_inr:,.2f}\n"
+                    f"• Delivery: ₹0.00 (Free Campus Delivery)\n"
+                    f"• Total: ₹{total_inr:,.2f}\n"
+                    f"• Policy Status: {decision}\n\n"
+                    f"Explicit buyer authorization is required before Razorpay payment initiation. "
+                    f"Please review and authorize your purchase: [Proceed to Purchase Authorization](/checkout/authorize). "
+                    f"Payment has not been initiated."
+                )
+
+            return AgentChatResponse(
+                message=msg,
+                session_id=context.session_id,
+                tool_calls=tool_records,
+                cart=_cart_to_response(cart_orm) if cart_orm else None,
+                policy=PolicyService.evaluate_cart(context.db, context.session_id),
+            )
+
+        # 2. Cart Total Intent ("what's my total", "cart total", "how much is my cart total")
+        if any(w in lower_msg for w in ["what's my cart total", "what is my cart total", "what is my total", "what's my total", "how much is my cart total", "how much do i owe", "cart total"]):
+            tool_res = cls.execute_tool(context, "get_cart", {})
+            tool_records.append(ToolCallRecord(tool_name="get_cart", arguments={}, result=tool_res))
+            cart_data = tool_res.get("cart", {})
+            total_inr = cart_data.get("total_inr", 0)
+            total_paise = cart_data.get("total_paise", 0)
+            item_count = cart_data.get("total_items_count", 0)
+            policy_eval = PolicyService.evaluate_cart(context.db, context.session_id)
+
+            msg = (
+                f"Your authoritative cart total is ₹{total_inr:,.2f} ({total_paise} paise) "
+                f"for {item_count} item(s). Spending policy status: {policy_eval.decision}."
+            )
+            cart_orm = CartService.get_cart(context.db, context.session_id)
+            return AgentChatResponse(
+                message=msg,
+                session_id=context.session_id,
+                tool_calls=tool_records,
+                cart=_cart_to_response(cart_orm) if cart_orm else None,
+                policy=policy_eval,
+            )
+
+        # 3. Evaluate Policy Intent ("can i buy", "check policy", "within limit", "is this allowed", "can i afford")
+        if any(w in lower_msg for w in ["can i buy", "policy", "within limit", "allowed", "check my cart limit", "can i afford", "why can't i buy", "why is this blocked"]):
             tool_res = cls.execute_tool(context, "evaluate_policy", {})
             tool_records.append(ToolCallRecord(tool_name="evaluate_policy", arguments={}, result=tool_res))
 
@@ -284,32 +391,97 @@ class AgentService:
             else:
                 msg = f"Your cart total of ₹{total_inr:,.2f} satisfies all policy rules. Payment has not been initiated."
 
+            cart_orm = CartService.get_cart(context.db, context.session_id)
             return AgentChatResponse(
                 message=msg,
                 session_id=context.session_id,
                 tool_calls=tool_records,
+                cart=_cart_to_response(cart_orm) if cart_orm else None,
                 policy=PolicyService.evaluate_cart(context.db, context.session_id),
             )
 
-        # 2. Add to Cart Intent (Requires explicit request: "add ... to cart", "add ...")
+        # 4. Cart Removal Intent ("remove the mouse", "remove everything except the laptop", "clear cart", "clear my cart")
+        if any(w in lower_msg for w in ["remove", "delete from cart", "take out", "empty cart", "clear cart", "clear my cart", "clear"]):
+            cart_orm = CartService.get_cart(context.db, context.session_id)
+
+            if "everything except" in lower_msg or "all except" in lower_msg:
+                # Keep target SKU (e.g. laptop), remove all others
+                target_sku = resolve_target_sku(lower_msg)
+                if cart_orm:
+                    for it in list(cart_orm.items):
+                        if it.product_id != target_sku and (not it.product or it.product.sku != target_sku):
+                            cls.execute_tool(context, "remove_from_cart", {"product_id": it.product_id})
+                    cart_orm = CartService.get_cart(context.db, context.session_id)
+                    total_inr = cart_orm.total_paise / 100.0 if cart_orm else 0
+                    msg = f"I have removed everything except {target_sku} from your cart. Updated cart total: ₹{total_inr:,.2f}."
+                else:
+                    msg = "Your cart is already empty."
+            elif any(w in lower_msg for w in ["clear", "empty", "delete all", "remove everything"]):
+                if cart_orm:
+                    CartService.clear_cart(context.db, context.session_id)
+                    cart_orm = CartService.get_cart(context.db, context.session_id)
+                msg = "Your cart has been cleared and all inventory reservations have been released."
+            else:
+                target_sku = resolve_target_sku(lower_msg)
+                tool_res = cls.execute_tool(context, "remove_from_cart", {"product_id": target_sku})
+                tool_records.append(ToolCallRecord(tool_name="remove_from_cart", arguments={"product_id": target_sku}, result=tool_res))
+                cart_orm = CartService.get_cart(context.db, context.session_id)
+                total_inr = cart_orm.total_paise / 100.0 if cart_orm else 0
+                if tool_res.get("success"):
+                    msg = f"I have removed {target_sku} from your cart. Updated cart total: ₹{total_inr:,.2f}."
+                else:
+                    msg = f"Could not remove {target_sku}: {tool_res.get('message', 'Item not found in cart.')}"
+
+            return AgentChatResponse(
+                message=msg,
+                session_id=context.session_id,
+                tool_calls=tool_records,
+                cart=_cart_to_response(cart_orm) if cart_orm else None,
+                policy=PolicyService.evaluate_cart(context.db, context.session_id),
+            )
+
+        # 5. Quantity Update Intent ("change quantity to 2", "make that quantity three", "make it 3", "actually, just keep one")
+        if (
+            any(w in lower_msg for w in ["change quantity", "make that quantity", "make it", "set quantity", "reduce quantity", "keep only", "actually, just keep", "just keep", "change the laptop quantity", "quantity to"])
+            or ("quantity" in lower_msg and any(w in lower_msg for w in ["to", "set", "make", "change", "keep"]))
+        ):
+            new_qty = parse_qty(lower_msg, default=1)
+            target_sku = resolve_target_sku(lower_msg)
+            cart_orm = CartService.get_cart(context.db, context.session_id)
+            if cart_orm and cart_orm.items and len(cart_orm.items) == 1 and not any(k in lower_msg for k in ["mouse", "ultra", "15", "laptop"]):
+                target_sku = cart_orm.items[0].product_id
+
+            tool_res = cls.execute_tool(context, "update_cart_item", {"product_id": target_sku, "quantity": new_qty})
+            tool_records.append(ToolCallRecord(tool_name="update_cart_item", arguments={"product_id": target_sku, "quantity": new_qty}, result=tool_res))
+
+            if tool_res.get("success"):
+                cart_info = tool_res.get("cart", {})
+                msg = (
+                    f"I have updated the quantity of {target_sku} to {new_qty}. "
+                    f"Your updated cart total is ₹{cart_info.get('total_inr', 0):,.2f} ({cart_info.get('total_paise', 0)} paise)."
+                )
+            else:
+                err_code = tool_res.get("error_code")
+                if err_code == "INSUFFICIENT_STOCK":
+                    msg = f"Cannot update quantity: insufficient stock available. {tool_res.get('message')}"
+                else:
+                    msg = f"Could not update {target_sku}: {tool_res.get('message')}"
+
+            cart_orm = CartService.get_cart(context.db, context.session_id)
+            return AgentChatResponse(
+                message=msg,
+                session_id=context.session_id,
+                tool_calls=tool_records,
+                cart=_cart_to_response(cart_orm) if cart_orm else None,
+                policy=PolicyService.evaluate_cart(context.db, context.session_id),
+            )
+
+        # 6. Add to Cart Intent (Requires explicit request: "add ... to cart", "add ...")
         # Ensure ambiguous praise ("looks nice", "i like that", "recommend") does NOT mutate cart!
         add_match = re.search(r"\badd\b\s+(the\s+)?([a-zA-Z0-9_\-]+)", lower_msg)
-        if add_match and any(keyword in lower_msg for keyword in ["add", "put"]):
-            raw_sku = add_match.group(2).upper()
-            target_sku = raw_sku
-            if "MOUSE" in lower_msg:
-                target_sku = "DK-MS-01"
-            elif "ULTRA" in lower_msg:
-                target_sku = "DK-LP-ULTRA"
-            elif "OOS" in lower_msg or "OUT" in lower_msg:
-                target_sku = "DK-LP-14-OOS"
-            elif "LOW" in lower_msg:
-                target_sku = "DK-LP-LOW-01"
-            elif "15" in lower_msg or "LAPTOP" in lower_msg:
-                target_sku = "DK-LP-15"
-
-            qty_match = re.search(r"(\d+)\s+units?", lower_msg)
-            quantity = int(qty_match.group(1)) if qty_match else 1
+        if (add_match or "add" in lower_msg) and any(keyword in lower_msg for keyword in ["add", "put"]):
+            target_sku = resolve_target_sku(lower_msg)
+            quantity = parse_qty(lower_msg, default=1)
 
             tool_res = cls.execute_tool(context, "add_to_cart", {"product_id": target_sku, "quantity": quantity})
             tool_records.append(ToolCallRecord(tool_name="add_to_cart", arguments={"product_id": target_sku, "quantity": quantity}, result=tool_res))
@@ -336,9 +508,10 @@ class AgentService:
                 session_id=context.session_id,
                 tool_calls=tool_records,
                 cart=_cart_to_response(cart_orm) if cart_orm else None,
+                policy=PolicyService.evaluate_cart(context.db, context.session_id),
             )
 
-        # 3. View Cart Intent
+        # 7. View Cart Intent
         if any(w in lower_msg for w in ["what's in my cart", "show cart", "view cart", "get cart", "my cart"]):
             tool_res = cls.execute_tool(context, "get_cart", {})
             tool_records.append(ToolCallRecord(tool_name="get_cart", arguments={}, result=tool_res))
@@ -357,9 +530,10 @@ class AgentService:
                 session_id=context.session_id,
                 tool_calls=tool_records,
                 cart=_cart_to_response(cart_orm) if cart_orm else None,
+                policy=PolicyService.evaluate_cart(context.db, context.session_id),
             )
 
-        # 4. Product Search & Discovery Intent
+        # 8. Product Search & Discovery Intent
         max_paise = None
         budget_match = re.search(r"(?:under|below|less than|above|max|budget)\s*(?:₹|rs\.?\s*)?(\d+)(k|lakh|000)?", lower_msg)
         if not budget_match:
@@ -419,6 +593,7 @@ class AgentService:
             session_id=context.session_id,
             tool_calls=tool_records,
             cart=_cart_to_response(cart_orm) if cart_orm else None,
+            policy=PolicyService.evaluate_cart(context.db, context.session_id),
         )
 
     @classmethod

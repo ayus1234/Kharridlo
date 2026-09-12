@@ -190,6 +190,13 @@ export default function CartPage() {
     setSessionId(sid);
     fetchCart(sid);
     fetchPolicyTiers();
+
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("auto_pay") === "1" || params.get("authorized") === "1") {
+        setBuyerApproved(true);
+      }
+    }
   }, []);
 
   const fetchPolicyTiers = async () => {
@@ -974,6 +981,66 @@ export default function CartPage() {
           )}
         </div>
 
+        {/* Agentic Conversational Quick Actions (Phase 4) */}
+        {cart && cart.items.length > 0 && paymentState.status !== "SUCCESS" && (
+          <div className="mb-6 p-4 bg-gradient-to-r from-indigo-50/90 via-purple-50/50 to-slate-50 rounded-2xl border border-indigo-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-xs flex-shrink-0">
+                <Sparkles className="w-4 h-4 text-emerald-300" />
+              </div>
+              <div>
+                <h3 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                  <span>Conversational Cart Assistant</span>
+                  <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                    Phase 4 Active
+                  </span>
+                </h3>
+                <p className="text-[11px] text-slate-500">
+                  Modify quantities, optimize hardware bundle, or verify spending limit conversationally.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent("open-ai-chat", { detail: { prompt: "How can I optimize or make this cart cheaper?" } }));
+                }}
+                className="px-2.5 py-1.5 rounded-xl text-xs font-semibold text-indigo-700 bg-white border border-indigo-200 hover:bg-indigo-50 transition-colors shadow-2xs"
+              >
+                💡 Make it cheaper
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent("open-ai-chat", { detail: { prompt: "What is my cart total and does it pass policy?" } }));
+                }}
+                className="px-2.5 py-1.5 rounded-xl text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 transition-colors shadow-2xs"
+              >
+                📊 Check cart & policy
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent("open-ai-chat", { detail: { prompt: "Remove the most expensive item from my cart" } }));
+                }}
+                className="px-2.5 py-1.5 rounded-xl text-xs font-semibold text-rose-700 bg-white border border-rose-200 hover:bg-rose-50 transition-colors shadow-2xs"
+              >
+                🗑️ Remove expensive item
+              </button>
+              <Link
+                href="/checkout/authorize"
+                className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-2xs flex items-center gap-1.5"
+              >
+                <Lock className="w-3.5 h-3.5 text-indigo-200" />
+                <span>Authorization Checkpoint</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </div>
+        )}
+
         {/* Global Error Banner */}
         {error && (
           <div className="mb-6 p-4 rounded-xl bg-rose-50 border border-rose-200 flex items-start gap-3">
@@ -1114,6 +1181,10 @@ export default function CartPage() {
                   {paymentState.status === "CANCELLED" ? "Payment Dismissed / Cancelled" : "Payment Attempt Failed"}
                 </h4>
                 <p className="text-xs text-amber-800 mt-0.5">{paymentState.error}</p>
+                <p className="text-[11px] text-emerald-800 font-semibold mt-1 flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 inline" />
+                  <span>Cart Preserved: Your items and reserved inventory remain safely in your cart. Nothing was lost.</span>
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-2">

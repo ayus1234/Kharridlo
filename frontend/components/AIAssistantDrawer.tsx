@@ -51,6 +51,7 @@ interface Message {
   tool_calls?: ToolCall[];
   policy?: any;
   cart?: any;
+  checkout_url?: string;
   recommendedProducts?: ProductRecommendation[];
   requirements?: ShoppingRequirements | null;
   clarification_question?: string;
@@ -91,7 +92,19 @@ export default function AIAssistantDrawer({ onCartUpdated }: AIAssistantDrawerPr
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setSessionId(getOrCreateSessionId());
+    const sid = getOrCreateSessionId();
+    setSessionId(sid);
+
+    const handleOpenChat = (e: any) => {
+      setIsOpen(true);
+      if (e.detail?.prompt) {
+        setTimeout(() => {
+          sendMessage(e.detail.prompt);
+        }, 150);
+      }
+    };
+    window.addEventListener("open-ai-chat", handleOpenChat);
+    return () => window.removeEventListener("open-ai-chat", handleOpenChat);
   }, []);
 
   useEffect(() => {
@@ -238,6 +251,7 @@ export default function AIAssistantDrawer({ onCartUpdated }: AIAssistantDrawerPr
         tool_calls: data.tool_calls,
         policy: data.policy,
         cart: data.cart,
+        checkout_url: data.checkout_url,
         recommendedProducts: extractedProds,
         requirements: data.requirements,
         clarification_question: data.clarification_question,
@@ -250,8 +264,18 @@ export default function AIAssistantDrawer({ onCartUpdated }: AIAssistantDrawerPr
 
       setMessages((prev) => [...prev, assistantMessage]);
 
-      // If tool mutated cart, notify parent
-      if (data.cart || (data.tool_calls && data.tool_calls.some((t: ToolCall) => t.tool_name === "add_to_cart" || t.tool_name === "remove_from_cart"))) {
+      // If tool mutated cart, notify parent and dispatch event
+      const hasCartMutation = Boolean(
+        data.cart ||
+        (data.tool_calls && data.tool_calls.some((t: ToolCall) =>
+          t.tool_name === "add_to_cart" ||
+          t.tool_name === "remove_from_cart" ||
+          t.tool_name === "update_cart_item" ||
+          t.tool_name === "clear_cart"
+        ))
+      );
+      if (hasCartMutation) {
+        window.dispatchEvent(new Event("cart-updated"));
         if (onCartUpdated) onCartUpdated();
       }
     } catch {
@@ -583,6 +607,21 @@ export default function AIAssistantDrawer({ onCartUpdated }: AIAssistantDrawerPr
                     <p className="mt-1 text-[10px] text-slate-400 italic">
                       AI has zero financial authority. Payment requires explicit buyer sign-off.
                     </p>
+                  </div>
+                )}
+
+                {/* Direct Checkout Authorization Link */}
+                {m.sender === "assistant" && (m.checkout_url || (m.policy && m.policy.decision === "AUTHORIZATION_REQUIRED")) && (
+                  <div className="mt-2.5">
+                    <Link
+                      href={m.checkout_url || "/checkout/authorize"}
+                      onClick={() => setIsOpen(false)}
+                      className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-all active:scale-95 text-center"
+                    >
+                      <ShieldCheck className="w-4 h-4" />
+                      <span>Review & Authorize at Checkpoint</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
                   </div>
                 )}
               </div>
