@@ -121,6 +121,29 @@ interface PaymentState {
 
 export default function CartPage() {
   const [cart, setCart] = useState<CartResponse | null>(null);
+
+  const safeSetCart = (raw: any) => {
+    if (!raw || typeof raw !== "object") {
+      setCart(null);
+      return;
+    }
+    const safeItems = Array.isArray(raw.items) ? raw.items : [];
+    const safeCart: CartResponse = {
+      id: String(raw.id || `cart_${Date.now()}`),
+      session_id: String(raw.session_id || sessionId || ""),
+      status: String(raw.status || "active"),
+      currency: String(raw.currency || "INR"),
+      subtotal_paise: Number(raw.subtotal_paise || raw.total_paise || 0),
+      subtotal_inr: Number(raw.subtotal_inr || (raw.subtotal_paise ? raw.subtotal_paise / 100 : 0)),
+      total_paise: Number(raw.total_paise || 0),
+      total_inr: Number(raw.total_inr || (raw.total_paise ? raw.total_paise / 100 : 0)),
+      total_items_count: Number(raw.total_items_count ?? safeItems.length),
+      expires_at: String(raw.expires_at || new Date().toISOString()),
+      is_expired: Boolean(raw.is_expired),
+      items: safeItems,
+    };
+    setCart(safeCart);
+  };
   const [loading, setLoading] = useState<boolean>(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -258,7 +281,7 @@ export default function CartPage() {
         const fallbackRes = await fetch(`/api/cart/${sid}`, { cache: "no-store", signal: AbortSignal.timeout(1500) });
         if (fallbackRes.ok) {
           const data = await fallbackRes.json();
-          setCart(data);
+          safeSetCart(data);
           if (typeof window !== "undefined") {
             try {
               if (data.items && data.items.length > 0) {
@@ -281,7 +304,7 @@ export default function CartPage() {
           }
         }
       }
-      setCart(data);
+      safeSetCart(data);
       if (typeof window !== "undefined") {
         try {
           if (data.items && data.items.length > 0) {
@@ -348,7 +371,7 @@ export default function CartPage() {
       }
       if (res && res.ok) {
         const updatedCart: CartResponse = await res.json();
-        setCart(updatedCart);
+        safeSetCart(updatedCart);
         window.dispatchEvent(new Event("cart-updated"));
       } else {
         const errData = await res?.json().catch(() => null);
@@ -392,7 +415,7 @@ export default function CartPage() {
       }
       if (res && res.ok) {
         const updatedCart: CartResponse = await res.json();
-        setCart(updatedCart);
+        safeSetCart(updatedCart);
         if (typeof window !== "undefined") {
           try {
             localStorage.setItem("kharridlo_client_cart", JSON.stringify(updatedCart.items || []));
@@ -435,7 +458,7 @@ export default function CartPage() {
       }
       if (res && res.ok) {
         const updatedCart: CartResponse = await res.json();
-        setCart(updatedCart);
+        safeSetCart(updatedCart);
         if (typeof window !== "undefined") {
           try {
             localStorage.removeItem("kharridlo_client_cart");
@@ -480,7 +503,7 @@ export default function CartPage() {
           body: JSON.stringify({ tier: newTier }),
         });
       }
-      if (cart && cart.items.length > 0) {
+      if (cart && (cart.items?.length || 0) > 0) {
         evaluateCommercePolicy();
       }
     } catch {
@@ -527,7 +550,7 @@ export default function CartPage() {
       // If backend evaluated empty DB cart while frontend has items, fall back to serverless policy evaluator
       if (
         (data.cart_total_paise === 0 || data.reasons?.some((r: any) => r.code === "EMPTY_CART")) &&
-        cart && cart.items && cart.items.length > 0 &&
+        cart && (cart.items?.length || 0) > 0 &&
         url !== `/api/policy/evaluate/${sid}`
       ) {
         const fallbackRes = await fetch(`/api/policy/evaluate/${sid}`, {
@@ -968,7 +991,7 @@ export default function CartPage() {
                 <Clock className="w-3.5 h-3.5 text-amber-600" />
                 <span>30-min inventory reservation</span>
               </div>
-              {cart.items.length > 0 && paymentState.status !== "SUCCESS" && (
+              {(cart.items?.length || 0) > 0 && paymentState.status !== "SUCCESS" && (
                 <button
                   onClick={clearCart}
                   disabled={actionLoading !== null}
@@ -982,7 +1005,7 @@ export default function CartPage() {
         </div>
 
         {/* Agentic Conversational Quick Actions (Phase 4) */}
-        {cart && cart.items.length > 0 && paymentState.status !== "SUCCESS" && (
+        {cart && (cart.items?.length || 0) > 0 && paymentState.status !== "SUCCESS" && (
           <div className="mb-6 p-4 bg-gradient-to-r from-indigo-50/90 via-purple-50/50 to-slate-50 rounded-2xl border border-indigo-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-xs flex-shrink-0">
@@ -1211,7 +1234,7 @@ export default function CartPage() {
             <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-3 text-indigo-600" />
             <p className="text-sm font-medium">Loading authoritative cart session...</p>
           </div>
-        ) : !cart || cart.items.length === 0 ? (
+        ) : !cart || !cart.items || cart.items.length === 0 ? (
           <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 shadow-sm p-8 max-w-md mx-auto">
             <ShoppingBag className="w-12 h-12 text-slate-300 mx-auto mb-3" />
             <h3 className="text-sm font-bold text-slate-800">Your cart is currently empty</h3>
@@ -1235,15 +1258,15 @@ export default function CartPage() {
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                 <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
                   <h3 className="font-bold text-sm text-slate-900">
-                    Cart Items ({cart.total_items_count})
+                    Cart Items ({cart.total_items_count ?? cart.items?.length ?? 0})
                   </h3>
                   <span className="text-[11px] font-mono text-slate-400">
-                    Cart ID: {cart.id.substring(0, 8)}...
+                    Cart ID: {(cart.id || "").substring(0, 8)}...
                   </span>
                 </div>
 
                 <div className="divide-y divide-slate-100">
-                  {cart.items.map((item) => (
+                  {(cart.items || []).map((item) => (
                     <div key={item.id} className="p-4 sm:p-5 flex items-start justify-between gap-4">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
@@ -1422,7 +1445,7 @@ export default function CartPage() {
                     <PolicyStatusCard
                       decision={policyResult.decision}
                       policyTier={policyResult.policy_tier || selectedTier}
-                      cartTotalInr={cart.total_inr || cart.total_paise / 100}
+                      cartTotalInr={cart.total_inr ?? (cart.total_paise ? cart.total_paise / 100 : 0)}
                       remainingBufferInr={policyResult.remaining_buffer_inr ?? (policyResult.remaining_buffer_paise ? policyResult.remaining_buffer_paise / 100 : undefined)}
                       maxCartTotalInr={policyResult.max_cart_total_inr ?? (policyResult.max_cart_total_paise ? policyResult.max_cart_total_paise / 100 : 40000)}
                       reasons={policyResult.reasons}

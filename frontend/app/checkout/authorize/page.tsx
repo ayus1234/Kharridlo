@@ -233,7 +233,7 @@ export default function PurchaseAuthorizationPage() {
   };
 
   const handleAuthorizeAndPay = async () => {
-    if (!cart || cart.items.length === 0) return;
+    if (!cart || (cart.items?.length || 0) === 0) return;
     setAuthorizing(true);
     setPaymentError(null);
 
@@ -540,7 +540,7 @@ export default function PurchaseAuthorizationPage() {
             <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-3 text-indigo-600" />
             <p className="text-sm font-medium">Revalidating authoritative cart and spending policy...</p>
           </div>
-        ) : !cart || cart.items.length === 0 ? (
+        ) : !cart || !cart.items || cart.items.length === 0 ? (
           <div className="p-12 bg-white rounded-3xl border border-slate-200 text-center max-w-md mx-auto shadow-sm">
             <ShoppingBag className="w-12 h-12 text-slate-300 mx-auto mb-3" />
             <h3 className="text-sm font-bold text-slate-800">Your cart is currently empty</h3>
