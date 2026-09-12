@@ -1,5 +1,4 @@
-from typing import Optional, cast
-from datetime import datetime
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.db.session import get_db
@@ -35,29 +34,29 @@ def _to_cart_response(cart: Cart) -> CartResponse:
         product = item.product
         item_responses.append(
             CartItemResponse(
-                id=str(item.id),
-                cart_id=str(item.cart_id),
-                product_id=str(item.product_id),
+                id=item.id,
+                cart_id=item.cart_id,
+                product_id=item.product_id,
                 sku=product.sku if product else "UNKNOWN",
                 name=product.name if product else "Unknown Product",
                 brand=product.brand if product else "Unknown Brand",
                 category=product.category if product else "general",
                 image_url=product.image_url if product else None,
-                quantity=cast(int, item.quantity),
-                unit_price_paise=cast(int, item.unit_price_paise),
-                line_total_paise=cast(int, item.line_total_paise),
+                quantity=item.quantity,
+                unit_price_paise=item.unit_price_paise,
+                line_total_paise=item.line_total_paise,
                 availability_status=product.inventory.status if (product and product.inventory) else "in_stock",
             )
         )
 
     return CartResponse(
-        id=str(cart.id),
-        session_id=str(cart.session_id),
-        status=str(cart.status),
-        currency=str(cart.currency),
-        subtotal_paise=cast(int, cart.subtotal_paise),
-        total_paise=cast(int, cart.total_paise),
-        expires_at=cast(datetime, cart.expires_at),
+        id=cart.id,
+        session_id=cart.session_id,
+        status=cart.status,
+        currency=cart.currency,
+        subtotal_paise=cart.subtotal_paise,
+        total_paise=cart.total_paise,
+        expires_at=cart.expires_at,
         is_expired=cart.is_expired,
         items=item_responses,
     )

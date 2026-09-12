@@ -1,5 +1,5 @@
 import uuid
-from typing import List, cast
+from typing import List
 from datetime import datetime, timezone, timedelta
 from sqlalchemy import String, Integer, BigInteger, DateTime, ForeignKey, UniqueConstraint
 from sqlalchemy.sql import func
@@ -37,7 +37,7 @@ class Cart(Base):
     def is_expired(self) -> bool:
         """Determines if the cart is past its expiration timestamp."""
         now = datetime.now(timezone.utc)
-        expires = cast(datetime, self.expires_at)
+        expires = self.expires_at
         if expires.tzinfo is None:
             expires = expires.replace(tzinfo=timezone.utc)
         return now > expires
