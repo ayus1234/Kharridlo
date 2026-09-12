@@ -693,7 +693,7 @@ class AgentService:
             temperature=0.2,
         )
 
-        contents = [user_msg]
+        contents: List[Any] = [user_msg]
         response = client.models.generate_content(
             model=getattr(settings, "GEMINI_MODEL", "gemini-2.5-flash"),
             contents=contents,
@@ -704,7 +704,9 @@ class AgentService:
         while response.function_calls and turn_count < MAX_TOOL_CALLS_PER_TURN:
             turn_count += 1
             function_call = response.function_calls[0]
-            call_name = function_call.name
+            call_name: str = function_call.name or ""
+            if not call_name:
+                break
             call_args = dict(function_call.args) if function_call.args else {}
 
             tool_result = cls.execute_tool(context, call_name, call_args)
@@ -714,7 +716,8 @@ class AgentService:
                 name=call_name,
                 response=tool_result,
             )
-            contents.append(response.candidates[0].content)
+            if response.candidates and len(response.candidates) > 0 and response.candidates[0].content:
+                contents.append(response.candidates[0].content)
             contents.append(types.Content(parts=[tool_response_part]))
 
             response = client.models.generate_content(
