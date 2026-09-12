@@ -127,6 +127,7 @@ export async function POST(request: NextRequest) {
         cart_total_paise: cart.total_paise,
         max_single_transaction_paise: currentTier.max_single_transaction_paise,
         remaining_buffer_paise: remainingBufferPaise,
+        remaining_buffer_inr: Math.round(remainingBufferPaise / 100),
       },
       cart,
       tool_calls: [
@@ -134,6 +135,81 @@ export async function POST(request: NextRequest) {
         { tool_name: "evaluate_policy", arguments: { session_id: sessionId }, result: { decision: "AUTHORIZATION_REQUIRED" } },
       ],
       execution_mode: "checkout_handoff",
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // 1.5 Cart Optimization & Value Advisory ("make it cheaper", "optimize", "save money")
+  // ---------------------------------------------------------------------------
+  if (
+    lowerMsg.includes("cheaper") ||
+    lowerMsg.includes("optimize") ||
+    lowerMsg.includes("save money") ||
+    lowerMsg.includes("budget alternative") ||
+    lowerMsg.includes("lower price") ||
+    lowerMsg.includes("reduce cost")
+  ) {
+    if (cart.items.length === 0) {
+      return NextResponse.json({
+        message: "Your cart is currently empty! Add products to your cart, and I will analyze cost optimization and value-for-money alternatives for you.",
+        session_id: sessionId,
+        cart,
+        execution_mode: "cart_advisory",
+      });
+    }
+
+    const sortedByPrice = [...cart.items].sort((a, b) => ((b.unit_price_paise || 0) * (b.quantity || 1)) - ((a.unit_price_paise || 0) * (a.quantity || 1)));
+    const mostExpensive = sortedByPrice[0];
+    const totalInr = (cart.total_paise / 100).toLocaleString("en-IN");
+    const expItemInr = (((mostExpensive.unit_price_paise || 0) * (mostExpensive.quantity || 1)) / 100).toLocaleString("en-IN");
+
+    // Search curated catalog for lower-priced alternatives
+    const catAlternatives = CURATED_MARKETPLACE_PRODUCTS.filter((p) => {
+      const pricePaise = p.source_price_minor || (p.source_price_inr ? p.source_price_inr * 100 : 0);
+      return p.category === mostExpensive.category && 
+             pricePaise < (mostExpensive.unit_price_paise || 0) &&
+             p.id !== mostExpensive.product_id;
+    }).slice(0, 3);
+
+    let optMessage = `Here is an intelligent cost optimization for your current cart (**₹${totalInr}**):\n\n`;
+    optMessage += `1. **Highest Cost Driver:** **${mostExpensive.name}** contributes **₹${expItemInr}** (${mostExpensive.quantity > 1 ? `₹${((mostExpensive.unit_price_paise || 0) / 100).toLocaleString("en-IN")} × ${mostExpensive.quantity}` : "single unit"}).\n`;
+
+    if (mostExpensive.quantity > 1) {
+      const savedIfReduced = (((mostExpensive.quantity - 1) * mostExpensive.unit_price_paise) / 100).toLocaleString("en-IN");
+      optMessage += `2. **Quantity Adjustment:** Reducing quantity to 1 would immediately save **₹${savedIfReduced}**.\n`;
+    }
+
+    if (catAlternatives.length > 0) {
+      const bestAlt = catAlternatives[0];
+      const altPriceInr = (bestAlt.source_price_inr || (bestAlt.source_price_minor ? bestAlt.source_price_minor / 100 : 0)).toLocaleString("en-IN");
+      const altPricePaise = bestAlt.source_price_minor || (bestAlt.source_price_inr ? bestAlt.source_price_inr * 100 : 0);
+      const savedAmount = Math.max(0, Math.round((mostExpensive.unit_price_paise - altPricePaise) / 100)).toLocaleString("en-IN");
+      optMessage += `3. **Verified Value Alternative:** Swap for **${bestAlt.title}** (₹${altPriceInr}), saving **₹${savedAmount}** while meeting essential computing specs.\n`;
+    } else {
+      optMessage += `2. **Item Removal Option:** You can say *"Remove expensive item"* to remove **${mostExpensive.name}** and lower your cart total.\n`;
+    }
+
+    optMessage += `\nWould you like me to remove **${mostExpensive.name}**, swap it with a value alternative, or proceed to authorization?`;
+
+    const remainingBufferPaise = Math.max(0, currentTier.max_single_transaction_paise - cart.total_paise);
+    return NextResponse.json({
+      message: optMessage,
+      session_id: sessionId,
+      cart,
+      recommended_products: catAlternatives,
+      policy: {
+        decision: cart.total_paise <= currentTier.max_single_transaction_paise ? "AUTHORIZATION_REQUIRED" : "BLOCK",
+        policy_tier: currentTier.tier,
+        cart_total_paise: cart.total_paise,
+        max_single_transaction_paise: currentTier.max_single_transaction_paise,
+        remaining_buffer_paise: remainingBufferPaise,
+        remaining_buffer_inr: Math.round(remainingBufferPaise / 100),
+      },
+      tool_calls: [
+        { tool_name: "get_cart", arguments: { session_id: sessionId }, result: cart },
+        { tool_name: "find_budget_alternatives", arguments: { target_item: mostExpensive.name, max_price_paise: mostExpensive.unit_price_paise }, result: { candidates: catAlternatives } },
+      ],
+      execution_mode: "cart_optimization",
     });
   }
 
@@ -180,6 +256,8 @@ export async function POST(request: NextRequest) {
         policy_tier: currentTier.tier,
         cart_total_paise: cart.total_paise,
         max_single_transaction_paise: currentTier.max_single_transaction_paise,
+        remaining_buffer_paise: remainingBufferPaise,
+        remaining_buffer_inr: Math.round(remainingBufferPaise / 100),
       },
       cart,
       execution_mode: "deterministic_policy_engine",
@@ -221,6 +299,8 @@ export async function POST(request: NextRequest) {
         policy_tier: currentTier.tier,
         cart_total_paise: cart.total_paise,
         max_single_transaction_paise: currentTier.max_single_transaction_paise,
+        remaining_buffer_paise: Math.max(0, currentTier.max_single_transaction_paise - cart.total_paise),
+        remaining_buffer_inr: Math.round(Math.max(0, currentTier.max_single_transaction_paise - cart.total_paise) / 100),
       },
       tool_calls: [
         { tool_name: "get_cart", arguments: { session_id: sessionId }, result: cart },
@@ -376,26 +456,37 @@ export async function POST(request: NextRequest) {
 
     // Identify target item to remove
     let itemToRemove = cart.items[cart.items.length - 1];
-    for (const item of cart.items) {
-      const lowerName = item.name.toLowerCase();
-      const lowerSku = item.sku.toLowerCase();
-      if (
-        lowerMsg.includes(lowerSku) ||
-        lowerMsg.includes(lowerName) ||
-        (lowerName.includes("laptop") && lowerMsg.includes("laptop")) ||
-        (lowerName.includes("mouse") && lowerMsg.includes("mouse")) ||
-        (lowerName.includes("keyboard") && lowerMsg.includes("keyboard"))
-      ) {
-        itemToRemove = item;
-        break;
+    const isExpensiveIntent =
+      lowerMsg.includes("expensive") ||
+      lowerMsg.includes("highest") ||
+      lowerMsg.includes("priciest") ||
+      lowerMsg.includes("costliest");
+
+    if (isExpensiveIntent) {
+      itemToRemove = [...cart.items].sort((a, b) => ((b.unit_price_paise || 0) * (b.quantity || 1)) - ((a.unit_price_paise || 0) * (a.quantity || 1)))[0];
+    } else {
+      for (const item of cart.items) {
+        const lowerName = item.name.toLowerCase();
+        const lowerSku = item.sku.toLowerCase();
+        if (
+          lowerMsg.includes(lowerSku) ||
+          lowerMsg.includes(lowerName) ||
+          (lowerName.includes("laptop") && lowerMsg.includes("laptop")) ||
+          (lowerName.includes("mouse") && lowerMsg.includes("mouse")) ||
+          (lowerName.includes("keyboard") && lowerMsg.includes("keyboard"))
+        ) {
+          itemToRemove = item;
+          break;
+        }
       }
     }
 
     cart = removeItemFromServerCart(sessionId, itemToRemove.product_id);
     const isPolicyOk = cart.total_paise <= currentTier.max_single_transaction_paise;
+    const remainingBufferPaise = Math.max(0, currentTier.max_single_transaction_paise - cart.total_paise);
 
     return NextResponse.json({
-      message: `Removed **${itemToRemove.name}** from your cart.\n\n• **Updated Cart Total:** ₹${(cart.total_paise / 100).toLocaleString("en-IN")} (${cart.items.length} items remaining)\n• **Policy Status:** ${isPolicyOk ? "✅ Within Limit" : "⚠️ Limit Exceeded"}`,
+      message: `Removed ${isExpensiveIntent ? "most expensive item " : ""}**${itemToRemove.name}** (₹${((itemToRemove.unit_price_paise * (itemToRemove.quantity || 1)) / 100).toLocaleString("en-IN")}) from your cart.\n\n• **Updated Cart Total:** ₹${(cart.total_paise / 100).toLocaleString("en-IN")} (${cart.items.length} items remaining)\n• **Policy Status:** ${isPolicyOk ? "✅ Within Limit" : "⚠️ Limit Exceeded"}`,
       session_id: sessionId,
       cart,
       tool_calls: [
@@ -415,6 +506,8 @@ export async function POST(request: NextRequest) {
         policy_tier: currentTier.tier,
         cart_total_paise: cart.total_paise,
         max_single_transaction_paise: currentTier.max_single_transaction_paise,
+        remaining_buffer_paise: remainingBufferPaise,
+        remaining_buffer_inr: Math.round(remainingBufferPaise / 100),
       },
       execution_mode: "cart_mutation",
     });

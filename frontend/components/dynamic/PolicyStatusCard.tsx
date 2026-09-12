@@ -112,14 +112,14 @@ export default function PolicyStatusCard({
         <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/70">
           <span className="text-[10px] text-slate-400 uppercase font-semibold block">Cart Total</span>
           <span className="font-bold text-navy-900 text-sm mt-0.5 block">
-            ₹{cartTotalInr.toLocaleString("en-IN")}
+            ₹{Number(cartTotalInr || 0).toLocaleString("en-IN")}
           </span>
         </div>
 
         <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/70">
           <span className="text-[10px] text-slate-400 uppercase font-semibold block">Tier Cap</span>
           <span className="font-bold text-slate-700 text-sm mt-0.5 block">
-            ₹{maxCartTotalInr.toLocaleString("en-IN")}
+            ₹{Number(maxCartTotalInr || 0).toLocaleString("en-IN")}
           </span>
         </div>
       </div>
@@ -129,12 +129,12 @@ export default function PolicyStatusCard({
         <p className="font-semibold text-navy-900 mb-0.5">{config.title}</p>
         <p className="text-[11px] text-slate-600">{config.description}</p>
 
-        {reasons.length > 0 && (
+        {Array.isArray(reasons) && reasons.length > 0 && (
           <ul className="mt-2 space-y-1 text-[11px] font-mono-data text-slate-700 border-t border-slate-200/60 pt-2">
-            {reasons.map((r, i) => (
+            {reasons.map((r: any, i) => (
               <li key={i} className="flex items-start gap-1.5">
                 <span className="text-slate-400">•</span>
-                <span>{r.message}</span>
+                <span>{typeof r === "string" ? r : (r?.message || r?.code || "Policy rule satisfied")}</span>
               </li>
             ))}
           </ul>

@@ -83,7 +83,7 @@ export default function AIAssistantDrawer({ onCartUpdated }: AIAssistantDrawerPr
       id: "welcome",
       sender: "assistant",
       text: "Hello! I am your Kharridlo AI Shopping Companion, powered by Gemini 2.0 and bounded commerce tools. Tell me your needs, budget, or preferred specs (e.g. *'Laptop under ₹80k for coding'*), and I'll recommend the best options with transparent trade-offs.",
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      timestamp: "Just now",
     },
   ]);
   const [inputValue, setInputValue] = useState("");
@@ -602,7 +602,14 @@ export default function AIAssistantDrawer({ onCartUpdated }: AIAssistantDrawerPr
                       <span className="text-[10px] uppercase">{m.policy.policy_tier}</span>
                     </div>
                     <p className="mt-1 text-[11px] opacity-90">
-                      Buffer remaining: ₹{(m.policy.remaining_buffer_paise / 100).toLocaleString("en-IN")}
+                      Buffer remaining: ₹{Number(
+                        m.policy.remaining_buffer_inr ??
+                        (m.policy.remaining_buffer_paise !== undefined && m.policy.remaining_buffer_paise !== null
+                          ? m.policy.remaining_buffer_paise / 100
+                          : (m.policy.max_single_transaction_paise && m.policy.cart_total_paise !== undefined
+                              ? Math.max(0, m.policy.max_single_transaction_paise - m.policy.cart_total_paise) / 100
+                              : 0))
+                      ).toLocaleString("en-IN")}
                     </p>
                     <p className="mt-1 text-[10px] text-slate-400 italic">
                       AI has zero financial authority. Payment requires explicit buyer sign-off.

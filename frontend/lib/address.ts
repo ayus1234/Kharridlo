@@ -109,12 +109,13 @@ export function getSavedAddresses(): DeliveryAddress[] {
   return PRESET_ADDRESSES;
 }
 
-export function formatAddress(addr: DeliveryAddress): string {
+export function formatAddress(addr?: DeliveryAddress | null): string {
+  if (!addr) return "Standard Delivery Address";
   const parts = [
     addr.flatHouse,
     addr.areaStreet,
     addr.landmark ? `Near ${addr.landmark}` : null,
-    `${addr.city}, ${addr.state} - ${addr.pincode}`,
+    [addr.city, addr.state].filter(Boolean).join(", ") + (addr.pincode ? ` - ${addr.pincode}` : ""),
   ].filter(Boolean);
-  return parts.join(", ");
+  return parts.join(", ") || "Standard Delivery Address";
 }
