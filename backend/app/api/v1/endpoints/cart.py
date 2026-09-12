@@ -43,9 +43,9 @@ def _to_cart_response(cart: Cart) -> CartResponse:
                 brand=product.brand if product else "Unknown Brand",
                 category=product.category if product else "general",
                 image_url=product.image_url if product else None,
-                quantity=int(item.quantity),
-                unit_price_paise=int(item.unit_price_paise),
-                line_total_paise=int(item.line_total_paise),
+                quantity=cast(int, item.quantity),
+                unit_price_paise=cast(int, item.unit_price_paise),
+                line_total_paise=cast(int, item.line_total_paise),
                 availability_status=product.inventory.status if (product and product.inventory) else "in_stock",
             )
         )
@@ -55,10 +55,10 @@ def _to_cart_response(cart: Cart) -> CartResponse:
         session_id=str(cart.session_id),
         status=str(cart.status),
         currency=str(cart.currency),
-        subtotal_paise=int(cart.subtotal_paise),
-        total_paise=int(cart.total_paise),
+        subtotal_paise=cast(int, cart.subtotal_paise),
+        total_paise=cast(int, cart.total_paise),
         expires_at=cast(datetime, cart.expires_at),
-        is_expired=bool(cart.is_expired),
+        is_expired=cart.is_expired,
         items=item_responses,
     )
 
