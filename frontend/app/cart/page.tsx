@@ -225,18 +225,20 @@ export default function CartPage() {
   const fetchPolicyTiers = async () => {
     try {
       const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
-      const url = (isHttps && apiBaseUrl.startsWith("http://localhost"))
-        ? `/api/policy/tiers`
-        : `${apiBaseUrl}/api/v1/policy/tiers`;
-      let res: Response | null = null;
-      try {
-        res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(1500) });
-      } catch {
-        res = await fetch(`/api/policy/tiers`, { cache: "no-store", signal: AbortSignal.timeout(1500) });
+      const isLocalhost = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+      const preferInternal = isLocalhost || (isHttps && apiBaseUrl.startsWith("http://localhost"));
+      const primaryUrl = preferInternal ? `/api/policy/tiers` : `${apiBaseUrl}/api/v1/policy/tiers`;
+      const fallbackUrl = preferInternal ? `${apiBaseUrl}/api/v1/policy/tiers` : `/api/policy/tiers`;
+
+      let res = await fetch(primaryUrl, { cache: "no-store", signal: AbortSignal.timeout(3000) }).catch(() => null);
+      if (!res || !res.ok) {
+        res = await fetch(fallbackUrl, { cache: "no-store", signal: AbortSignal.timeout(3000) }).catch(() => null);
       }
       if (res && res.ok) {
-        const tiers: PolicyTierSummary[] = await res.json();
-        setAvailableTiers(tiers);
+        const tiers: PolicyTierSummary[] = await res.json().catch(() => []);
+        if (Array.isArray(tiers) && tiers.length > 0) {
+          setAvailableTiers(tiers);
+        }
       }
     } catch {
       // Graceful fallback
@@ -268,54 +270,79 @@ export default function CartPage() {
     setError(null);
     try {
       const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
-      const url = (isHttps && apiBaseUrl.startsWith("http://localhost"))
-        ? `/api/cart/${sid}`
-        : `${apiBaseUrl}/api/v1/cart/${sid}`;
-      let res: Response | null = null;
-      try {
-        res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(1500) });
-      } catch {
-        res = await fetch(`/api/cart/${sid}`, { cache: "no-store", signal: AbortSignal.timeout(1500) });
-      }
+      const isLocalhost = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+      const preferInternal = isLocalhost || (isHttps && apiBaseUrl.startsWith("http://localhost"));
+      const primaryUrl = preferInternal ? `/api/cart/${sid}` : `${apiBaseUrl}/api/v1/cart/${sid}`;
+      const fallbackUrl = preferInternal ? `${apiBaseUrl}/api/v1/cart/${sid}` : `/api/cart/${sid}`;
+
+      let res: Response | null = await fetch(primaryUrl, { cache: "no-store", signal: AbortSignal.timeout(3500) }).catch(() => null);
       if (!res || !res.ok) {
-        const fallbackRes = await fetch(`/api/cart/${sid}`, { cache: "no-store", signal: AbortSignal.timeout(1500) });
-        if (fallbackRes.ok) {
-          const data = await fallbackRes.json();
-          safeSetCart(data);
-          if (typeof window !== "undefined") {
-            try {
-              if (data.items && data.items.length > 0) {
-                localStorage.setItem("kharridlo_client_cart", JSON.stringify(data.items));
-              } else {
-                localStorage.removeItem("kharridlo_client_cart");
-              }
-            } catch {}
-          }
-          return;
-        }
+        res = await fetch(fallbackUrl, { cache: "no-store", signal: AbortSignal.timeout(3500) }).catch(() => null);
       }
-      let data: CartResponse = await res.json();
-      if ((!data.items || data.items.length === 0) && url !== `/api/cart/${sid}`) {
-        const serverlessRes = await fetch(`/api/cart/${sid}`, { cache: "no-store" }).catch(() => null);
+
+      let data: CartResponse | null = null;
+      if (res && res.ok) {
+        data = await res.json().catch(() => null);
+      }
+
+      if ((!data || !data.items || data.items.length === 0) && primaryUrl !== `/api/cart/${sid}`) {
+        const serverlessRes = await fetch(`/api/cart/${sid}`, { cache: "no-store", signal: AbortSignal.timeout(2000) }).catch(() => null);
         if (serverlessRes && serverlessRes.ok) {
-          const serverlessData = await serverlessRes.json();
-          if (serverlessData.items && serverlessData.items.length > 0) {
+          const serverlessData = await serverlessRes.json().catch(() => null);
+          if (serverlessData?.items && serverlessData.items.length > 0) {
             data = serverlessData;
           }
         }
       }
-      safeSetCart(data);
-      if (typeof window !== "undefined") {
-        try {
-          if (data.items && data.items.length > 0) {
-            localStorage.setItem("kharridlo_client_cart", JSON.stringify(data.items));
-          } else {
-            localStorage.removeItem("kharridlo_client_cart");
-          }
-        } catch {}
+
+      // If backend was unreachable or empty, restore from persistent client cart
+      if (!data || !Array.isArray(data.items) || data.items.length === 0) {
+        if (typeof window !== "undefined") {
+          try {
+            const rawStored = localStorage.getItem("kharridlo_client_cart");
+            if (rawStored) {
+              const storedItems = JSON.parse(rawStored);
+              if (Array.isArray(storedItems) && storedItems.length > 0) {
+                const totalPaise = storedItems.reduce((acc: number, item: any) => acc + (item.line_total_paise || ((item.unit_price_paise || 0) * (item.quantity || 1))), 0);
+                data = {
+                  id: `cart_${sid}`,
+                  session_id: sid,
+                  status: "active",
+                  currency: "INR",
+                  subtotal_paise: totalPaise,
+                  subtotal_inr: totalPaise / 100,
+                  total_paise: totalPaise,
+                  total_inr: totalPaise / 100,
+                  total_items_count: storedItems.reduce((acc: number, item: any) => acc + (item.quantity || 1), 0),
+                  expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+                  is_expired: false,
+                  items: storedItems,
+                };
+              }
+            }
+          } catch {}
+        }
+      }
+
+      if (data) {
+        safeSetCart(data);
+        if (typeof window !== "undefined") {
+          try {
+            if (data.items && data.items.length > 0) {
+              localStorage.setItem("kharridlo_client_cart", JSON.stringify(data.items));
+            } else {
+              localStorage.removeItem("kharridlo_client_cart");
+            }
+          } catch {}
+        }
+      } else {
+        safeSetCart({ items: [] });
       }
     } catch (err: any) {
-      setError(err?.message || "Unable to reach cart service");
+      const msg = err?.message || "";
+      if (!msg.toLowerCase().includes("timeout") && !msg.toLowerCase().includes("timed out") && !msg.toLowerCase().includes("signal") && !msg.toLowerCase().includes("abort")) {
+        setError(msg || "Unable to reach cart service");
+      }
     } finally {
       setLoading(false);
     }
@@ -519,30 +546,36 @@ export default function CartPage() {
     try {
       const sid = sessionId || getOrCreateSessionId();
       const isHttps = typeof window !== "undefined" && window.location.protocol === "https:";
+      const isLocalhost = typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1");
+      const preferInternal = isLocalhost || (isHttps && apiBaseUrl.startsWith("http://localhost"));
+
       const payload = {
         cart_items: cart?.items || [],
         tier: selectedTier,
       };
-      const url = (isHttps && apiBaseUrl.startsWith("http://localhost"))
+      const primaryUrl = preferInternal
         ? `/api/policy/evaluate/${sid}`
         : `${apiBaseUrl}/api/v1/policy/evaluate/${sid}`;
-      let res: Response | null = null;
-      try {
-        res = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-      } catch {
-        res = null;
-      }
+      const fallbackUrl = preferInternal
+        ? `${apiBaseUrl}/api/v1/policy/evaluate/${sid}`
+        : `/api/policy/evaluate/${sid}`;
+
+      let res: Response | null = await fetch(primaryUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(4000),
+      }).catch(() => null);
+
       if (!res || !res.ok) {
-        res = await fetch(`/api/policy/evaluate/${sid}`, {
+        res = await fetch(fallbackUrl, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
-        });
+          signal: AbortSignal.timeout(4000),
+        }).catch(() => null);
       }
+
       if (!res || !res.ok) {
         throw new Error(`Policy evaluation failed: ${res?.status || "error"}`);
       }
@@ -551,7 +584,7 @@ export default function CartPage() {
       if (
         (data.cart_total_paise === 0 || data.reasons?.some((r: any) => r.code === "EMPTY_CART")) &&
         cart && (cart.items?.length || 0) > 0 &&
-        url !== `/api/policy/evaluate/${sid}`
+        primaryUrl !== `/api/policy/evaluate/${sid}`
       ) {
         const fallbackRes = await fetch(`/api/policy/evaluate/${sid}`, {
           method: "POST",
@@ -564,7 +597,10 @@ export default function CartPage() {
       }
       setPolicyResult(data);
     } catch (err: any) {
-      setError(err?.message || "Failed to execute deterministic policy check");
+      const msg = err?.message || "";
+      if (!msg.toLowerCase().includes("timeout") && !msg.toLowerCase().includes("timed out") && !msg.toLowerCase().includes("signal") && !msg.toLowerCase().includes("abort")) {
+        setError(msg || "Failed to execute deterministic policy check");
+      }
     } finally {
       setEvaluatingPolicy(false);
     }
@@ -1065,13 +1101,21 @@ export default function CartPage() {
         )}
 
         {/* Global Error Banner */}
-        {error && (
-          <div className="mb-6 p-4 rounded-xl bg-rose-50 border border-rose-200 flex items-start gap-3">
-            <XCircle className="w-5 h-5 text-rose-600 flex-shrink-0 mt-0.5" />
-            <div>
-              <h3 className="text-xs font-bold text-rose-900">Cart / Policy Notification</h3>
-              <p className="text-xs text-rose-700 mt-0.5">{error}</p>
+        {error && !error.toLowerCase().includes("timeout") && !error.toLowerCase().includes("timed out") && !error.toLowerCase().includes("signal") && (
+          <div className="mb-6 p-4 rounded-xl bg-rose-50 border border-rose-200 flex items-start justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <XCircle className="w-5 h-5 text-rose-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <h3 className="text-xs font-bold text-rose-900">Cart / Policy Notification</h3>
+                <p className="text-xs text-rose-700 mt-0.5">{error}</p>
+              </div>
             </div>
+            <button
+              onClick={() => setError(null)}
+              className="text-xs font-semibold text-rose-600 hover:text-rose-800 px-2 py-1 rounded-lg hover:bg-rose-100 transition-colors"
+            >
+              Dismiss
+            </button>
           </div>
         )}
 

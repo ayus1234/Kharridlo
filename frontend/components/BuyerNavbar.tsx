@@ -41,6 +41,7 @@ export default function BuyerNavbar() {
     const fetchCount = async () => {
       try {
         const sid = getOrCreateSessionId();
+        if (!sid) return;
         
         // 1. Fast local verification first (cookie-backed, runs in <5ms, zero cold-start)
         const localRes = await fetch(`/api/cart/${sid}`, {
